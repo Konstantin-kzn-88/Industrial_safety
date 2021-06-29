@@ -1,1 +1,3 @@
 https://github.com/Konstantin-kzn-88/Industrial_safety.git
+
+выполнил соединение проетов
