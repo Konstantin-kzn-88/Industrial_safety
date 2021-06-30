@@ -1,5 +1,13 @@
-import matplotlib.pyplot as plt
+# -----------------------------------------------------------
+# Класс предназначен для построения кривых типа у=f(x)
+# 1. у=f(x)
+# 2. у1=f(x) у2=f(x) на одном графике при едином х
+#
+# (C) 2021 Kuznetsov Konstantin, Kazan , Russian Federation
+# email kuznetsovkm@yandex.ru
+# -----------------------------------------------------------
 
+import matplotlib.pyplot as plt
 
 class Charts_line:
 
