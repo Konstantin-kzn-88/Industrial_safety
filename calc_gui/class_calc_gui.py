@@ -1,10 +1,7 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
 import sys
 import traceback
-from sandbox import xl_report
-
-# col = ['Мл.масса, кг/кмоль', 'Двление пара, кПа', 'Площадь пролива, м2',
-#        'Масса ж.ф., кг', 'Время испарения, c']
+from excel import class_xl_report
 
 class Minimal_GUI(QtWidgets.QWidget):
     def __init__(self, parent: QtWidgets.QWidget = None, columns= []):
@@ -12,7 +9,7 @@ class Minimal_GUI(QtWidgets.QWidget):
         QtWidgets.QWidget.__init__(self, parent)
         self.columns = columns
         # откроем Excel
-        self.Excel = xl_report.Excel()
+        self.Excel = class_xl_report.Excel()
         self.Excel.create(self.columns)
         # GUI
         layout = QtWidgets.QFormLayout(self)
@@ -73,19 +70,15 @@ class Minimal_GUI(QtWidgets.QWidget):
 
 
 def log_uncaught_exceptions(ex_cls, ex, tb):
+    # pyqt визуализация ошибок
     text = '{}: {}:\n'.format(ex_cls.__name__, ex)
-
     text += ''.join(traceback.format_tb(tb))
-
-    print(text)
     QtWidgets.QMessageBox.critical(None, 'Error', text)
-
     sys.exit()
-
 
 sys.excepthook = log_uncaught_exceptions
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
-    main = Min_GUI()
+    main = Minimal_GUI()
     app.exec_()

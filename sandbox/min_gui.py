@@ -1,7 +1,7 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
 import sys
 import traceback
-from sandbox import xl_report
+from excel import class_xl_report
 
 col = ['Мол.масса, кг/кмоль', 'Давление пара, кПа', 'Площадь пролива, м2',
        'Масса ж.ф., кг', 'Время испарения, c']
@@ -11,7 +11,7 @@ class Min_GUI(QtWidgets.QWidget):
     def __init__(self, parent: QtWidgets.QWidget = None, columns=col):
         QtWidgets.QWidget.__init__(self, parent)
         # откроем Excel
-        self.Excel = xl_report.Excel()
+        self.Excel = class_xl_report.Excel()
         self.Excel.create(columns)
         # GUI
         layout = QtWidgets.QFormLayout(self)

@@ -69,3 +69,4 @@ if __name__ == '__main__':
     # time = 3600
     # mass = ev_class.evapor_liguid(molecular_weight, vapor_pressure, spill_area, max_mass, time)
     # print(f"Масса испарившегося вещества составляет {mass} кг.")
+    # ответ 0,114
