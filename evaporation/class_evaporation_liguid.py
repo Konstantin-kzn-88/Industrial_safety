@@ -13,7 +13,7 @@ max_time_evapor = 3600  # по НТД максимальное время исп
 class Evapor_liqud:
 
     def evapor_liguid(self, molecular_weight: float, vapor_pressure: float,
-                      spill_area: float, max_mass: float, time: int):
+                      spill_area: float, max_mass: float, time: int)-> None:
         """
         :param molecular_weight: молекулярная масса, кг/кмоль
         :param vapor_pressure: давление насышенного пара, кПа
@@ -29,7 +29,7 @@ class Evapor_liqud:
         return mass
 
     def evapor_plot(self, molecular_weight: float, vapor_pressure: float,
-                    spill_area: float, max_mass: float):
+                    spill_area: float, max_mass: float)-> None:
         """
         :param molecular_weight: молекулярная масса, кг/кмоль
         :param vapor_pressure: давление насышенного пара, кПа

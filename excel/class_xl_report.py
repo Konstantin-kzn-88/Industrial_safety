@@ -1,6 +1,5 @@
 import win32com.client
 
-
 class Excel:
     def __init__(self) -> None:
         self.Excel = win32com.client.Dispatch("Excel.Application")
@@ -33,7 +32,7 @@ class Excel:
                    self.sheet.Cells(k, i).value = rec
                    k = k + 1
 
-    def close(self):
+    def close(self)-> None:
         self.wb.Close(SaveChanges=False)
         # Закроем COM объект
         self.Excel.Quit()

@@ -1,10 +1,23 @@
+# -----------------------------------------------------------
+# Класс предназначен для построения общего GUI-калькуляторов
+# На основе списка создаются:
+# 1. Поля для ввода объектов QDoubleSpinBox
+# и панель управления:
+# 2. QRadioButton выбора построения графика/записи в excel
+# 3. Кпопка расчета
+# Т.е. характерный вид для многих калькуляторов:
+# числовые значения -> выбор график/запись -> кнопка расчета
+# (C) 2021 Kuznetsov Konstantin, Kazan , Russian Federation
+# email kuznetsovkm@yandex.ru
+# -----------------------------------------------------------
+
 from PyQt5 import QtWidgets, QtCore, QtGui
 import sys
 import traceback
 from excel import class_xl_report
 
 class Minimal_GUI(QtWidgets.QWidget):
-    def __init__(self, parent: QtWidgets.QWidget = None, columns= []):
+    def __init__(self, parent: QtWidgets.QWidget = None, columns= [])-> None:
 
         QtWidgets.QWidget.__init__(self, parent)
         self.columns = columns
@@ -26,6 +39,8 @@ class Minimal_GUI(QtWidgets.QWidget):
             spin.setRange(0, 100000)
             spin.setSingleStep(0.01)
             spin.setSuffix("    " + name)
+            line = spin.lineEdit()
+            line.setFont(QtGui.QFont("Times", 8, QtGui.QFont.Bold))
             layout.addRow(spin)
             self.form_elem[self.columns.index(name)] = spin
 
