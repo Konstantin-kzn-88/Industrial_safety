@@ -12,21 +12,23 @@ from pathlib import Path
 import traceback
 
 # local import
-from evaporation import class_evaporation_liguid as ev
+from strait_fire import class_strait_fire as sf
 from calc_gui import class_calc_gui
+
 
 class Calc_GUI(QtWidgets.QWidget):
     def __init__(self, parent=None) -> None:
         QtWidgets.QWidget.__init__(self, parent)
         self.table_header = 0  # установлена ли шабка для талицы
         # Иконка и название
-        self.setWindowTitle('Расчет испарения вещества (СП 12.13130-2009)')
+        self.setWindowTitle('Расчет пожара пролива (Приказ МЧС 404)')
         self.setWindowIcon(QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/calc_ico.png'))
         # списки для таблицы (шапка)
         self.table_header = 0  # установлена ли шабка для талицы
-        self.header = ['Мол.масса, кг/кмоль', 'Давление пара, кПа', 'Площадь пролива, м2',
-               'Масса ж.ф., кг', 'Время испарения, c']
-        self.header_res = ['Масса испарившегося в-ва, кг']
+        self.header = ['Площадь пролива, м2', 'Уд.масс. скорость, кг(с*м2)', 'Мол.масса, кг/кмоль',
+                       'Тем-ра кипения, гр.С', 'Скорость вертра, м/c']
+        self.header_res = ['Интенсивность (10.5) кВт/м2', 'Интенсивность (7.0) кВт/м2',
+                           'Интенсивность (4.2) кВт/м2', 'Интенсивность (1.4) кВт/м2']
         # используем формат общего GUI из calc_gui (package)
         self.min_gui = class_calc_gui.Minimal_GUI(columns=self.header)
         layout = QtWidgets.QFormLayout(self)
@@ -39,32 +41,25 @@ class Calc_GUI(QtWidgets.QWidget):
     def btn_calc_func(self) -> None:
         # получим все данные с полей формы
         val = self.min_gui.get_form_val()
-        print(val)
         # по кнопкам выбора определим пишем в excel/строим график
         if self.min_gui.write_excel.isChecked():
-            # вычислим массу испарившегся вещества, кг
-            mass = ev.Evapor_liqud().evapor_liguid(molecular_weight=val[0],
-                                                   vapor_pressure=val[1],
-                                                   spill_area=val[2],
-                                                   max_mass=val[3], time=val[4])
-            # запишем расчетную массу в excel
+            # вычислим пожар пролива
+            result = sf.Strait_fire().termal_class_zone(S_spill=val[0], m_sg=val[1], mol_mass=val[2],
+                                                      t_boiling=val[3], wind_velocity=val[4])
+            # запишем  в excel
             # проверим заполнялась ли шапка таблицы в экселе
             if self.table_header == 0:  # нет
                 self.table_header = 1
-                self.min_gui.Excel.create(self.header+self.header_res)
+                self.min_gui.Excel.create(self.header + self.header_res)
 
-            val.append(mass)
+            val = val + result
             self.min_gui.Excel.write(val)
 
 
         else:
 
-            # нужно построить график на основании данных которые
-            # есть в полях
-            ev.Evapor_liqud().evapor_plot(molecular_weight=val[0],
-                                          vapor_pressure=val[1],
-                                          spill_area=val[2],
-                                          max_mass=val[3])
+            sf.Strait_fire().strait_fire_plot(S_spill=val[0], m_sg=val[1], mol_mass=val[2],
+                                              t_boiling=val[3], wind_velocity=val[4])
 
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
         self.min_gui.closeEvent(event)

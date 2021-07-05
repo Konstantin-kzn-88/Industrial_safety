@@ -1,0 +1,1 @@
+from .class_strait_fire import Strait_fire

@@ -93,7 +93,7 @@ class Strait_fire:
         :param t_boiling: температура кипения, град.С (например t_boiling = 68)
         :param wind_velocity: скорость ветра, м/с (например wind_velocity = 2)
 
-        :return: : float: q_term: интенсивность теплового излучения, кВт/м2
+        :return: : list: [radius, q_term, probit, probability]: список списков параметров
         """
 
         radius_arr = []
@@ -117,10 +117,9 @@ class Strait_fire:
         # Определим расстояние на котором интенсивность = 4 кВт/м2
         r_4_kw = 0
         for q in q_term_arr:
-            if q<4:
+            if q < 4:
                 r_4_kw = radius_arr[q_term_arr.index(q)]
                 break
-
 
         for i in radius_arr:
             dist = r_4_kw - i  # расстояние до точки на которой интенсивность = 4 кВт/м2
@@ -141,62 +140,82 @@ class Strait_fire:
 
         return result
 
-    def strait_fire_plot(self, title: str, x_lbl: str, y_lbl_1: str,
-                         y_lbl_2: str, y_lbl_3: str, x_arr: list, y_arr_1: list,
-                         y_arr_2: list, y_arr_3: list, chart_lbl_1: str,
-                         chart_lbl_2: str, chart_lbl_3: str) -> None:
+    def strait_fire_plot(self, S_spill: float, m_sg: float, mol_mass: float,
+                         t_boiling: float, wind_velocity: float) -> None:
 
         """
+        :param S_spill: площадь пролива, м2
+        :param m_sg: удельная плотность выгорания, кг/(с*м2) (например m_sg = 0.06)
+        :param mol_mass: молекулярная масса, кг/кмоль (например mol_mass = 95.3)
+        :param t_boiling: температура кипения, град.С (например t_boiling = 68)
+        :param wind_velocity: скорость ветра, м/с (например wind_velocity = 2)
 
-        :param title: "Зависимости интенсивности излучения"
-        :param x_lbl: "Расстояние, м" (наименование х-оси)
-        :param y_lbl_1: "Интенсивность, кВт/м2" (наименование у-оси)
-        :param y_lbl_2: "Пробит-функция, -" (наименование у-оси)
-        :param y_lbl_3: "Вероятность поражения, -" (наименование у-оси)
-        :param x_arr: список расстояний, м
-        :param y_arr_1: список воздействия, - (размерность в зависимости от функции)
-        :param y_arr_2: список воздействия, - (размерность в зависимости от функции)
-        :param y_arr_3: список воздействия, - (размерность в зависимости от функции)
-        :param chart_lbl_1: "Интенсивность" (наименование построенной линии)
-        :param chart_lbl_2: "Pr" (наименование построенной линии)
-        :param chart_lbl_2: "Qvp" (наименование построенной линии)
-        :return: plt.show()
+         :return: None (matplotlib plot)
         """
+        title = "Интенсивность излучения"
+        x_lbl = "Расстояние, м"
+        y_lbl_1 = "Интенсивность, кВт/м2"
+        y_lbl_2 = "Пробит-функция, -"
+        y_lbl_3 = "Вероятность поражения, -"
+
+        res_list = self.termal_radiation_array(S_spill, m_sg, mol_mass,
+                                               t_boiling, wind_velocity)
+
+        x_arr = res_list[0]
+        y_arr_1 = res_list[1]
+        y_arr_2 = res_list[2]
+        y_arr_3 = res_list[3]
+
+        chart_lbl_1 = "q"
+        chart_lbl_2 = "Pr"
+        chart_lbl_3 = "P"
 
         Charts_line.triple_chart(self, title, x_lbl, y_lbl_1, y_lbl_2,
                                  y_lbl_3, x_arr, y_arr_1, y_arr_2, y_arr_3,
                                  chart_lbl_1, chart_lbl_2, chart_lbl_3)
 
+    def termal_class_zone(self, S_spill: float, m_sg: float, mol_mass: float,
+                          t_boiling: float, wind_velocity: float):
+        """
+        :param S_spill: площадь пролива, м2
+        :param m_sg: удельная плотность выгорания, кг/(с*м2) (например m_sg = 0.06)
+        :param mol_mass: молекулярная масса, кг/кмоль (например mol_mass = 95.3)
+        :param t_boiling: температура кипения, град.С (например t_boiling = 68)
+        :param wind_velocity: скорость ветра, м/с (например wind_velocity = 2)
+
+        :return: : list: [radius_CZA]: список отсортированных зон
+        """
+
+        res_list = self.termal_radiation_array(S_spill, m_sg, mol_mass,
+                                               t_boiling, wind_velocity)
+
+        # Calculate classified_zone_array
+        classified_zone_array = [10.5, 7.0, 4.2, 1.4]  # CZA
+        radius_CZA = []
+        q_term_array = res_list[1]
+        radius_array = res_list[0]
+
+        for CZA in classified_zone_array:
+            sort = list(filter((lambda x: CZA + 0.3 > x > CZA - 0.1), q_term_array))
+            if sort == []:
+                radius_CZA.append(0)
+            else:
+                sort = min(sort)
+                radius_CZA.append(round(radius_array[q_term_array.index(sort)], 2))
+
+        return radius_CZA
+
 
 if __name__ == '__main__':
     ev_class = Strait_fire()
-    S_spill = 20
+    S_spill = 2000
     m_sg = 0.06
     mol_mass = 95
     t_boiling = 68
     wind_velocity = 2
 
-    title = "Plot"
-    x_lbl = "Dist,m"
-    y_lbl_1 = "heat"
-    y_lbl_2 = "Pr"
-    y_lbl_3 = "Q"
-
-    res_list = ev_class.termal_radiation_array(S_spill, m_sg, mol_mass,
-                                               t_boiling, wind_velocity)
-
-    x_arr = res_list[0]
-    y_arr_1 = res_list[1]
-    y_arr_2 = res_list[2]
-    y_arr_3 = res_list[3]
-
-    chart_lbl_1 = "heat"
-    chart_lbl_2 = "Pr"
-    chart_lbl_3 = "Q"
-
-    ev_class.strait_fire_plot(title, x_lbl, y_lbl_1, y_lbl_2,
-                              y_lbl_3, x_arr, y_arr_1, y_arr_2, y_arr_3,
-                              chart_lbl_1, chart_lbl_2, chart_lbl_3)
+    print(ev_class.termal_class_zone(S_spill, m_sg, mol_mass,
+                                     t_boiling, wind_velocity))
 
     # ev_class = Strait_fire()
     # S_spill= 918
@@ -209,3 +228,34 @@ if __name__ == '__main__':
     #
     # print(ev_class.termal_radiation_point(S_spill,E_f,m_sg,mol_mass,
     #                                       t_boiling,wind_velocity,radius))
+
+    # ev_class = Strait_fire()
+    # S_spill = 20
+    # m_sg = 0.06
+    # mol_mass = 95
+    # t_boiling = 68
+    # wind_velocity = 2
+    #
+    # title = "Plot"
+    # x_lbl = "Dist,m"
+    # y_lbl_1 = "heat"
+    # y_lbl_2 = "Pr"
+    # y_lbl_3 = "Q"
+    #
+    # res_list = ev_class.termal_radiation_array(S_spill, m_sg, mol_mass,
+    #                                            t_boiling, wind_velocity)
+    #
+    # x_arr = res_list[0]
+    # y_arr_1 = res_list[1]
+    # y_arr_2 = res_list[2]
+    # y_arr_3 = res_list[3]
+    #
+    # chart_lbl_1 = "heat"
+    # chart_lbl_2 = "Pr"
+    # chart_lbl_3 = "Q"
+    #
+    # ev_class.strait_fire_plot(title, x_lbl, y_lbl_1, y_lbl_2,
+    #                           y_lbl_3, x_arr, y_arr_1, y_arr_2, y_arr_3,
+    #                           chart_lbl_1, chart_lbl_2, chart_lbl_3)
+
+    #
