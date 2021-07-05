@@ -11,7 +11,7 @@
 # email kuznetsovkm@yandex.ru
 # -----------------------------------------------------------
 
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PySide2 import QtWidgets, QtCore, QtGui
 import sys
 import traceback
 from excel import class_xl_report
@@ -76,6 +76,10 @@ class Minimal_GUI(QtWidgets.QWidget):
             (QtWidgets.QMessageBox.Yes
              | QtWidgets.QMessageBox.No)
         )
+
+        messageBox.setButtonText(QtWidgets.QMessageBox.Yes, "Да")
+        messageBox.setButtonText(QtWidgets.QMessageBox.No, "Нет")
+
         resultCode = messageBox.exec_()
         if resultCode == QtWidgets.QMessageBox.No:
             return event.ignore()

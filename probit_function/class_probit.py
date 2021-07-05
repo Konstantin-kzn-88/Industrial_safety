@@ -12,7 +12,7 @@ import math
 
 class Probit:
 
-    def probit_check(self, probit:float)->float:
+    def probit_check(self, probit: float) -> float:
         """Проверка пробит функции:
         значения определены в интервале
         от 2.67 до 8.09"""
@@ -35,9 +35,9 @@ class Probit:
                0.33495 * (probit ** 4) + 2.4406 * (probit ** 3) - \
                9.41 * (probit ** 2) + 18.31 * (probit ** 1) - 14.156
         # проверка (вероятность гибели не может быть больше 1 и меньше 0
-        if q_vp > 1:
-            probability_death = 1
-        elif q_vp <0:
+        if q_vp > 0.99:
+            probability_death = 0.99
+        elif q_vp < 0:
             probability_death = 0
         else:
             probability_death = q_vp
@@ -67,7 +67,23 @@ class Probit:
 
         :return: float
         """
-        probit = -12.8 + 2.56 * math.log(time*(q_ball ** (4/3)))
+        probit = -12.8 + 2.56 * math.log(time * (q_ball ** (4 / 3)))
+        probit = self.probit_check(probit)
+
+        return probit
+
+    def probit_strait_fire(self, dist: float, q_max: float) -> float:
+        """
+        Вычисление пробит-функции при взрыве
+        :param dist: расстояние до зоны выхода
+        :param q_max: максимальная интенсивность на заданном расстоянии, кВт/м2
+
+        :return: float
+        """
+        t0 = 5  # время обнаружения пожара по методике, с
+        speed = 5  # средняя скорость, м/с
+        time = t0 + (dist / speed)
+        probit = -12.8 + 2.56 * math.log(time * (q_max ** (4 / 3)))
         probit = self.probit_check(probit)
 
         return probit
@@ -75,10 +91,10 @@ class Probit:
 
 if __name__ == '__main__':
     ev_class = Probit()
-    time=40
-    q_ball= 12.9
-    print(ev_class.probit_fireball(time,q_ball)) # 3.28
-    print(ev_class.probability(3.28)) #0.004
+    dist = 50
+    q_max = 17
+    print(ev_class.probit_strait_fire(dist, q_max))
+    print(ev_class.probability(3.06))
 
     # ГОСТ 12.3.047-98 прил."Э"
     # ev_class = Probit()
@@ -96,3 +112,4 @@ if __name__ == '__main__':
     # разница значений из-за первого числа (в других НТД приведено
     # значение -12.8), поэтому оставил общепринятую практику
     # Pr = -14.9 + 2.56 * math.log(t * (q_ball ** (4 / 3)))
+
