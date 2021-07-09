@@ -92,13 +92,12 @@ class Charts_line:
 
         plt.subplot(3, 1, 2)
         plt.plot(x_arr, y_arr_2, label=chart_lbl_2, color='k')
-        plt.xlabel(x_lbl, fontsize=14)
         plt.ylabel(y_lbl_2, fontsize=14)
         plt.grid(True)
         plt.legend()
 
         plt.subplot(3, 1, 3)
-        plt.plot(x_arr, y_arr_3, label=chart_lbl_3, color='r')
+        plt.plot(x_arr, y_arr_3, label=chart_lbl_3, color='b')
         plt.xlabel(x_lbl, fontsize=14)
         plt.ylabel(y_lbl_3, fontsize=14)
         plt.grid(True)
@@ -106,6 +105,60 @@ class Charts_line:
 
         #
         plt.show()
+
+    def quadruple_chart(self, title: str, x_lbl: str, y_lbl_1: str,
+                     y_lbl_2: str, y_lbl_3: str, y_lbl_4: str, x_arr: list, y_arr_1: list,
+                     y_arr_2: list, y_arr_3: list, y_arr_4: list, chart_lbl_1: str,
+                     chart_lbl_2: str, chart_lbl_3: str, chart_lbl_4: str):
+        """
+
+        :param title: "Зависимости интенсивности излучения"
+        :param x_lbl: "Расстояние, м" (наименование х-оси)
+        :param y_lbl_1: "Интенсивность, кВт/м2" (наименование у-оси)
+        :param y_lbl_2: "Доза, кДж/м2" (наименование у-оси)
+        :param y_lbl_3: "Пробит-функция, -" (наименование у-оси)
+        :param y_lbl_4: "Вероятность поражения, -" (наименование у-оси)
+        :param x_arr: список расстояний, м
+        :param y_arr_1: список воздействия, - (размерность в зависимости от функции)
+        :param y_arr_2: список воздействия, - (размерность в зависимости от функции)
+        :param y_arr_3: список воздействия, - (размерность в зависимости от функции)
+        :param y_arr_4: список воздействия, - (размерность в зависимости от функции)
+        :param chart_lbl_1: "Интенсивность" (наименование построенной линии)
+        :param chart_lbl_2: "Доза" (наименование построенной линии)
+        :param chart_lbl_3: "Pr" (наименование построенной линии)
+        :param chart_lbl_4: "Qvp" (наименование построенной линии)
+        :return: plt.show()
+        """
+        plt.figure(figsize=(9, 9))
+        plt.subplot(4, 1, 1)
+        plt.plot(x_arr, y_arr_1, label=chart_lbl_1, color='r')
+        plt.title(title)
+        plt.ylabel(y_lbl_1, fontsize=12)
+        plt.grid(True)
+        plt.legend()
+
+        plt.subplot(4, 1, 2)
+        plt.plot(x_arr, y_arr_2, label=chart_lbl_2, color='b')
+        plt.ylabel(y_lbl_2, fontsize=12)
+        plt.grid(True)
+        plt.legend()
+
+        plt.subplot(4, 1, 3)
+        plt.plot(x_arr, y_arr_3, label=chart_lbl_3, color='g')
+        plt.ylabel(y_lbl_3, fontsize=12)
+        plt.grid(True)
+        plt.legend()
+
+        plt.subplot(4, 1, 4)
+        plt.plot(x_arr, y_arr_4, label=chart_lbl_4, color='k')
+        plt.xlabel(x_lbl, fontsize=12)
+        plt.ylabel(y_lbl_4, fontsize=12)
+        plt.grid(True)
+        plt.legend()
+        #
+        plt.show()
+
+
 
 if __name__ == '__main__':
     pass
