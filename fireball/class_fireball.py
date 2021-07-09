@@ -106,38 +106,32 @@ class Fireball:
         chart_lbl_4 = "P"
 
         Charts_line.quadruple_chart(self, title, x_lbl, y_lbl_1, y_lbl_2,
-                                 y_lbl_3,y_lbl_4, x_arr, y_arr_1, y_arr_2, y_arr_3, y_arr_4,
-                                 chart_lbl_1, chart_lbl_2, chart_lbl_3, chart_lbl_4)
+                                    y_lbl_3, y_lbl_4, x_arr, y_arr_1, y_arr_2, y_arr_3, y_arr_4,
+                                    chart_lbl_1, chart_lbl_2, chart_lbl_3, chart_lbl_4)
 
-    def termal_class_zone(self, S_spill: float, m_sg: float, mol_mass: float,
-                          t_boiling: float, wind_velocity: float):
+    def termal_class_zone(self, mass: float, ef: float) -> list:
         """
-        :param S_spill: площадь пролива, м2
-        :param m_sg: удельная плотность выгорания, кг/(с*м2) (например m_sg = 0.06)
-        :param mol_mass: молекулярная масса, кг/кмоль (например mol_mass = 95.3)
-        :param t_boiling: температура кипения, град.С (например t_boiling = 68)
-        :param wind_velocity: скорость ветра, м/с (например wind_velocity = 2)
+        :param mass: масса огненного шара, кг
+        :param ef: ср.поверхностная плотность теплового излучения, кВт/м2 (например ef = 450)
 
         :return: : list: [radius_CZA]: список отсортированных зон
         """
 
-        res_list = self.termal_radiation_array(S_spill, m_sg, mol_mass,
-                                               t_boiling, wind_velocity)
+        res_list = self.fireball_array(mass, ef)
 
         # Calculate classified_zone_array
-        classified_zone_array = [10.5, 7.0, 4.2, 1.4]  # CZA
+        classified_zone_array = [600, 320, 220, 120]  # CZA
         radius_CZA = []
-        q_term_array = res_list[1]
+        d_term_array = res_list[2]
         radius_array = res_list[0]
 
         for CZA in classified_zone_array:
-            sort = list(filter((lambda x: CZA + 0.3 > x > CZA - 0.1), q_term_array))
+            sort = list(filter((lambda x: CZA + 10 > x > CZA - 0.1), d_term_array))
             if sort == []:
                 radius_CZA.append(0)
             else:
                 sort = min(sort)
-                radius_CZA.append(round(radius_array[q_term_array.index(sort)], 2))
-
+                radius_CZA.append(round(radius_array[d_term_array.index(sort)], 2))
         return radius_CZA
 
 
@@ -146,7 +140,7 @@ if __name__ == '__main__':
     mass = 2.54 * (10 ** 5)
     ef = 450
 
-    ev_class.fireball_plot(mass, ef)
+    print(ev_class.termal_class_zone(mass, ef))
 
     # ГОСТ 12.3.047-98 прил.Д
     # ev_class = Fireball()
