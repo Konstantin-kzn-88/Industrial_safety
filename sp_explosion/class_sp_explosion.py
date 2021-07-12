@@ -24,12 +24,20 @@ class Explosion:
                          impulse: импульс, Па*с
         """
         M_pr = (heat_of_combustion / 4520) * mass * z
+        # поиск максимального значения давления и импульса
+        for r in range(1,2000):
+            delta_p_max = 101.3 * ((0.8 * (M_pr ** 0.33) / r) + (3 * (M_pr ** 0.66)) /
+                               (r ** 2) + (5 * M_pr) / (r ** 3))
+            impulse_max = 123 * (M_pr ** 0.66) / r
+            if delta_p_max <200:
+                break
 
         delta_p = 101.3 * ((0.8 * (M_pr ** 0.33) / radius) + (3 * (M_pr ** 0.66)) /
                            (radius ** 2) + (5 * M_pr) / (radius ** 3))
         impulse = 123 * (M_pr ** 0.66) / radius
         if delta_p > 150:
-            delta_p = 150
+            delta_p = delta_p_max
+            impulse = impulse_max
         delta_p = round(delta_p, 2)
         impulse = round(impulse, 2)
 
