@@ -1,20 +1,10 @@
-import tkinter as tk
 
+iter = int(input("Введеите целое число: "))
 
-def click_button():
-    window.destroy()
-    window2 = tk.Tk()
-    window2.title("Дочернее окно")
-    window2.geometry("300x300")
+list_out = list(range(1,iter+1))
+print(list_out)
 
-
-window = tk.Tk()
-window.title("Основное окно")
-window.geometry("300x300")
-
-hello = tk.Label(text="Hello world!")
-hello.pack()
-button1 = tk.Button(text="Click me!", relief='solid', bd=0, background="#fff", command=click_button)
-
-button1.pack()
-tk.mainloop()
+i = 0
+while i <= len(list_out)-1:
+    print(list_out[i])
+    i += 1
