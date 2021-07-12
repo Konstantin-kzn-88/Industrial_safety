@@ -6,7 +6,6 @@
 # email kuznetsovkm@yandex.ru
 # -----------------------------------------------------------
 
-import math
 from charts import Charts_line
 from probit_function import Probit
 
@@ -59,7 +58,7 @@ class Explosion:
         delta_p = self.explosion_point(mass, heat_of_combustion, z, radius)[0]
 
         # просчитаем значения пока интенсивность теплового излучения больше 1.2 кВт/м2
-        while delta_p > 5:
+        while delta_p > 2.9:
             res = self.explosion_point(mass, heat_of_combustion, z, radius)
             delta_p = res[0]
             impulse = res[1]
@@ -127,8 +126,9 @@ class Explosion:
         delta_p_array = res_list[1]
         radius_array = res_list[0]
 
+
         for CZA in classified_zone_array:
-            sort = list(filter((lambda x: CZA + 10 > x > CZA - 0.1), delta_p_array))
+            sort = list(filter((lambda x: CZA + 5 > x > CZA - 0.1), delta_p_array))
             if sort == []:
                 radius_CZA.append(0)
             else:
