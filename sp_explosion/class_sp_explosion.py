@@ -25,11 +25,11 @@ class Explosion:
         """
         M_pr = (heat_of_combustion / 4520) * mass * z
         # поиск максимального значения давления и импульса
-        for r in range(1,2000):
+        for r in range(1, 2000):
             delta_p_max = 101.3 * ((0.8 * (M_pr ** 0.33) / r) + (3 * (M_pr ** 0.66)) /
-                               (r ** 2) + (5 * M_pr) / (r ** 3))
+                                   (r ** 2) + (5 * M_pr) / (r ** 3))
             impulse_max = 123 * (M_pr ** 0.66) / r
-            if delta_p_max <200:
+            if delta_p_max < 200:
                 break
 
         delta_p = 101.3 * ((0.8 * (M_pr ** 0.33) / radius) + (3 * (M_pr ** 0.66)) /
@@ -65,7 +65,7 @@ class Explosion:
         radius = 1
         delta_p = self.explosion_point(mass, heat_of_combustion, z, radius)[0]
 
-        # просчитаем значения пока интенсивность теплового излучения больше 1.2 кВт/м2
+        # просчитаем значения пока взрыв больше 2.9 кПА
         while delta_p > 2.9:
             res = self.explosion_point(mass, heat_of_combustion, z, radius)
             delta_p = res[0]
@@ -133,7 +133,6 @@ class Explosion:
         radius_CZA = []
         delta_p_array = res_list[1]
         radius_array = res_list[0]
-
 
         for CZA in classified_zone_array:
             sort = list(filter((lambda x: CZA + 5 > x > CZA - 0.1), delta_p_array))
