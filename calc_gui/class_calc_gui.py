@@ -64,7 +64,6 @@ class Minimal_GUI(QtWidgets.QWidget):
         # созданных в цикле на уровне конструктора
         res = []
         for form_val in self.form_elem:
-            print(form_val.value())
             res.append(form_val.value())
         return res
 
