@@ -51,7 +51,7 @@ class Calc_GUI(QtWidgets.QWidget):
         for i in val:  # проверка на 0
             if i == 0 and i != val[1]:
                 return
-        add_pow = math.pow(val[2], val[3])
+        add_pow = val[2]*math.pow(10, val[3])
         print(add_pow)
         # по кнопкам выбора определим пишем в excel/строим график
         if self.min_gui.write_excel.isChecked():
