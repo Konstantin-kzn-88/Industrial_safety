@@ -16,10 +16,15 @@ from PySide2 import QtWidgets, QtGui
 
 class Painter(QtWidgets.QMainWindow):
 
-    def __init__(self):
+    def __init__(self, parent=None) -> None:
         super().__init__()
         # Иконки
         self.main_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/painter.png')
+        db_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/data_base.png')
+        ok_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/ok.png')
+        replace_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/replace.png')
+        save_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/save.png')
+        del_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/del.png')
         exit_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/exit.png')
         info_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/info.png')
         # Главное окно
@@ -29,6 +34,41 @@ class Painter(QtWidgets.QMainWindow):
         # Центральный виджет
         text_edit = QtWidgets.QTextEdit()
         self.setCentralWidget(text_edit)
+
+        # База данных (меню)
+        db_menu = QtWidgets.QMenu('База данных', self)
+        db_create = QtWidgets.QAction(ok_ico, 'Создать', self)
+        db_create.setStatusTip('Создать новую базу данных')
+        db_create.triggered.connect(self.db_create)
+        db_menu.addAction(db_create)
+        db_connect = QtWidgets.QAction(db_ico,'Подключиться', self)
+        db_connect.setStatusTip('Подключиться к существующей базе данных')
+        db_connect.triggered.connect(self.db_connect)
+        db_menu.addAction(db_connect)
+
+        # Генплан (меню)
+        plan_menu = QtWidgets.QMenu('Ген.план', self)
+        plan_add = QtWidgets.QAction(ok_ico, 'Добавить', self)
+        plan_add.setStatusTip('Добавить новый план объекта')
+        plan_add.setShortcut('Ctrl+N')
+        plan_add.triggered.connect(self.plan_add)
+        plan_menu.addAction(plan_add)
+        plan_replace = QtWidgets.QAction(replace_ico, 'Заменить', self)
+        plan_replace.setStatusTip('Заменить план объекта')
+        plan_replace.setShortcut('Ctrl+R')
+        plan_replace.triggered.connect(self.plan_replace)
+        plan_menu.addAction(plan_replace)
+        plan_save = QtWidgets.QAction(save_ico, 'Coхранить', self)
+        plan_save.setStatusTip('Сохранить текущее изображение плана объекта как файл')
+        plan_save.setShortcut('Ctrl+S')
+        plan_save.triggered.connect(self.plan_save)
+        plan_menu.addAction(plan_save)
+        plan_del = QtWidgets.QAction(del_ico, 'Удалить', self)
+        plan_del.setStatusTip('Удалить изображение плана объекта')
+        plan_del.setShortcut('Ctrl+D')
+        plan_del.triggered.connect(self.plan_del)
+        plan_menu.addAction(plan_del)
+
         # Выход из приложения
         exit_action = QtWidgets.QAction(exit_ico, 'Выход', self)
         exit_action.setShortcut('Ctrl+Q')
@@ -41,9 +81,11 @@ class Painter(QtWidgets.QMainWindow):
         about_action.triggered.connect(self.about_programm)
 
 
-        # Меню приложения
+        # Меню приложения (верхняя плашка)
         menubar = self.menuBar()
         file_menu = menubar.addMenu('Файл')
+        file_menu.addMenu(db_menu)
+        file_menu.addMenu(plan_menu)
         file_menu.addAction(exit_action)
         file_menu = menubar.addMenu('О приложении')
         file_menu.addAction(about_action)
@@ -53,8 +95,29 @@ class Painter(QtWidgets.QMainWindow):
         # toolbar = self.addToolBar('Выход')
         # toolbar.addAction(exitAction)
 
+        if not parent:
+            self.show()
 
-        self.show()
+    # Функции базы данных
+    def db_connect(self):
+        print("db_connect")
+
+    def db_create(self):
+        print("db_create")
+
+    # Функции генплана
+    def plan_add(self):
+        print("plan_add")
+
+    def plan_replace(self):
+        print("plan_replace")
+
+    def plan_save(self):
+        print("plan_save")
+
+    def plan_del(self):
+        print("plan_del")
+
 
     #     Функция выхода из программы
     def close_event(self) -> None:
