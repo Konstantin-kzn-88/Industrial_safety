@@ -60,6 +60,7 @@ class Painter(QtWidgets.QMainWindow):
         self.view = QtWidgets.QGraphicsView(self.scene, self)
         self.area.setWidget(self.view)
         self.area.setWidgetResizable(True)
+
             # т.к. данных  много создадим
             # вкладки табов
         self.tabs = QtWidgets.QTabWidget()  # создаем вкладки табов
@@ -69,10 +70,99 @@ class Painter(QtWidgets.QMainWindow):
         self.tabs.addTab(self.tab_main, "")  # 0. Главная вкладка с данными
         self.tabs.setTabIcon(0, draw_ico)
         self.tabs.setTabToolTip(0, "Главня вкладка")
+        self.tab_main.layout = QtWidgets.QFormLayout(self)
+
+            # Рамка №1 (то что будет в рамке 1)
+        self.scale_name = QtWidgets.QLineEdit()
+        self.scale_name.setPlaceholderText("Масштаб")
+        self.scale_name.setToolTip("[м, пикс.]")
+        self.scale_name.setReadOnly(True)
+
+            # Рамка №2 (то что будет в рамке 2)
+        self.draw_act = QtWidgets.QRadioButton("Объект")
+        self.draw_act.setChecked(True)
+        self.scale_act = QtWidgets.QRadioButton("Масштаб")
+        self.dist_act = QtWidgets.QRadioButton("Расстояние")
+        self.area_act = QtWidgets.QRadioButton("Площадь")
+        self.result_lbl = QtWidgets.QLabel()
+        self.draw_btn = QtWidgets.QPushButton("Применить")
+        self.draw_btn.setCheckable(True)
+        self.draw_btn.setChecked(False)
+
+            # Рамка №3 (то что будет в рамке 3)
+        self.scale_name = QtWidgets.QLineEdit()
+        self.scale_name.setPlaceholderText("Масштаб")
+        self.scale_name.setToolTip("[м, пикс.]")
+        self.scale_name.setReadOnly(True)
+
+
+            # Упаковываем все на вкладку таба "0" (делаем все в QGroupBox
+            # т.к. элементы будут добавляться и их
+            # потом нужно будет объединять в группы
+
+            # Рамка №1
+        layout_scale = QtWidgets.QFormLayout(self)
+        GB_scale = QtWidgets.QGroupBox('Масштаб')
+        GB_scale.setStyleSheet("QGroupBox { font-weight : bold; }")
+        layout_scale.addRow("", self.scale_name)
+        GB_scale.setLayout(layout_scale)
+            # Рамка №2
+        layout_act = QtWidgets.QFormLayout(self)
+        GB_act = QtWidgets.QGroupBox('Действие')
+        GB_act.setStyleSheet("QGroupBox { font-weight : bold; }")
+        hbox_1 = QtWidgets.QHBoxLayout()
+        hbox_1.addWidget(self.draw_act)
+        hbox_1.addWidget(self.scale_act)
+        layout_act.addRow("", hbox_1)
+        hbox_2 = QtWidgets.QHBoxLayout()
+        hbox_2.addWidget(self.dist_act)
+        hbox_2.addWidget(self.area_act)
+        layout_act.addRow("", hbox_2)
+        layout_act.addRow("", self.result_lbl)
+        layout_act.addRow("", self.draw_btn)
+        GB_act.setLayout(layout_act)
+            # Собираем рамки
+        self.tab_main.layout.addWidget(GB_scale)
+        self.tab_main.layout.addWidget(GB_act)
+            # Размещаем на табе
+        self.tab_main.setLayout(self.tab_main.layout)
+
             # добавляем "1" таб на вкладку табов
         self.tabs.addTab(self.tab_settings, "")  # 1. Настройки
         self.tabs.setTabIcon(1, settings_ico)
         self.tabs.setTabToolTip(1, "Настройки")
+        self.tab_settings.layout = QtWidgets.QFormLayout(self)
+            # Рамка №1 (то что будет в рамке 1)
+        self.db_name = QtWidgets.QLineEdit()  # Наименование  базы данных
+        self.db_name.setPlaceholderText("Наименование базы данных")
+        self.db_name.setToolTip("Наименование базы данных")
+        self.db_name.setReadOnly(True)
+            # Рамка №2 (то что будет в рамке 2)
+        self.plan_list = QtWidgets.QComboBox()  # ген.планы объекта
+        self.plan_list.addItems(["--Нет ген.планов-- "])
+        self.plan_list.setToolTip("""Ген.планы объекта""")
+        # self.plan_list.activated[str].connect(self.plan_list_select)
+
+            # Упаковываем все на вкладку таба "0" (делаем все в QGroupBox
+            # т.к. элементы будут добавляться и их
+            # потом нужно будет объединять в группы
+            # Рамка №1
+        layout_db = QtWidgets.QFormLayout(self)
+        GB_db = QtWidgets.QGroupBox('База данных')
+        GB_db.setStyleSheet("QGroupBox { font-weight : bold; }")
+        layout_db.addRow("", self.db_name)
+        GB_db.setLayout(layout_db)
+            # Рамка №2
+        layout_plan = QtWidgets.QFormLayout(self)
+        GB_plan = QtWidgets.QGroupBox('Ген.план')
+        GB_plan.setStyleSheet("QGroupBox { font-weight : bold; }")
+        layout_plan.addRow("", self.plan_list)
+        GB_plan.setLayout(layout_plan)
+            # Размещаем на табе
+        self.tab_settings.layout.addWidget(GB_db)
+        self.tab_settings.layout.addWidget(GB_plan)
+            # Размещаем на табе
+        self.tab_settings.setLayout(self.tab_settings.layout)
 
         grid.addWidget(self.area, 0, 0, 1, 1)
         grid.addWidget(self.tabs, 0, 1, 1, 1)
