@@ -24,7 +24,12 @@ class Painter(QtWidgets.QMainWindow):
         ok_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/ok.png')
         replace_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/replace.png')
         save_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/save.png')
+        clear_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/clear.png')
         del_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/del.png')
+        question_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/question.png')
+        scale_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/scale.png')
+        dist_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/polyline.png')
+        area_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/area.png')
         exit_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/exit.png')
         info_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/info.png')
         # Главное окно
@@ -63,22 +68,48 @@ class Painter(QtWidgets.QMainWindow):
         plan_save.setShortcut('Ctrl+S')
         plan_save.triggered.connect(self.plan_save)
         plan_menu.addAction(plan_save)
+        plan_clear = QtWidgets.QAction(clear_ico, 'Очистить', self)
+        plan_clear.setStatusTip('Очистить план объекта')
+        plan_clear.setShortcut('Ctrl+С')
+        plan_clear.triggered.connect(self.plan_clear)
+        plan_menu.addAction(plan_clear)
         plan_del = QtWidgets.QAction(del_ico, 'Удалить', self)
         plan_del.setStatusTip('Удалить изображение плана объекта')
-        plan_del.setShortcut('Ctrl+D')
+        plan_del.setShortcut('Ctrl+X')
         plan_del.triggered.connect(self.plan_del)
         plan_menu.addAction(plan_del)
 
+        # Интрументы
+        tools_scale = QtWidgets.QAction(scale_ico, 'Масштаб', self)
+        tools_scale.setShortcut('Ctrl+M')
+        tools_scale.setStatusTip('Вычислить масштаб плана')
+        tools_scale.triggered.connect(self.tools_scale)
+        tools_dist = QtWidgets.QAction(dist_ico, 'Расстояние', self)
+        tools_dist.setShortcut('Ctrl+D')
+        tools_dist.setStatusTip('Вычислить произвольное расстояние')
+        tools_dist.triggered.connect(self.tools_dist)
+        tools_area = QtWidgets.QAction(area_ico, 'Площадь', self)
+        tools_area.setShortcut('Ctrl+F')
+        tools_area.setStatusTip('Вычислить произвольную площадь')
+        tools_area.triggered.connect(self.tools_area)
+
         # Выход из приложения
-        exit_action = QtWidgets.QAction(exit_ico, 'Выход', self)
-        exit_action.setShortcut('Ctrl+Q')
-        exit_action.setStatusTip('Выход из Painter')
-        exit_action.triggered.connect(self.close_event)
+        exit_prog = QtWidgets.QAction(exit_ico, 'Выход', self)
+        exit_prog.setShortcut('Ctrl+Q')
+        exit_prog.setStatusTip('Выход из Painter')
+        exit_prog.triggered.connect(self.close_event)
+
+        # Справка
+        help_show = QtWidgets.QAction(question_ico, 'Справка', self)
+        help_show.setShortcut('F1')
+        help_show.setStatusTip('Открыть справку Painter')
+        help_show.triggered.connect(self.help_show)
+
         # О приложении
-        about_action = QtWidgets.QAction(info_ico, 'О приложении', self)
-        about_action.setShortcut('F1')
-        about_action.setStatusTip('О приложении')
-        about_action.triggered.connect(self.about_programm)
+        about_prog = QtWidgets.QAction(info_ico, 'О приложении', self)
+        about_prog.setShortcut('F2')
+        about_prog.setStatusTip('О приложении Painter')
+        about_prog.triggered.connect(self.about_programm)
 
 
         # Меню приложения (верхняя плашка)
@@ -86,9 +117,15 @@ class Painter(QtWidgets.QMainWindow):
         file_menu = menubar.addMenu('Файл')
         file_menu.addMenu(db_menu)
         file_menu.addMenu(plan_menu)
-        file_menu.addAction(exit_action)
-        file_menu = menubar.addMenu('О приложении')
-        file_menu.addAction(about_action)
+        file_menu.addAction(exit_prog)
+        tools_menu = menubar.addMenu('Иструменты')
+        tools_menu.addAction(tools_scale)
+        tools_menu.addAction(tools_dist)
+        tools_menu.addAction(tools_area)
+
+        help_menu = menubar.addMenu('Справка')
+        help_menu.addAction(help_show)
+        help_menu.addAction(about_prog)
         # Установить статусбар
         self.statusBar()
 
@@ -98,6 +135,7 @@ class Painter(QtWidgets.QMainWindow):
         if not parent:
             self.show()
 
+    # 1. Вкладка ФАЙЛ
     # Функции базы данных
     def db_connect(self):
         print("db_connect")
@@ -114,6 +152,9 @@ class Painter(QtWidgets.QMainWindow):
 
     def plan_save(self):
         print("plan_save")
+
+    def plan_clear(self):
+        print("plan_clear")
 
     def plan_del(self):
         print("plan_del")
@@ -137,6 +178,23 @@ class Painter(QtWidgets.QMainWindow):
         elif resultCode == QtWidgets.QMessageBox.Yes:
             return self.close()
 
+    # 2. Вкладка ИНСТРУМЕНТЫ
+    # Функция масштаба
+    def tools_scale(self):
+        print("tools_scale")
+
+    # Функция расстояния
+    def tools_dist(self):
+        print("tools_dist")
+
+    # Функция площади
+    def tools_area(self):
+        print("tools_area")
+
+    # 2. Вкладка СПРАВКА
+    # функция справки
+    def help_show(self):
+        print("help_show")
 
     #     Функция "О программе"
     def about_programm(self) -> None:
