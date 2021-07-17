@@ -30,6 +30,8 @@ class Painter(QtWidgets.QMainWindow):
         scale_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/scale.png')
         dist_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/polyline.png')
         area_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/area.png')
+        settings_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/settings.png')
+        draw_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/draw.png')
         exit_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/exit.png')
         info_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/info.png')
         # Главное окно
@@ -37,8 +39,45 @@ class Painter(QtWidgets.QMainWindow):
         self.setWindowTitle('Painter')
         self.setWindowIcon(self.main_ico)
         # Центральный виджет
-        text_edit = QtWidgets.QTextEdit()
-        self.setCentralWidget(text_edit)
+            # создаем сетку из двух колонок
+            # окно для графики
+            # окно для ввода данных
+        central_widget = QtWidgets.QWidget()
+        grid = QtWidgets.QGridLayout(self)
+        grid.setColumnStretch(0, 7)
+        grid.setColumnStretch(1, 1)
+            # В первой колонке создаем место под ген.план
+            # создаем сцену  #создаем сцену и плосы прокрутки картинки
+        self.scene = QtWidgets.QGraphicsScene(self)
+            # создаем полосы прокрутки
+        self.area = QtWidgets.QScrollArea(self)
+            # добавляем картинку
+        self.pixmap = QtGui.QPixmap()
+        self.scene.addPixmap(self.pixmap)
+            # создаем обработчик клика мыши по сцене
+        # self.scene.mousePressEvent = self.m_press_event
+            # создаем вид который визуализирует сцену
+        self.view = QtWidgets.QGraphicsView(self.scene, self)
+        self.area.setWidget(self.view)
+        self.area.setWidgetResizable(True)
+            # т.к. данных  много создадим
+            # вкладки табов
+        self.tabs = QtWidgets.QTabWidget()  # создаем вкладки табов
+        self.tab_main = QtWidgets.QWidget()  # 0. Главная вкладка с данными
+        self.tab_settings = QtWidgets.QWidget()  # 1. Настройки
+            # добавляем "0" таб на вкладку табов
+        self.tabs.addTab(self.tab_main, "")  # 0. Главная вкладка с данными
+        self.tabs.setTabIcon(0, draw_ico)
+        self.tabs.setTabToolTip(0, "Главня вкладка")
+            # добавляем "1" таб на вкладку табов
+        self.tabs.addTab(self.tab_settings, "")  # 1. Настройки
+        self.tabs.setTabIcon(1, settings_ico)
+        self.tabs.setTabToolTip(1, "Настройки")
+
+        grid.addWidget(self.area, 0, 0, 1, 1)
+        grid.addWidget(self.tabs, 0, 1, 1, 1)
+        central_widget.setLayout(grid)
+        self.setCentralWidget(central_widget)
 
         # База данных (меню)
         db_menu = QtWidgets.QMenu('База данных', self)
