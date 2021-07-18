@@ -32,6 +32,9 @@ class Painter(QtWidgets.QMainWindow):
         object_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/object.png')
         settings_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/settings.png')
         draw_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/draw.png')
+        state_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/state.png')
+        tube_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/tube.png')
+        tree_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/tree.png')
         exit_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/exit.png')
         info_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/info.png')
         # Главное окно
@@ -79,7 +82,7 @@ class Painter(QtWidgets.QMainWindow):
         self.scale_name.setReadOnly(True)
 
         # Рамка №2 (то что будет в рамке 2)
-        self.type_act = QtWidgets.QComboBox()  # д. проектируемый/существующий объект
+        self.type_act = QtWidgets.QComboBox()
         self.type_act.addItems(["Объект", "Масштаб", "Расстояние", "Площадь"])
         self.type_act.setItemIcon(0, object_ico)
         self.type_act.setItemIcon(1, scale_ico)
@@ -89,6 +92,33 @@ class Painter(QtWidgets.QMainWindow):
         self.draw_btn = QtWidgets.QPushButton("Применить")
         self.draw_btn.setCheckable(True)
         self.draw_btn.setChecked(False)
+
+        # Рамка №3 (то что будет в рамке 3)
+        self.obj_name = QtWidgets.QLineEdit()
+        self.obj_name.setPlaceholderText("Наименование объекта")
+        self.obj_name.setToolTip("Е-1")
+        self.obj_coord = QtWidgets.QLineEdit()
+        self.obj_coord.setPlaceholderText("Координаты объекта")
+        self.obj_coord.setToolTip("[x,y]")
+        self.obj_coord.setReadOnly(True)
+        self.obj_type = QtWidgets.QComboBox()
+        self.obj_type.addItems(["Линейный", "Стационарный"])
+        self.obj_type.setItemIcon(0, tube_ico)
+        self.obj_type.setItemIcon(1, state_ico)
+        self.obj_save_btn = QtWidgets.QPushButton("Сохранить")
+        self.obj_save_btn.setIcon(save_ico)
+        self.obj_save_btn.setToolTip("Сохранить объект")
+        # self.obj_save_btn.clicked.connect(self.on_picture_draw)
+
+        # Рамка №4 (то что будет в рамке 4)
+        self.model = QtGui.QStandardItemModel(0, 0)  # Создаем модель QStandardItemModel для QTreeView
+        self.all_items = QtGui.QStandardItem("Объекты:")  #
+        self.all_items.setIcon(tree_ico)
+        self.model.appendRow(self.all_items)
+        self.view_tree = QtWidgets.QTreeView()
+        self.view_tree.header().hide()
+        self.view_tree.setModel(self.model)
+        # self.view_tree.clicked.connect(self.treefunction)
 
         # Упаковываем все на вкладку таба "0" (делаем все в QGroupBox
         # т.к. элементы будут добавляться и их
@@ -108,9 +138,26 @@ class Painter(QtWidgets.QMainWindow):
         layout_act.addRow("", self.draw_btn)
         layout_act.addRow("", self.result_lbl)
         GB_act.setLayout(layout_act)
+        # Рамка №3
+        layout_obj = QtWidgets.QFormLayout(self)
+        GB_obj = QtWidgets.QGroupBox('Действие')
+        GB_obj.setStyleSheet("QGroupBox { font-weight : bold; }")
+        layout_obj.addRow("", self.obj_name)
+        layout_obj.addRow("", self.obj_coord)
+        layout_obj.addRow("", self.obj_type)
+        layout_obj.addRow("", self.obj_save_btn)
+        GB_obj.setLayout(layout_obj)
+        # Рамка №4
+        layout_tree = QtWidgets.QVBoxLayout(self)
+        GB_tree = QtWidgets.QGroupBox('Дерево объектов')
+        GB_tree.setStyleSheet("QGroupBox { font-weight : bold; }")
+        layout_tree.addWidget(self.view_tree)
+        GB_tree.setLayout(layout_tree)
         # Собираем рамки
         self.tab_main.layout.addWidget(GB_scale)
         self.tab_main.layout.addWidget(GB_act)
+        self.tab_main.layout.addWidget(GB_obj)
+        self.tab_main.layout.addWidget(GB_tree)
         # Размещаем на табе
         self.tab_main.setLayout(self.tab_main.layout)
 
