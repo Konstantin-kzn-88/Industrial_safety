@@ -171,6 +171,10 @@ class Painter(QtWidgets.QMainWindow):
         self.db_name.setPlaceholderText("Наименование базы данных")
         self.db_name.setToolTip("Наименование базы данных")
         self.db_name.setReadOnly(True)
+        self.db_path = QtWidgets.QLineEdit()  # путь  базы данных
+        self.db_path.setPlaceholderText("Путь базы данных")
+        self.db_path.setToolTip("Путь базы данных")
+        self.db_path.setReadOnly(True)
         # Рамка №2 (то что будет в рамке 2)
         self.plan_list = QtWidgets.QComboBox()  # ген.планы объекта
         self.plan_list.addItems(["--Нет ген.планов-- "])
@@ -185,6 +189,7 @@ class Painter(QtWidgets.QMainWindow):
         GB_db = QtWidgets.QGroupBox('База данных')
         GB_db.setStyleSheet("QGroupBox { font-weight : bold; }")
         layout_db.addRow("", self.db_name)
+        layout_db.addRow("", self.db_path)
         GB_db.setLayout(layout_db)
         # Рамка №2
         layout_plan = QtWidgets.QFormLayout(self)
