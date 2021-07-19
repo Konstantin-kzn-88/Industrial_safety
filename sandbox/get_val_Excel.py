@@ -6,7 +6,7 @@ sheet = Excel.ActiveSheet
 
 # Excel.Selection.Value = "Hello World"
 vals = Excel.Selection.Value
-print(vals)
+print(len(vals))
 
 if __name__ == '__main__':
     pass
