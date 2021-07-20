@@ -1,8 +1,11 @@
 from mysql.connector import connect, Error
 import time
 
+
 start = time.process_time()
 file_path = 'C:\\Users\\konstantin\\Desktop\\test_in.png'
+file_path_out = 'C:\\Users\\konstantin\\Desktop\\test_out.png'
+
 # конвертация в BLOB
 def convertToBinaryData(file_path):
     with open(file_path, 'rb') as file:
@@ -21,17 +24,21 @@ try:
             database="u1082920_test",
     ) as con:
         cur = con.cursor()
+        # cur.execute("DROP TABLE IF EXISTS foto")  # del table if she be
         # Создать таблицу если ее не было
         cur.execute("""CREATE TABLE IF NOT  EXISTS foto (
             foto_id INTEGER,
-            pic BLOB
+            pic LONGBLOB
             )""")
 
         cur.execute("""SELECT * FROM foto""")
         result = cur.fetchall()
         print(result[0][1])
+        fout = open(file_path_out, 'wb')
+        fout.write(result[0][1])
+        fout.close()
 
-        # # запрос на добавление данных
+        # запрос на добавление данных
         # cur.execute("SELECT * FROM foto")
         # real_id = cur.fetchall()
         # if real_id == []:
@@ -50,7 +57,7 @@ try:
         # cur.execute("INSERT INTO foto VALUES(%s,%s)",data_tuple)
         # con.commit()
         # print("Image and file inserted successfully as a BLOB into a table")
-        # cur.close()
+        cur.close()
 
 except Error as e:
     print(e)
