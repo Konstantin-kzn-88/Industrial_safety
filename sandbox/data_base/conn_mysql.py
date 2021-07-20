@@ -1,7 +1,10 @@
 from mysql.connector import connect, Error
+import time
 
+start = time.process_time()
+file_path = 'C:\\Users\\konstantin\\Desktop\\test_in.png'
 # конвертация в BLOB
-def convertToBinaryData(self, file_path):
+def convertToBinaryData(file_path):
     with open(file_path, 'rb') as file:
         blobData = file.read()
     return blobData
@@ -12,25 +15,51 @@ def convertToBinaryData(self, file_path):
 
 try:
     with connect(
-        host="server167.hosting.reg.ru",
-        user="u1082920_test",
-        password="!Fq3pKcK",
-        database="u1082920_test",
+            host="server167.hosting.reg.ru",
+            user="u1082920_test",
+            password="!Fq3pKcK",
+            database="u1082920_test",
     ) as con:
         cur = con.cursor()
         # Создать таблицу если ее не было
         cur.execute("""CREATE TABLE IF NOT  EXISTS foto (
-            foto_id INTEGER PRIMARY KEY,
+            foto_id INTEGER,
             pic BLOB
             )""")
+
         cur.execute("""SELECT * FROM foto""")
         result = cur.fetchall()
-        print(result)
-        con.commit()
-        con.close()
+        print(result[0][1])
+
+        # # запрос на добавление данных
+        # cur.execute("SELECT * FROM foto")
+        # real_id = cur.fetchall()
+        # if real_id == []:
+        #     max_id = 1
+        # else:
+        #     for row in real_id:
+        #         max_id = int(row[0]) + 1
+        # print(max_id)
+        #
+        #
+        #
+        # empPhoto = convertToBinaryData(file_path)
+        #
+        # # Convert data into tuple format
+        # data_tuple = (max_id, empPhoto)
+        # cur.execute("INSERT INTO foto VALUES(%s,%s)",data_tuple)
+        # con.commit()
+        # print("Image and file inserted successfully as a BLOB into a table")
+        # cur.close()
 
 except Error as e:
     print(e)
+
+
+work_time = (time.process_time() - start)
+print(f"Время выполнения {work_time}")
+
+
 
 if __name__ == '__main__':
     print("start")
