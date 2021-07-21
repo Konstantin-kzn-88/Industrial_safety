@@ -4,7 +4,7 @@ import time
 
 start = time.process_time()
 file_path = 'C:\\Users\\konstantin\\Desktop\\test_in.png'
-file_path_out = 'C:\\Users\\konstantin\\Desktop\\test_out.png'
+file_path_out = 'C:\\Users\\Konstantin_user\\Desktop\\test_out.png'
 
 # конвертация в BLOB
 def convertToBinaryData(file_path):
@@ -33,7 +33,7 @@ try:
 
         cur.execute("""SELECT * FROM foto""")
         result = cur.fetchall()
-        print(result[0][1])
+        # print(result[0][1])
         fout = open(file_path_out, 'wb')
         fout.write(result[0][1])
         fout.close()
