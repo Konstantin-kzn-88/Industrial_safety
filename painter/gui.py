@@ -181,7 +181,7 @@ class Painter(QtWidgets.QMainWindow):
         self.plan_list = QtWidgets.QComboBox()  # ген.планы объекта
         self.plan_list.addItems(["--Нет ген.планов-- "])
         self.plan_list.setToolTip("""Ген.планы объекта""")
-        # self.plan_list.activated[str].connect(self.plan_list_select)
+        self.plan_list.activated[str].connect(self.plan_list_select)
         # Рамка №3 (то что будет в рамке 3)
         self.color_zone1_btn = QtWidgets.QPushButton("Зона 1")
         self.color_zone1_btn.setIcon(color_ico)
@@ -371,7 +371,7 @@ class Painter(QtWidgets.QMainWindow):
         file_path = QtCore.QFileInfo(path).path()
         self.db_name.setText(file_name)
         self.db_path.setText(file_path)
-        # self.plan_list_update()
+        self.plan_list_update()
 
     def db_create(self):
         """
@@ -410,7 +410,57 @@ class Painter(QtWidgets.QMainWindow):
 
     # Функции генплана
     def plan_add(self):
-        print("plan_add")
+        """
+         Загрузка файла картинки
+        """
+        # Проверка подключения к базе данных
+        if self.db_name.text() == "":
+            msg = QtWidgets.QMessageBox(self)
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+            msg.setWindowTitle("Информация")
+            msg.setText("Нет подключенной базы данных")
+            msg.exec()
+            return
+        file_path = QtWidgets.QFileDialog.getOpenFileName(self, 'Открыть генеральный план',
+                                                          "/home", ("Images (*.jpg)"))[0]
+        # Проверка выбран ли файл ген.плана
+        if file_path == "":
+            msg = QtWidgets.QMessageBox(self)
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+            msg.setWindowTitle("Информация")
+            msg.setText("Файл не выбран")
+            msg.exec()
+            return
+
+        file_name = QtCore.QFileInfo(file_path).fileName()
+        # Подключение к базе данных
+        path_str = (f"{self.db_path.text()}/{self.db_name.text()}")
+        path_str = path_str.replace("/", "//")
+        sqliteConnection = sqlite3.connect(path_str)
+        cursorObj = sqliteConnection.cursor()
+        cursorObj.execute("SELECT * FROM objects")
+        real_id = cursorObj.fetchall()
+        # проверка максимального id в базе
+        max_id = 1
+        if real_id == []:
+            max_id = 1
+        else:
+            for row in real_id:
+                max_id = int(row[0]) + 1
+                print(max_id)
+
+        # SQL запрос
+        sqlite_insert_blob_query = """ INSERT INTO 'objects'
+                                            ('id', 'data', 'photo', 'name_photo') VALUES (?, ?, ?, ?)"""
+        # Конвертация файла в BLOB
+        empPhoto = self.convertToBinaryData(file_path)
+        # Проготовим множество к вставке в SQL запрос
+        data_tuple = (max_id, "", empPhoto, file_name)
+        cursorObj.execute(sqlite_insert_blob_query, data_tuple)
+        sqliteConnection.commit()
+        print("Image and file inserted successfully as a BLOB into a table")
+        cursorObj.close()
+        self.plan_list_update()
 
     def plan_replace(self):
         print("plan_replace")
@@ -422,7 +472,97 @@ class Painter(QtWidgets.QMainWindow):
         print("plan_clear")
 
     def plan_del(self):
-        print("plan_del")
+        if self.db_name.text() == '':
+            return
+        path_str = (f"{self.db_path.text()}/{self.db_name.text()}")
+        path_str = path_str.replace("/", "//")
+        sqliteConnection = sqlite3.connect(path_str)
+        cursorObj = sqliteConnection.cursor()
+
+        cursorObj.execute("SELECT * FROM objects")
+        plant_in_db = cursorObj.fetchall()
+        for row in plant_in_db:
+
+            if str(row[3]) + ',' + str(row[0]) == self.plan_list.currentText():
+                sql = 'DELETE FROM objects WHERE id=?'
+                cursorObj.execute(sql, (str(row[0]),))
+
+                sqliteConnection.commit()
+                sqliteConnection.execute("VACUUM")
+                cursorObj.close()
+        self.plan_list_update()
+        self.scene.clear()
+
+    def convertToBinaryData(self, file_path):
+        # Convert digital data to binary format
+        with open(file_path, 'rb') as file:
+            blobData = file.read()
+        return blobData
+
+    def plan_list_select(self, text):
+        # self.reset_state_obj()  # обнуляем все поля
+        # достаем картинку из БД
+        path_str = (f"{self.db_path.text()}/{self.db_name.text()}")
+        path_str = path_str.replace("/", "//")
+        sqliteConnection = sqlite3.connect(path_str)
+        cursorObj = sqliteConnection.cursor()
+        cursorObj.execute("SELECT * FROM objects")
+        plant_in_db = cursorObj.fetchall()
+        for row in plant_in_db:
+            if str(row[3]) + ',' + str(row[0]) == text:
+                image_data = row[2]
+                self.scene.clear()
+                qimg = QtGui.QImage.fromData(image_data)
+                self.pixmap = QtGui.QPixmap.fromImage(qimg)
+                self.scene.addPixmap(self.pixmap)
+                self.scene.setSceneRect(QtCore.QRectF(self.pixmap.rect()))
+        sqliteConnection.execute("VACUUM")
+        cursorObj.close()
+
+        # # Очищаем словарь объектов
+        # self.data_obj.clear()
+        # # достаем словарь из БД
+        # sqliteConnection = sqlite3.connect(path_str)
+        # cursorObj = sqliteConnection.cursor()
+        # cursorObj.execute("SELECT * FROM objects")
+        # data_in_db = cursorObj.fetchall()
+        # for row in data_in_db:
+        #     if str(row[3]) + ',' + str(row[0]) == text:
+        #         if str(row[1]) == "":
+        #             self.data_obj = {}
+        #         else:
+        #             self.data_obj = eval(row[1])
+        # sqliteConnection.execute("VACUUM")
+        # cursorObj.close()
+        # # Удаляем все позиции из объектов
+        # self.all_items.removeRows(0, self.all_items.rowCount())
+        # # # добавить из списка self.data_obj  объекты
+        # # for key in self.data_obj.keys():
+        # #     key = QStandardItem(key)
+        # #     self.all_items.setChild(self.all_items.rowCount(), key)
+
+    def plan_list_update(self):
+        # подключение к базе данных
+        path_str = (f"{self.db_path.text()}/{self.db_name.text()}")
+        path_str = path_str.replace("/", "//")
+        sqliteConnection = sqlite3.connect(path_str)
+        cursorObj = sqliteConnection.cursor()
+        cursorObj.execute("SELECT * FROM objects")
+        plant_in_db = cursorObj.fetchall()
+        self.plan_list.clear()
+
+        plan_item = []
+
+        for row in plant_in_db:
+            name_plant = str(row[3]) + ',' + str(row[0])
+            plan_item.append(name_plant)
+        if plan_item == []:
+            self.plan_list.addItems(["--Нет ген.планов-- "])
+        else:
+            self.plan_list.addItems(plan_item)
+        sqliteConnection.execute("VACUUM")
+        cursorObj.close()
+        print("update plan")
 
     #     Функция выхода из программы
     def close_event(self) -> None:
