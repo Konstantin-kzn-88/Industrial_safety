@@ -7,10 +7,12 @@
 # email kuznetsovkm@yandex.ru
 # -----------------------------------------------------------
 import sqlite3
+import time
 import sys
 import os
 from pathlib import Path
 from PySide2 import QtWidgets, QtGui, QtCore
+
 
 
 class Painter(QtWidgets.QMainWindow):
@@ -507,7 +509,16 @@ class Painter(QtWidgets.QMainWindow):
         self.scene.clear()
 
     def plan_save(self):
-        print("plan_save")
+        text = str(int(time.time()))
+        # self.del_all_item()
+        self.scene.clearSelection()
+        self.scene.setSceneRect(self.scene.itemsBoundingRect())
+        image = QtGui.QImage(self.scene.sceneRect().size().toSize(), QtGui.QImage.Format_ARGB32)
+        image.fill(QtCore.Qt.transparent)
+        painter = QtGui.QPainter(image)
+        self.scene.render(painter)
+        image.save((f"{self.db_path.text()}/{text}.jpg"), "JPG")
+        painter.end()
 
     def plan_clear(self):
         # очистить ген.план от разных зон и объектов
