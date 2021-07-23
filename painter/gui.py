@@ -179,7 +179,7 @@ class Painter(QtWidgets.QMainWindow):
         self.db_path.setReadOnly(True)
         # Рамка №2 (то что будет в рамке 2)
         self.plan_list = QtWidgets.QComboBox()  # ген.планы объекта
-        self.plan_list.addItems(["--Нет ген.планов-- "])
+        self.plan_list.addItems(["--Нет ген.планов--"])
         self.plan_list.setToolTip("""Ген.планы объекта""")
         self.plan_list.activated[str].connect(self.plan_list_select)
         # Рамка №3 (то что будет в рамке 3)
@@ -377,9 +377,7 @@ class Painter(QtWidgets.QMainWindow):
         """
          Функция содает новую БД и сохраняет ее в папке
          """
-        print('Создаем новую БД')
         text, ok = QtWidgets.QInputDialog.getText(self, 'Создать новую базу данных', 'Введите имя новой базы данных:')
-        print("QInputDialog")
         # self.vibor_master_plan.clear() #очистить ген.план.
 
         if ok:
@@ -458,18 +456,64 @@ class Painter(QtWidgets.QMainWindow):
         data_tuple = (max_id, "", empPhoto, file_name)
         cursorObj.execute(sqlite_insert_blob_query, data_tuple)
         sqliteConnection.commit()
-        print("Image and file inserted successfully as a BLOB into a table")
         cursorObj.close()
         self.plan_list_update()
 
     def plan_replace(self):
-        print("plan_replace")
+        if self.db_name.text() == "":
+            msg = QtWidgets.QMessageBox(self)
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+            msg.setWindowTitle("Информация")
+            msg.setText("Нет подключенной базы данных")
+            msg.exec()
+            return
+        file_path = QtWidgets.QFileDialog.getOpenFileName(self, 'Открыть генеральный план',
+                                                          "/home", ("Images (*.jpg)"))[0]
+        # Проверка выбран ли файл ген.плана
+        if file_path == "":
+            msg = QtWidgets.QMessageBox(self)
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+            msg.setWindowTitle("Информация")
+            msg.setText("Файл не выбран")
+            msg.exec()
+            return
+        file_name = QtCore.QFileInfo(file_path).fileName()
+        path_str = (f"{self.db_path.text()}/{self.db_name.text()}")
+        path_str = path_str.replace("/", "//")
+        sqliteConnection = sqlite3.connect(path_str)
+        cursorObj = sqliteConnection.cursor()
+
+        cursorObj.execute("SELECT * FROM objects")
+        real_id = cursorObj.fetchall()
+
+        if real_id == []:
+            msg = QtWidgets.QMessageBox(self)
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+            msg.setWindowTitle("Информация")
+            msg.setText("Ген.плана еще нет, поэтому его замена не возможна")
+            msg.exec()
+            return
+        else:
+            for row in real_id:
+                if str(row[3]) + ',' + str(row[0]) == self.plan_list.currentText():
+                    print("Hey")
+                    empPhoto = self.convertToBinaryData(file_path)
+                    cursorObj.execute('UPDATE objects SET photo = ?  where id = ?', (empPhoto, str(row[0])))
+                    cursorObj.execute('UPDATE objects SET name_photo = ? where id = ?', (file_name, str(row[0])))
+                    sqliteConnection.commit()
+                    print("Image and file replaced successfully as a BLOB into a table")
+                    cursorObj.close()
+        self.plan_list_update()
+        self.scene.clear()
 
     def plan_save(self):
         print("plan_save")
 
     def plan_clear(self):
-        print("plan_clear")
+        # очистить ген.план от разных зон и объектов
+        if self.plan_list.currentText() == "--Нет ген.планов--":
+            return
+        self.plan_list_select(text=self.plan_list.currentText())
 
     def plan_del(self):
         if self.db_name.text() == '':
