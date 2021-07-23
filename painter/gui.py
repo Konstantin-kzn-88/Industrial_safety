@@ -12,6 +12,22 @@ import sys
 import os
 from pathlib import Path
 from PySide2 import QtWidgets, QtGui, QtCore
+from shapely.geometry import LineString
+
+class MoveItem(QtWidgets.QGraphicsItem):
+    def __init__(self, parent=None):
+        super().__init__()
+        self.tag = None
+
+    def boundingRect(self):
+        #print('boundingRect')
+        return QtCore.QRectF(-10, -10, 10, 10);
+
+    def paint(self, painter, option, widget):  # рисуем новый квадрат со стороной 10
+        # print('paint')
+        painter.setPen(QtCore.Qt.red)
+        painter.setBrush(QtCore.Qt.red)
+        painter.drawRect(-5, -5, 5, 5)
 
 
 
@@ -41,6 +57,9 @@ class Painter(QtWidgets.QMainWindow):
         info_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/info.png')
         color_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/color_select.png')
         excel_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/excel.png')
+        # Важные переменные
+        self.data_scale=[] # массив хранения данных для масштаба
+
         # Главное окно
         self.setGeometry(300, 300, 350, 250)
         self.setWindowTitle('Painter')
@@ -62,7 +81,7 @@ class Painter(QtWidgets.QMainWindow):
         self.pixmap = QtGui.QPixmap()
         self.scene.addPixmap(self.pixmap)
         # создаем обработчик клика мыши по сцене
-        # self.scene.mousePressEvent = self.m_press_event
+        self.scene.mousePressEvent = self.scene_press_event
         # создаем вид который визуализирует сцену
         self.view = QtWidgets.QGraphicsView(self.scene, self)
         self.area.setWidget(self.view)
@@ -82,7 +101,7 @@ class Painter(QtWidgets.QMainWindow):
         # Рамка №1 (то что будет в рамке 1)
         self.scale_name = QtWidgets.QLineEdit()
         self.scale_name.setPlaceholderText("Масштаб")
-        self.scale_name.setToolTip("[м, пикс.]")
+        self.scale_name.setToolTip("В одном пикселе метров")
         self.scale_name.setReadOnly(True)
 
         # Рамка №2 (то что будет в рамке 2)
@@ -92,8 +111,10 @@ class Painter(QtWidgets.QMainWindow):
         self.type_act.setItemIcon(1, scale_ico)
         self.type_act.setItemIcon(2, dist_ico)
         self.type_act.setItemIcon(3, area_ico)
+        self.type_act.activated[str].connect(self.select_type_act)
         self.result_lbl = QtWidgets.QLabel()
         self.draw_btn = QtWidgets.QPushButton("Применить")
+        self.draw_btn.clicked.connect(self.change_draw_btn)
         self.draw_btn.setCheckable(True)
         self.draw_btn.setChecked(False)
 
@@ -618,6 +639,85 @@ class Painter(QtWidgets.QMainWindow):
         sqliteConnection.execute("VACUUM")
         cursorObj.close()
         print("update plan")
+
+    # Функции работы с ген.планом
+    def scene_press_event(self, event):  # функция клика по ген.плану
+        # Проверим наличие ген.плана
+        if self.plan_list.currentText() == "--Нет ген.планов--":
+            return
+        # Проверим нажатие кнопки и действия:
+        if self.draw_btn.isChecked():
+            if self.type_act.currentIndex() == 0:
+                print("Draw obj")
+            elif self.type_act.currentIndex() == 1:
+                print("Draw scale")
+                self.data_scale.append(str(event.scenePos().x()))  # замеряем координаты клика
+                self.data_scale.append(str(event.scenePos().y()))  # и запсываем в data_scale
+                self.draw_all_item(self.data_scale)
+
+                if len(self.data_scale) == 4:  # как только длина data_scale == 4
+                    num_int, ok = QtWidgets.QInputDialog.getInt(self,"Масштаб","Сколько метров:")
+                    if ok:
+                        x_a = float(self.data_scale[0])  # по координатам двух точек
+                        y_a = float(self.data_scale[1])  # вычисляем расстояние в пикселях
+                        x_b = float(self.data_scale[2])
+                        y_b = float(self.data_scale[3])
+
+                        length = LineString([(x_a, y_a), (x_b, y_b)]).length  # shapely
+                        print("length", length)
+                        self.data_scale.clear()  # очищаем data_scale
+                        self.result_lbl.setText(f"В отрезке: {float(length) / num_int:.3f} пикселей") # пишем сколько в одним пикселе метров
+                        self.scale_name.setText(f"{float(length) / num_int:.3f}")
+                        self.draw_btn.setChecked(False)
+                        self.del_all_item()
+
+            elif self.type_act.currentIndex() == 2:
+                print("Draw dist")
+            elif self.type_act.currentIndex() == 3:
+                print("Draw area")
+
+    def select_type_act(self):
+        print("select_type_act")
+        # снять с кнопки "Применить" нажатие
+        self.draw_btn.setChecked(False)
+
+    def change_draw_btn(self):
+        print("change_draw_btn")
+
+    def draw_all_item(self, coordinate):
+        """
+        Рисует все Item на картинке
+        """
+        if coordinate == []:
+            return
+        i = 0
+        k = 0
+        while i < len(coordinate):
+            name_rings = MoveItem()
+            name_rings.setPos(float(coordinate[i]), float(coordinate[i + 1]))
+            self.scene.addItem(name_rings)
+            i += 2
+        while k < len(coordinate) - 2:
+            line = QtWidgets.QGraphicsLineItem(float(coordinate[k]), float(coordinate[k + 1]),
+                                     float(coordinate[k + 2]), float(coordinate[k + 3]))
+            line.setPen(QtGui.QPen(QtCore.Qt.blue, 2))
+            self.scene.addItem(line)
+            k -= 2
+            k += 4
+
+    def del_all_item(self):
+        """
+        Удаляет все Item с картинки
+        """
+        for item in self.scene.items():  # удалить все линии точки и линии
+            str1 = str(item)
+            str2 = 'QGraphicsLineItem'
+            str3 = 'MoveItem'
+            if str2 in str1:
+                self.scene.removeItem(item)
+            str1 = str(item)
+            if str3 in str1:
+                self.scene.removeItem(item)
 
     #     Функция выхода из программы
     def close_event(self) -> None:
