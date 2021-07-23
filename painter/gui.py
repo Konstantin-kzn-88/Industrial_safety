@@ -2,15 +2,15 @@
 # Графический интерфейс предназначен для отрисовки зон действия
 # поражающих факторов и построения полей потенциального риска
 # на основе данных из excel (расчеты в данном модуле не производятся)
-# приказ мчс №404
+#
 # (C) 2021 Kuznetsov Konstantin, Kazan , Russian Federation
 # email kuznetsovkm@yandex.ru
 # -----------------------------------------------------------
-
+import sqlite3
 import sys
 import os
 from pathlib import Path
-from PySide2 import QtWidgets, QtGui
+from PySide2 import QtWidgets, QtGui, QtCore
 
 
 class Painter(QtWidgets.QMainWindow):
@@ -223,7 +223,6 @@ class Painter(QtWidgets.QMainWindow):
         self.get_data_btn.setToolTip("Загрузить выделенный диапазон")
         # self.obj_save_btn.clicked.connect(self.on_picture_draw)
 
-
         # Упаковываем все на вкладку таба "0" (делаем все в QGroupBox
         # т.к. элементы будут добавляться и их
         # потом нужно будет объединять в группы
@@ -356,10 +355,58 @@ class Painter(QtWidgets.QMainWindow):
     # 1. Вкладка ФАЙЛ
     # Функции базы данных
     def db_connect(self):
-        print("db_connect")
+        """
+        Подключение к существующей БД
+        """
+
+        path = QtWidgets.QFileDialog.getOpenFileName(self, 'Открыть базу данных', "/home", ("Data base (*.db)"))[0]
+        if path == "":
+            msg = QtWidgets.QMessageBox(self)
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+            msg.setWindowTitle("Информация")
+            msg.setText("Файл базы данных не выбран")
+            msg.exec()
+            return
+        file_name = QtCore.QFileInfo(path).fileName()
+        file_path = QtCore.QFileInfo(path).path()
+        self.db_name.setText(file_name)
+        self.db_path.setText(file_path)
+        # self.plan_list_update()
 
     def db_create(self):
-        print("db_create")
+        """
+         Функция содает новую БД и сохраняет ее в папке
+         """
+        print('Создаем новую БД')
+        text, ok = QtWidgets.QInputDialog.getText(self, 'Создать новую базу данных', 'Введите имя новой базы данных:')
+        print("QInputDialog")
+        # self.vibor_master_plan.clear() #очистить ген.план.
+
+        if ok:
+            # получить путь сохранения базы данных
+            dir = QtWidgets.QFileDialog.getExistingDirectory(self, "Выбрать путь базы данных",
+                                                             "/home",
+                                                             QtWidgets.QFileDialog.ShowDirsOnly
+                                                             | QtWidgets.QFileDialog.DontResolveSymlinks)
+            # проверить нет ли такого же файла в той же директории
+            check = os.path.exists(f"{dir}/{text}.db")
+            if check:
+                msg = QtWidgets.QMessageBox(self)
+                msg.setIcon(QtWidgets.QMessageBox.Warning)
+                msg.setWindowTitle("Информация")
+                msg.setText("База данных с таким названием уже существует!")
+                msg.exec()
+                return
+            sqliteConnection = sqlite3.connect(f"{dir}/{text}.db")
+            cursorObj = sqliteConnection.cursor()
+            cursorObj.execute("""CREATE TABLE objects(id INTEGER PRIMARY KEY, data TEXT NOT NULL,
+                                                                 photo BLOB NOT NULL, name_photo TEXT NOT NULL)""")
+            sqliteConnection.commit()
+            sqliteConnection.close
+            self.db_name.setText(text + '.db')
+            self.db_path.setText(dir)
+        else:
+            return
 
     # Функции генплана
     def plan_add(self):
@@ -394,7 +441,6 @@ class Painter(QtWidgets.QMainWindow):
             return
         elif resultCode == QtWidgets.QMessageBox.Yes:
             return self.close()
-
 
     # 2. Вкладка СПРАВКА
     # функция справки
