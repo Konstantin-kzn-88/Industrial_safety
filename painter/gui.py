@@ -7,13 +7,14 @@
 # email kuznetsovkm@yandex.ru
 # -----------------------------------------------------------
 import json
+import math
 import sqlite3
 import time
 import sys
 import os
 from pathlib import Path
 from PySide2 import QtWidgets, QtGui, QtCore
-from shapely.geometry import LineString
+from shapely.geometry import LineString, Polygon
 
 
 class MoveItem(QtWidgets.QGraphicsItem):
@@ -689,7 +690,7 @@ class Painter(QtWidgets.QMainWindow):
                 self.del_all_item()  # удалим все Item
                 if self.scale_name.text() == "":  # проверим есть ли масштаб
                     msg = QtWidgets.QMessageBox(self)
-                    msg.setIcon(QtWidgets.MessageBox.Warning)
+                    msg.setIcon(QtWidgets.QMessageBox.Warning)
                     msg.setWindowTitle("Информация")
                     msg.setText("Не установлен масштаб")
                     msg.exec()
@@ -724,7 +725,42 @@ class Painter(QtWidgets.QMainWindow):
                     self.result_lbl.setText(f'Длина линии {real_lenght}, м')
 
             elif self.type_act.currentIndex() == 3:
-                print("Draw area")
+                self.del_all_item()  # удалим все Item
+                if self.scale_name.text() == "":  # проверим есть ли масштаб
+                    msg = QtWidgets.QMessageBox(self)
+                    msg.setIcon(QtWidgets.QMessageBox.Warning)
+                    msg.setWindowTitle("Информация")
+                    msg.setText("Не установлен масштаб")
+                    self.draw_btn.setChecked(False)
+                    msg.exec()
+                    return
+                if self.obj_coord.displayText() == "":
+                    self.data_point.append(str(event.scenePos().x()))  #
+                    self.data_point.append(str(event.scenePos().y()))  # и запсываем в data_point
+                    self.obj_coord.setText(json.dumps(self.data_point))
+                    self.data_point.clear()
+                else:
+                    self.data_point = json.loads(self.obj_coord.displayText())
+                    self.data_point.append(str(event.scenePos().x()))  #
+                    self.data_point.append(str(event.scenePos().y()))  # и запсываем в data_point
+                    self.obj_coord.setText(json.dumps(self.data_point))
+                    self.data_point.clear()
+                self.draw_all_item(json.loads(self.obj_coord.displayText()))
+
+                b = json.loads(self.obj_coord.displayText())
+                if len(b) > 4:
+                    i = 0
+                    b_end = []
+                    while i < len(b):
+                        tuple_b = (float(b[i]), float(b[i + 1]))
+                        b_end.append(tuple_b)
+                        i += 2
+                        if i == len(b):
+                            break
+                    area = Polygon(b_end).area  # shapely
+                    real_area = float(area) / math.pow(float(self.scale_name.displayText()), 2)
+                    real_area = round(real_area, 2)
+                    self.result_lbl.setText(f'Площадь {real_area}, м2')
 
     def select_type_act(self):
         # При выборе нового действия нужно
@@ -734,7 +770,11 @@ class Painter(QtWidgets.QMainWindow):
         self.del_all_item()
 
     def change_draw_btn(self):
-        print("change_draw_btn")
+        # при изменении нажатия кнопки
+        # стереть все item
+        self.del_all_item()
+        # убрать все координаты
+        self.obj_coord.setText("")
 
     def draw_all_item(self, coordinate):
         """
