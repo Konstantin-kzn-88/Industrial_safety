@@ -59,9 +59,13 @@ class Painter(QtWidgets.QMainWindow):
         info_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/info.png')
         color_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/color_select.png')
         excel_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/excel.png')
+        plus_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/plus.png')
+        minus_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/minus.png')
+        hand_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/hand.png')
         # Важные переменные
+        self.scale = 1  # изначально масштаб картинки 1
         self.data_scale = []  # массив хранения данных для масштаба
-        self.data_point = [] # массив для хранения точек (измерение дистанции и площади)
+        self.data_point = []  # массив для хранения точек (измерение дистанции и площади)
 
         # Главное окно
         self.setGeometry(300, 300, 350, 250)
@@ -348,6 +352,22 @@ class Painter(QtWidgets.QMainWindow):
         exit_prog.setStatusTip('Выход из Painter')
         exit_prog.triggered.connect(self.close_event)
 
+        # Вид +/- и "рука"
+        scale_plus = QtWidgets.QAction(plus_ico, 'Увеличить план', self)
+        scale_plus.setShortcut('Ctrl+P')
+        scale_plus.setStatusTip('Увеличить план')
+        scale_plus.triggered.connect(self.scale_view_plus)
+
+        scale_min = QtWidgets.QAction(minus_ico, 'Уменьшить план', self)
+        scale_min.setShortcut('Ctrl+M')
+        scale_min.setStatusTip('Уменьшить план')
+        scale_min.triggered.connect(self.scale_view_min)
+
+        hand_act = QtWidgets.QAction(hand_ico, 'Рука', self)
+        hand_act.setShortcut('Ctrl+H')
+        hand_act.setStatusTip('Рука')
+        hand_act.triggered.connect(self.plan_hand)
+
         # Справка
         help_show = QtWidgets.QAction(question_ico, 'Справка', self)
         help_show.setShortcut('F1')
@@ -366,6 +386,10 @@ class Painter(QtWidgets.QMainWindow):
         file_menu.addMenu(db_menu)
         file_menu.addMenu(plan_menu)
         file_menu.addAction(exit_prog)
+        view_menu = menubar.addMenu('Вид')
+        view_menu.addAction(scale_plus)
+        view_menu.addAction(scale_min)
+        view_menu.addAction(hand_act)
         help_menu = menubar.addMenu('Справка')
         help_menu.addAction(help_show)
         help_menu.addAction(about_prog)
@@ -768,6 +792,8 @@ class Painter(QtWidgets.QMainWindow):
         # и удалить все item
         self.draw_btn.setChecked(False)
         self.del_all_item()
+        # убрать все координаты
+        self.obj_coord.setText("")
 
     def change_draw_btn(self):
         # при изменении нажатия кнопки
@@ -813,6 +839,7 @@ class Painter(QtWidgets.QMainWindow):
 
     #     Функция выхода из программы
     def close_event(self) -> None:
+        print("close")
         messageBox = QtWidgets.QMessageBox(
             QtWidgets.QMessageBox.Question,
             "Выход из программы",
@@ -829,7 +856,37 @@ class Painter(QtWidgets.QMainWindow):
         elif resultCode == QtWidgets.QMessageBox.Yes:
             return self.close()
 
-    # 2. Вкладка СПРАВКА
+    # 2. Вкладка ВИД
+    # Функции инструментов ген.плана
+    def scale_view_plus(self):  #
+        """
+        функция увеличения масштаба
+        """
+        self.scale += 0.05
+        self.view.scale(self.scale, self.scale)
+        self.scale = 1
+
+    def scale_view_min(self):  #
+        """
+        функция уменьшения масштаба
+        """
+        self.scale -= 0.05
+        self.view.scale(self.scale, self.scale)
+        self.scale = 1
+
+    def plan_hand(self):  # функция что бы появлялась рука для перетаскивания большой картинки
+        """
+        функция что бы появлялась рука для перетаскивания большой картинки
+        """
+        self.select_type_act() #снять кнопку применить и координаты убрать
+        if self.view.dragMode() == QtWidgets.QGraphicsView.ScrollHandDrag:
+            self.view.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
+        else:
+            self.view.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
+
+    # Функции инструментов ген.плана
+
+    # 3. Вкладка СПРАВКА
     # функция справки
     def help_show(self):
         print("help_show")
