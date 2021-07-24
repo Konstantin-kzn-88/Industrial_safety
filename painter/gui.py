@@ -15,6 +15,8 @@ import os
 from pathlib import Path
 from PySide2 import QtWidgets, QtGui, QtCore
 from shapely.geometry import LineString, Polygon
+from PySide2.QtCore import QTranslator
+I18N_QT_PATH = str(os.path.join(os.path.abspath('.'), 'i18n'))
 
 
 class MoveItem(QtWidgets.QGraphicsItem):
@@ -217,7 +219,7 @@ class Painter(QtWidgets.QMainWindow):
         self.color_zone1_btn.setIcon(color_ico)
         self.color_zone1_btn.setToolTip("Цвет зоны 1")
         self.color_zone1_btn.setStyleSheet("background-color: red")
-        # self.obj_save_btn.clicked.connect(self.on_picture_draw)
+        self.color_zone1_btn.clicked.connect(self.select_color)
         self.color_zone2_btn = QtWidgets.QPushButton("Зона 2")
         self.color_zone2_btn.setIcon(color_ico)
         self.color_zone2_btn.setToolTip("Цвет зоны 2")
@@ -904,8 +906,27 @@ class Painter(QtWidgets.QMainWindow):
         messageBox.setWindowIcon(self.main_ico)
         messageBox.exec_()
 
+    def select_color(self):
+        get_color = QtWidgets.QColorDialog
+        col = get_color.getColor(parent=self)
+        print(col.fromRgb())
+        btn = self.sender()
+        btn.setStyleSheet(f"background-color: {col.fromRgb()}")
+
+
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
+    locale = 'ru_RU'
+    qt_translator = QTranslator(app)
+    qt_translator.load('{}/qtbase_{}.qm'.format(I18N_QT_PATH, locale))
+    app_translator = QTranslator(app)
+    app_translator.load('{}/{}.qm'.format(I18N_QT_PATH, locale))
+    app.installTranslator(qt_translator)
+    app.installTranslator(app_translator)
     ex = Painter()
     app.exec_()
+
+
+
+
