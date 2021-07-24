@@ -6,6 +6,7 @@
 # (C) 2021 Kuznetsov Konstantin, Kazan , Russian Federation
 # email kuznetsovkm@yandex.ru
 # -----------------------------------------------------------
+import json
 import sqlite3
 import time
 import sys
@@ -14,13 +15,14 @@ from pathlib import Path
 from PySide2 import QtWidgets, QtGui, QtCore
 from shapely.geometry import LineString
 
+
 class MoveItem(QtWidgets.QGraphicsItem):
     def __init__(self, parent=None):
         super().__init__()
         self.tag = None
 
     def boundingRect(self):
-        #print('boundingRect')
+        # print('boundingRect')
         return QtCore.QRectF(-10, -10, 10, 10);
 
     def paint(self, painter, option, widget):  # рисуем новый квадрат со стороной 10
@@ -28,7 +30,6 @@ class MoveItem(QtWidgets.QGraphicsItem):
         painter.setPen(QtCore.Qt.red)
         painter.setBrush(QtCore.Qt.red)
         painter.drawRect(-5, -5, 5, 5)
-
 
 
 class Painter(QtWidgets.QMainWindow):
@@ -58,7 +59,8 @@ class Painter(QtWidgets.QMainWindow):
         color_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/color_select.png')
         excel_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/excel.png')
         # Важные переменные
-        self.data_scale=[] # массив хранения данных для масштаба
+        self.data_scale = []  # массив хранения данных для масштаба
+        self.data_point = [] # массив для хранения точек (измерение дистанции и площади)
 
         # Главное окно
         self.setGeometry(300, 300, 350, 250)
@@ -530,6 +532,9 @@ class Painter(QtWidgets.QMainWindow):
         self.scene.clear()
 
     def plan_save(self):
+        """
+        Сохранение текущего вида ген.плана
+        """
         text = str(int(time.time()))
         # self.del_all_item()
         self.scene.clearSelection()
@@ -548,6 +553,9 @@ class Painter(QtWidgets.QMainWindow):
         self.plan_list_select(text=self.plan_list.currentText())
 
     def plan_del(self):
+        """
+        Удаление ген.плана из БД
+        """
         if self.db_name.text() == '':
             return
         path_str = (f"{self.db_path.text()}/{self.db_name.text()}")
@@ -570,12 +578,15 @@ class Painter(QtWidgets.QMainWindow):
         self.scene.clear()
 
     def convertToBinaryData(self, file_path):
-        # Convert digital data to binary format
+        # Конвертирование в BLOB
         with open(file_path, 'rb') as file:
             blobData = file.read()
         return blobData
 
     def plan_list_select(self, text):
+        """
+        Выбор ген.плана из QCombobox
+        """
         # self.reset_state_obj()  # обнуляем все поля
         # достаем картинку из БД
         path_str = (f"{self.db_path.text()}/{self.db_name.text()}")
@@ -618,6 +629,9 @@ class Painter(QtWidgets.QMainWindow):
         # #     self.all_items.setChild(self.all_items.rowCount(), key)
 
     def plan_list_update(self):
+        """
+        Обновление списка ген.планов по базе данных
+        """
         # подключение к базе данных
         path_str = (f"{self.db_path.text()}/{self.db_name.text()}")
         path_str = path_str.replace("/", "//")
@@ -645,18 +659,18 @@ class Painter(QtWidgets.QMainWindow):
         # Проверим наличие ген.плана
         if self.plan_list.currentText() == "--Нет ген.планов--":
             return
-        # Проверим нажатие кнопки и действия:
+        # Проверим нажатие кнопки и действия QCombobox:
         if self.draw_btn.isChecked():
             if self.type_act.currentIndex() == 0:
                 print("Draw obj")
             elif self.type_act.currentIndex() == 1:
-                print("Draw scale")
+                # Вычислить масштаб
                 self.data_scale.append(str(event.scenePos().x()))  # замеряем координаты клика
                 self.data_scale.append(str(event.scenePos().y()))  # и запсываем в data_scale
                 self.draw_all_item(self.data_scale)
 
                 if len(self.data_scale) == 4:  # как только длина data_scale == 4
-                    num_int, ok = QtWidgets.QInputDialog.getInt(self,"Масштаб","Сколько метров:")
+                    num_int, ok = QtWidgets.QInputDialog.getInt(self, "Масштаб", "Сколько метров:")
                     if ok:
                         x_a = float(self.data_scale[0])  # по координатам двух точек
                         y_a = float(self.data_scale[1])  # вычисляем расстояние в пикселях
@@ -664,22 +678,60 @@ class Painter(QtWidgets.QMainWindow):
                         y_b = float(self.data_scale[3])
 
                         length = LineString([(x_a, y_a), (x_b, y_b)]).length  # shapely
-                        print("length", length)
+                        # print("length", length)
                         self.data_scale.clear()  # очищаем data_scale
-                        self.result_lbl.setText(f"В отрезке: {float(length) / num_int:.3f} пикселей") # пишем сколько в одним пикселе метров
+                        self.result_lbl.setText(f"В отрезке {num_int} м: {round(length, 2)} пикселей")
                         self.scale_name.setText(f"{float(length) / num_int:.3f}")
                         self.draw_btn.setChecked(False)
                         self.del_all_item()
 
             elif self.type_act.currentIndex() == 2:
-                print("Draw dist")
+                self.del_all_item()  # удалим все Item
+                if self.scale_name.text() == "":  # проверим есть ли масштаб
+                    msg = QtWidgets.QMessageBox(self)
+                    msg.setIcon(QtWidgets.MessageBox.Warning)
+                    msg.setWindowTitle("Информация")
+                    msg.setText("Не установлен масштаб")
+                    msg.exec()
+                    self.draw_btn.setChecked(False)
+                    return
+                if self.obj_coord.displayText() == "":
+                    self.data_point.append(str(event.scenePos().x()))  #
+                    self.data_point.append(str(event.scenePos().y()))  # и запсываем в data_point
+                    self.obj_coord.setText(json.dumps(self.data_point))
+                    self.data_point.clear()
+                else:
+                    self.data_point = json.loads(self.obj_coord.displayText())
+                    self.data_point.append(str(event.scenePos().x()))  #
+                    self.data_point.append(str(event.scenePos().y()))  # и запсываем в data_point
+                    self.obj_coord.setText(json.dumps(self.data_point))
+                    self.data_point.clear()
+                self.draw_all_item(json.loads(self.obj_coord.displayText()))
+
+                b = json.loads(self.obj_coord.displayText())
+                if len(b) > 2:
+                    i = 0
+                    b_end = []
+                    while i < len(b):
+                        tuple_b = (float(b[i]), float(b[i + 1]))
+                        b_end.append(tuple_b)
+                        i += 2
+                        if i == len(b):
+                            break
+                    length = LineString(b_end).length  # shapely
+                    real_lenght = float(length) / float(self.scale_name.displayText())
+                    real_lenght = round(real_lenght, 2)
+                    self.result_lbl.setText(f'Длина линии {real_lenght}, м')
+
             elif self.type_act.currentIndex() == 3:
                 print("Draw area")
 
     def select_type_act(self):
-        print("select_type_act")
+        # При выборе нового действия нужно
         # снять с кнопки "Применить" нажатие
+        # и удалить все item
         self.draw_btn.setChecked(False)
+        self.del_all_item()
 
     def change_draw_btn(self):
         print("change_draw_btn")
@@ -699,7 +751,7 @@ class Painter(QtWidgets.QMainWindow):
             i += 2
         while k < len(coordinate) - 2:
             line = QtWidgets.QGraphicsLineItem(float(coordinate[k]), float(coordinate[k + 1]),
-                                     float(coordinate[k + 2]), float(coordinate[k + 3]))
+                                               float(coordinate[k + 2]), float(coordinate[k + 3]))
             line.setPen(QtGui.QPen(QtCore.Qt.blue, 2))
             self.scene.addItem(line)
             k -= 2
