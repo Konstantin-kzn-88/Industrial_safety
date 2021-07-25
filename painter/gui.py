@@ -224,27 +224,27 @@ class Painter(QtWidgets.QMainWindow):
         self.color_zone2_btn.setIcon(color_ico)
         self.color_zone2_btn.setToolTip("Цвет зоны 2")
         self.color_zone2_btn.setStyleSheet("background-color: blue")
-        # self.obj_save_btn.clicked.connect(self.on_picture_draw)
+        self.color_zone2_btn.clicked.connect(self.select_color)
         self.color_zone3_btn = QtWidgets.QPushButton("Зона 3")
         self.color_zone3_btn.setIcon(color_ico)
         self.color_zone3_btn.setToolTip("Цвет зоны 3")
         self.color_zone3_btn.setStyleSheet("background-color: orange")
-        # self.obj_save_btn.clicked.connect(self.on_picture_draw)
+        self.color_zone3_btn.clicked.connect(self.select_color)
         self.color_zone4_btn = QtWidgets.QPushButton("Зона 4")
         self.color_zone4_btn.setIcon(color_ico)
         self.color_zone4_btn.setToolTip("Цвет зоны 4")
         self.color_zone4_btn.setStyleSheet("background-color: green")
-        # self.obj_save_btn.clicked.connect(self.on_picture_draw)
+        self.color_zone4_btn.clicked.connect(self.select_color)
         self.color_zone5_btn = QtWidgets.QPushButton("Зона 5")
         self.color_zone5_btn.setIcon(color_ico)
         self.color_zone5_btn.setToolTip("Цвет зоны 5")
         self.color_zone5_btn.setStyleSheet("background-color: magenta")
-        # self.obj_save_btn.clicked.connect(self.on_picture_draw)
+        self.color_zone5_btn.clicked.connect(self.select_color)
         self.color_zone6_btn = QtWidgets.QPushButton("Зона 6")
         self.color_zone6_btn.setIcon(color_ico)
         self.color_zone6_btn.setToolTip("Цвет зоны 6")
         self.color_zone6_btn.setStyleSheet("background-color: yellow")
-        # self.obj_save_btn.clicked.connect(self.on_picture_draw)
+        self.color_zone6_btn.clicked.connect(self.select_color)
         # Рамка №4 (то что будет в рамке 4)
         self.data_excel = QtWidgets.QLineEdit()
         self.data_excel.setPlaceholderText("Данные из Excel")
@@ -906,12 +906,22 @@ class Painter(QtWidgets.QMainWindow):
         messageBox.setWindowIcon(self.main_ico)
         messageBox.exec_()
 
+
     def select_color(self):
+        # Определение цветов зон действия поражающих факторов
         get_color = QtWidgets.QColorDialog
-        col = get_color.getColor(parent=self)
-        print(col.fromRgb())
+        color = get_color.getColor(parent=self)
+        color_rgb = color.getRgb()
+        red = color_rgb[0]
+        green = color_rgb[1]
+        blue = color_rgb[2]
+        # Какая кнопка послала сигнал?
         btn = self.sender()
-        btn.setStyleSheet(f"background-color: {col.fromRgb()}")
+        # Изменить цвет этой кнопке
+        btn.setStyleSheet(f'background: rgb({red},{green},{blue});')
+        # # RGB текущий цвет кнопки
+        # btn_color = btn.palette().button().color()
+        # print(btn_color.getRgb())
 
 
 
