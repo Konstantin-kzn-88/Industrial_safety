@@ -142,7 +142,7 @@ class Painter(QtWidgets.QMainWindow):
         self.obj_save_btn = QtWidgets.QPushButton("Сохранить")
         self.obj_save_btn.setIcon(save_ico)
         self.obj_save_btn.setToolTip("Сохранить объект")
-        # self.obj_save_btn.clicked.connect(self.on_picture_draw)
+        self.obj_save_btn.clicked.connect(self.save_object)
 
         # Рамка №4 (то что будет в рамке 4)
         self.model = QtGui.QStandardItemModel(0, 0)  # Создаем модель QStandardItemModel для QTreeView
@@ -174,7 +174,7 @@ class Painter(QtWidgets.QMainWindow):
         GB_act.setLayout(layout_act)
         # Рамка №3
         layout_obj = QtWidgets.QFormLayout(self)
-        GB_obj = QtWidgets.QGroupBox('Действие')
+        GB_obj = QtWidgets.QGroupBox('Объект')
         GB_obj.setStyleSheet("QGroupBox { font-weight : bold; }")
         layout_obj.addRow("", self.obj_name)
         layout_obj.addRow("", self.obj_coord)
@@ -464,13 +464,10 @@ class Painter(QtWidgets.QMainWindow):
          Загрузка файла картинки
         """
         # Проверка подключения к базе данных
-        if self.db_name.text() == "":
-            msg = QtWidgets.QMessageBox(self)
-            msg.setIcon(QtWidgets.QMessageBox.Warning)
-            msg.setWindowTitle("Информация")
-            msg.setText("Нет подключенной базы данных")
-            msg.exec()
+        # проверка базы данных
+        if self.is_there_a_database() == False:
             return
+
         file_path = QtWidgets.QFileDialog.getOpenFileName(self, 'Открыть генеральный план',
                                                           "/home", ("Images (*.jpg)"))[0]
         # Проверка выбран ли файл ген.плана
@@ -512,13 +509,10 @@ class Painter(QtWidgets.QMainWindow):
         self.plan_list_update()
 
     def plan_replace(self):
-        if self.db_name.text() == "":
-            msg = QtWidgets.QMessageBox(self)
-            msg.setIcon(QtWidgets.QMessageBox.Warning)
-            msg.setWindowTitle("Информация")
-            msg.setText("Нет подключенной базы данных")
-            msg.exec()
+        # проверка базы данных
+        if self.is_there_a_database() == False:
             return
+
         file_path = QtWidgets.QFileDialog.getOpenFileName(self, 'Открыть генеральный план',
                                                           "/home", ("Images (*.jpg)"))[0]
         # Проверка выбран ли файл ген.плана
@@ -562,6 +556,9 @@ class Painter(QtWidgets.QMainWindow):
         """
         Сохранение текущего вида ген.плана
         """
+        # Проверка ген.плана
+        if self.is_there_a_plan() == False:
+            return
         text = str(int(time.time()))
         # self.del_all_item()
         self.scene.clearSelection()
@@ -575,7 +572,8 @@ class Painter(QtWidgets.QMainWindow):
 
     def plan_clear(self):
         # очистить ген.план от разных зон и объектов
-        if self.plan_list.currentText() == "--Нет ген.планов--":
+        # Проверка ген.плана
+        if self.is_there_a_plan() == False:
             return
         self.plan_list_select(text=self.plan_list.currentText())
 
@@ -684,12 +682,33 @@ class Painter(QtWidgets.QMainWindow):
     # Функции работы с ген.планом
     def scene_press_event(self, event):  # функция клика по ген.плану
         # Проверим наличие ген.плана
-        if self.plan_list.currentText() == "--Нет ген.планов--":
+        if self.is_there_a_plan() == False:
             return
         # Проверим нажатие кнопки и действия QCombobox:
         if self.draw_btn.isChecked():
             if self.type_act.currentIndex() == 0:
-                print("Draw obj")
+                self.del_all_item()  # удалим все Item
+                if self.scale_name.text() == "":  # проверим есть ли масштаб
+                    msg = QtWidgets.QMessageBox(self)
+                    msg.setIcon(QtWidgets.QMessageBox.Warning)
+                    msg.setWindowTitle("Информация")
+                    msg.setText("Не установлен масштаб")
+                    msg.exec()
+                    self.draw_btn.setChecked(False)
+                    return
+                if self.obj_coord.displayText() == "":
+                    self.data_point.append(str(event.scenePos().x()))  #
+                    self.data_point.append(str(event.scenePos().y()))  # и запсываем в data_point
+                    self.obj_coord.setText(json.dumps(self.data_point))
+                    self.data_point.clear()
+                else:
+                    self.data_point = json.loads(self.obj_coord.displayText())
+                    self.data_point.append(str(event.scenePos().x()))  #
+                    self.data_point.append(str(event.scenePos().y()))  # и запсываем в data_point
+                    self.obj_coord.setText(json.dumps(self.data_point))
+                    self.data_point.clear()
+                self.draw_all_item(json.loads(self.obj_coord.displayText()))
+
             elif self.type_act.currentIndex() == 1:
                 # Вычислить масштаб
                 self.data_scale.append(str(event.scenePos().x()))  # замеряем координаты клика
@@ -906,7 +925,7 @@ class Painter(QtWidgets.QMainWindow):
         messageBox.setWindowIcon(self.main_ico)
         messageBox.exec_()
 
-
+    # ФУНКЦИИ ПРОГРАММЫ
     def select_color(self):
         # Определение цветов зон действия поражающих факторов
         get_color = QtWidgets.QColorDialog
@@ -923,7 +942,39 @@ class Painter(QtWidgets.QMainWindow):
         # btn_color = btn.palette().button().color()
         # print(btn_color.getRgb())
 
+    def save_object(self):
+        # проверка базы данных
+        if self.is_there_a_database() == False:
+            return
+        # Проверка ген.плана
+        if self.is_there_a_plan() == False:
+            return
+        scale = self.scale_name.text()
+        obj_name = self.obj_name.text()
+        obj_coord = self.obj_coord.text()
+        obj_type = self.obj_type.currentIndex()
 
+
+    # Проверки программы
+    def is_there_a_database(self):
+        if self.db_name.text() == "":
+            msg = QtWidgets.QMessageBox(self)
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+            msg.setWindowTitle("Информация")
+            msg.setText("Нет подключенной базы данных")
+            msg.exec()
+            return False
+        return True
+
+    def is_there_a_plan(self):
+        if self.plan_list.currentText() == "--Нет ген.планов--":
+            msg = QtWidgets.QMessageBox(self)
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+            msg.setWindowTitle("Информация")
+            msg.setText("Не выбран ген.план")
+            msg.exec()
+            return False
+        return True
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
