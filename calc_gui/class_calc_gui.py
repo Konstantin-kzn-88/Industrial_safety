@@ -40,7 +40,7 @@ class Minimal_GUI(QtWidgets.QWidget):
             spin.setSingleStep(0.01)
             spin.setSuffix("    " + name)
             line = spin.lineEdit()
-            line.setFont(QtGui.QFont("Times", 8, QtGui.QFont.Bold))
+            line.setFont(QtGui.QFont("Times", 10, QtGui.QFont.Bold))
             layout.addRow(spin)
             self.form_elem[self.columns.index(name)] = spin
 

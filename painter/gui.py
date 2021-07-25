@@ -64,10 +64,11 @@ class Painter(QtWidgets.QMainWindow):
         plus_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/plus.png')
         minus_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/minus.png')
         hand_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/hand.png')
-        # Важные переменные
+        # Важные переменные и объекты
         self.scale = 1  # изначально масштаб картинки 1
         self.data_scale = []  # массив хранения данных для масштаба
         self.data_point = []  # массив для хранения точек (измерение дистанции и площади)
+        self.data_obj = {}  # словарь всех объектов
 
         # Главное окно
         self.setGeometry(300, 300, 350, 250)
@@ -949,11 +950,71 @@ class Painter(QtWidgets.QMainWindow):
         # Проверка ген.плана
         if self.is_there_a_plan() == False:
             return
+        # Получить нужные переменные объекта
         scale = self.scale_name.text()
         obj_name = self.obj_name.text()
         obj_coord = self.obj_coord.text()
         obj_type = self.obj_type.currentIndex()
+        check_list = [scale, obj_name,obj_coord,obj_type]
+        # Проверка переменных на валидность
+        if self.is_var_a_valid(check_list) == False:
+            return
+        get_state_obj = self.get_state_obj()  # получим состояние всех кнопок
+        if get_state_obj == None:  # если мы в результате запроса self.get_state_obj()
+            return  # получили None, то выйти из функции (введены не все данные)
+        # проверяем есть ли уже такой ключ в словаре
+        for key in self.data_obj.keys():
+            if str(get_state_obj["obj_name"]) == key:  # если такой ключ уже есть
+                dict_add = {str(get_state_obj["obj_name"]): get_state_obj}  # запишем все в глобальную переменную
+                self.data_obj.update(dict_add)  # обновим словарь
+                # вызов функции сохраннения словаря после того как ключ обновлен
+                self.save_data_obj_vac()
+                return  # и выйдем т.к. новый QStandardItem нет смысла делать
 
+        #  если такого ключа нет, то добавим в словарь и создадим новый QStandardItem
+        dict_add = {str(get_state_obj["obj_name"]): get_state_obj}  # запишем все в глобальную переменную
+        self.data_obj.update(dict_add)
+        # вызов функции сохраннения словаря после того как ключ добавлен
+        self.save_data_obj_vac()
+        # создадим новый QStandardItem на дереве
+        key = QtGui.QStandardItem(str(get_state_obj["obj_name"]))
+        self.all_items.setChild(self.all_items.rowCount(), key)
+
+    def save_data_obj_vac(self):
+        """
+        Обновляет словарь self.data_obj после изменения:
+        - удаление объектов из дерева для стац.,лин. и объектов задний
+        - добавление объектов на дерево для стац.,лин. и объектов задний
+        """
+        path_str = (f"{self.db_path.text()}/{self.db_name.text()}")
+        path_str = path_str.replace("/", "//")
+        sqliteConnection = sqlite3.connect(path_str)
+        cursorObj = sqliteConnection.cursor()
+        cursorObj.execute("SELECT * FROM objects")
+        data_in_base = cursorObj.fetchall()
+        for row in data_in_base:
+            if str(row[3]) + ',' + str(row[0]) == self.plan_list.currentText():
+                cursorObj.execute('UPDATE objects SET data = ?  where id = ?', (str(self.data_obj), str(row[0])))
+                sqliteConnection.commit()
+        sqliteConnection.execute("VACUUM")
+        cursorObj.close()
+
+    def get_state_obj(self):
+        """
+        Функция фиксирует информацию  окон для записи
+        и сохранения информации и возвращает словарь
+        """
+        data_obj = {}
+        data_obj["obj_name"] = self.obj_name.text()
+        data_obj["scale"] = self.scale_name.text()
+        data_obj["obj_coord"] = self.obj_coord.text()
+        data_obj["obj_type"] = self.obj_type.currentIndex()
+
+        check_list = data_obj
+        if "" in check_list.values():
+            QtWidgets.QMessageBox.about(self, 'Ошибка', """Введены не все данные!""")
+            return
+        return data_obj
 
     # Проверки программы
     def is_there_a_database(self):
@@ -973,6 +1034,11 @@ class Painter(QtWidgets.QMainWindow):
             msg.setWindowTitle("Информация")
             msg.setText("Не выбран ген.план")
             msg.exec()
+            return False
+        return True
+
+    def is_var_a_valid(self,check_list:list):
+        if "" in check_list:
             return False
         return True
 
