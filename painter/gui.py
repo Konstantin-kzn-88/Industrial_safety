@@ -16,6 +16,7 @@ from pathlib import Path
 from PySide2 import QtWidgets, QtGui, QtCore
 from shapely.geometry import LineString, Polygon
 from PySide2.QtCore import QTranslator
+
 I18N_QT_PATH = str(os.path.join(os.path.abspath('.'), 'i18n'))
 
 
@@ -63,6 +64,7 @@ class Painter(QtWidgets.QMainWindow):
         excel_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/excel.png')
         plus_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/plus.png')
         minus_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/minus.png')
+        dbl_minus_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/double_minus.png')
         hand_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/hand.png')
         # Важные переменные и объекты
         self.scale = 1  # изначально масштаб картинки 1
@@ -140,10 +142,14 @@ class Painter(QtWidgets.QMainWindow):
         self.obj_type.addItems(["Линейный", "Стационарный"])
         self.obj_type.setItemIcon(0, tube_ico)
         self.obj_type.setItemIcon(1, state_ico)
-        self.obj_save_btn = QtWidgets.QPushButton("Сохранить")
-        self.obj_save_btn.setIcon(save_ico)
-        self.obj_save_btn.setToolTip("Сохранить объект")
-        self.obj_save_btn.clicked.connect(self.save_object)
+        # self.obj_save_btn = QtWidgets.QPushButton("Сохранить")
+        # self.obj_save_btn.setIcon(save_ico)
+        # self.obj_save_btn.setToolTip("Сохранить объект")
+        # self.obj_save_btn.clicked.connect(self.save_object)
+        # self.obj_del_btn = QtWidgets.QPushButton("Удалить")
+        # self.obj_del_btn.setIcon(del_ico)
+        # self.obj_del_btn.setToolTip("Удалить объект")
+        # self.obj_del_btn.clicked.connect(self.on_del_object)
 
         # Рамка №4 (то что будет в рамке 4)
         self.model = QtGui.QStandardItemModel(0, 0)  # Создаем модель QStandardItemModel для QTreeView
@@ -153,7 +159,7 @@ class Painter(QtWidgets.QMainWindow):
         self.view_tree = QtWidgets.QTreeView()
         self.view_tree.header().hide()
         self.view_tree.setModel(self.model)
-        # self.view_tree.clicked.connect(self.treefunction)
+        self.view_tree.clicked.connect(self.treefunction)
 
         # Упаковываем все на вкладку таба "0" (делаем все в QGroupBox
         # т.к. элементы будут добавляться и их
@@ -180,7 +186,8 @@ class Painter(QtWidgets.QMainWindow):
         layout_obj.addRow("", self.obj_name)
         layout_obj.addRow("", self.obj_coord)
         layout_obj.addRow("", self.obj_type)
-        layout_obj.addRow("", self.obj_save_btn)
+        # layout_obj.addRow("", self.obj_save_btn)
+        # layout_obj.addRow("", self.obj_del_btn)
         GB_obj.setLayout(layout_obj)
         # Рамка №4
         layout_tree = QtWidgets.QVBoxLayout(self)
@@ -343,7 +350,7 @@ class Painter(QtWidgets.QMainWindow):
         plan_clear.setShortcut('Ctrl+С')
         plan_clear.triggered.connect(self.plan_clear)
         plan_menu.addAction(plan_clear)
-        plan_del = QtWidgets.QAction(del_ico, 'Удалить', self)
+        plan_del = QtWidgets.QAction(del_ico, 'Удалить план с объектами', self)
         plan_del.setStatusTip('Удалить изображение плана объекта')
         plan_del.setShortcut('Ctrl+X')
         plan_del.triggered.connect(self.plan_del)
@@ -371,6 +378,28 @@ class Painter(QtWidgets.QMainWindow):
         hand_act.setStatusTip('Рука')
         hand_act.triggered.connect(self.plan_hand)
 
+        # # Редактировать объект
+        del_end_point = QtWidgets.QAction(minus_ico, 'Удалить последнюю точку', self)
+        del_end_point.setShortcut('Ctrl+D')
+        del_end_point.setStatusTip('Удалить последнюю точку')
+        del_end_point.triggered.connect(self.delete_end_point)
+
+        del_all_point = QtWidgets.QAction(dbl_minus_ico, 'Удалить все точки', self)
+        del_all_point.setShortcut('Ctrl+A')
+        del_all_point.setStatusTip('Удалить все точки')
+        del_all_point.triggered.connect(self.delete_all_point)
+
+        save_obj = QtWidgets.QAction(save_ico, 'Сохранить', self)
+        save_obj.setShortcut('Ctrl+W')
+        save_obj.setStatusTip('Сохранить объект')
+        save_obj.triggered.connect(self.save_object)
+
+        del_obj = QtWidgets.QAction(del_ico, 'Удалить', self)
+        del_obj.setShortcut('Ctrl+R')
+        del_obj.setStatusTip('Удалить объект')
+        del_obj.triggered.connect(self.on_del_object)
+
+
         # Справка
         help_show = QtWidgets.QAction(question_ico, 'Справка', self)
         help_show.setShortcut('F1')
@@ -393,6 +422,11 @@ class Painter(QtWidgets.QMainWindow):
         view_menu.addAction(scale_plus)
         view_menu.addAction(scale_min)
         view_menu.addAction(hand_act)
+        edit_menu = menubar.addMenu('Объект')
+        edit_menu.addAction(del_end_point)
+        edit_menu.addAction(del_all_point)
+        edit_menu.addAction(save_obj)
+        edit_menu.addAction(del_obj)
         help_menu = menubar.addMenu('Справка')
         help_menu.addAction(help_show)
         help_menu.addAction(about_prog)
@@ -613,7 +647,8 @@ class Painter(QtWidgets.QMainWindow):
         """
         Выбор ген.плана из QCombobox
         """
-        # self.reset_state_obj()  # обнуляем все поля
+        # очистить поля
+        self.zeroing_object()
         # достаем картинку из БД
         path_str = (f"{self.db_path.text()}/{self.db_name.text()}")
         path_str = path_str.replace("/", "//")
@@ -632,27 +667,27 @@ class Painter(QtWidgets.QMainWindow):
         sqliteConnection.execute("VACUUM")
         cursorObj.close()
 
-        # # Очищаем словарь объектов
-        # self.data_obj.clear()
-        # # достаем словарь из БД
-        # sqliteConnection = sqlite3.connect(path_str)
-        # cursorObj = sqliteConnection.cursor()
-        # cursorObj.execute("SELECT * FROM objects")
-        # data_in_db = cursorObj.fetchall()
-        # for row in data_in_db:
-        #     if str(row[3]) + ',' + str(row[0]) == text:
-        #         if str(row[1]) == "":
-        #             self.data_obj = {}
-        #         else:
-        #             self.data_obj = eval(row[1])
-        # sqliteConnection.execute("VACUUM")
-        # cursorObj.close()
-        # # Удаляем все позиции из объектов
-        # self.all_items.removeRows(0, self.all_items.rowCount())
-        # # # добавить из списка self.data_obj  объекты
-        # # for key in self.data_obj.keys():
-        # #     key = QStandardItem(key)
-        # #     self.all_items.setChild(self.all_items.rowCount(), key)
+        # Очищаем словарь объектов
+        self.data_obj.clear()
+        # достаем словарь из БД
+        sqliteConnection = sqlite3.connect(path_str)
+        cursorObj = sqliteConnection.cursor()
+        cursorObj.execute("SELECT * FROM objects")
+        data_in_db = cursorObj.fetchall()
+        for row in data_in_db:
+            if str(row[3]) + ',' + str(row[0]) == text:
+                if str(row[1]) == "":
+                    self.data_obj = {}
+                else:
+                    self.data_obj = eval(row[1])
+        sqliteConnection.execute("VACUUM")
+        cursorObj.close()
+        # Удаляем все позиции из объектов
+        self.all_items.removeRows(0, self.all_items.rowCount())
+        # добавить из списка self.data_obj  объекты
+        for key in self.data_obj.keys():
+            key = QtGui.QStandardItem(key)
+            self.all_items.setChild(self.all_items.rowCount(), key)
 
     def plan_list_update(self):
         """
@@ -900,7 +935,7 @@ class Painter(QtWidgets.QMainWindow):
         """
         функция что бы появлялась рука для перетаскивания большой картинки
         """
-        self.select_type_act() #снять кнопку применить и координаты убрать
+        self.select_type_act()  # снять кнопку применить и координаты убрать
         if self.view.dragMode() == QtWidgets.QGraphicsView.ScrollHandDrag:
             self.view.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
         else:
@@ -955,7 +990,7 @@ class Painter(QtWidgets.QMainWindow):
         obj_name = self.obj_name.text()
         obj_coord = self.obj_coord.text()
         obj_type = self.obj_type.currentIndex()
-        check_list = [scale, obj_name,obj_coord,obj_type]
+        check_list = [scale, obj_name, obj_coord, obj_type]
         # Проверка переменных на валидность
         if self.is_var_a_valid(check_list) == False:
             return
@@ -979,6 +1014,21 @@ class Painter(QtWidgets.QMainWindow):
         # создадим новый QStandardItem на дереве
         key = QtGui.QStandardItem(str(get_state_obj["obj_name"]))
         self.all_items.setChild(self.all_items.rowCount(), key)
+
+    def on_del_object(self, index):
+        """
+        Удаляет объект и удаляет его на дереве объектов
+        """
+        self.del_all_item()
+        index = self.view_tree.selectedIndexes()[0]
+        item = index.model().itemFromIndex(index)
+        if not item.parent() is None and item.parent().text().startswith('Объект'):
+            if item.text().startswith('Объект'):
+                return
+            self.data_obj.pop(item.text(), None)  # по ключу мы удаляем объект из словаря data
+            item.parent().removeRow(item.row())
+        # вызов функции сохраннения словаря после того как ключ удален
+        self.save_data_obj_vac()
 
     def save_data_obj_vac(self):
         """
@@ -1006,7 +1056,7 @@ class Painter(QtWidgets.QMainWindow):
         """
         data_obj = {}
         data_obj["obj_name"] = self.obj_name.text()
-        data_obj["scale"] = self.scale_name.text()
+        data_obj["scale_name"] = self.scale_name.text()
         data_obj["obj_coord"] = self.obj_coord.text()
         data_obj["obj_type"] = self.obj_type.currentIndex()
 
@@ -1016,8 +1066,52 @@ class Painter(QtWidgets.QMainWindow):
             return
         return data_obj
 
+    def treefunction(self, index):
+        """
+        Фунция предназначена для работы с деревом объектов
+        """
+        # Удалить все линии и точки с карты
+        self.del_all_item()
+        # очистить поля
+        self.zeroing_object()
+        # Получить индекс с объекта
+        ind = str(index.model().itemFromIndex(index).text())
+        if ind == "Объекты:":  # если нажаты  объекты на дереве, то выход
+            return
+        # Если координаты по объекту есть, то нарисовать их на сцене
+        if self.data_obj[ind].get('coord_app') == "":
+            draw_point = {}
+        else:
+            draw_point = eval(self.data_obj[ind].get('obj_coord'))
+        self.draw_all_item(draw_point)
+        # установим значения для объекта
+        self.obj_name.setText(self.data_obj[ind].get('obj_name'))
+        self.scale_name.setText(self.data_obj[ind].get('scale_name'))
+        self.obj_coord.setText(self.data_obj[ind].get('obj_coord'))
+        self.obj_type.setCurrentIndex(self.data_obj[ind].get('obj_type'))
+
+    def delete_end_point(self):
+        "Удаление последней точки на объекте"
+        if self.obj_coord.displayText() == "":
+            return
+        self.data_point = json.loads(self.obj_coord.displayText())  # преобразуем lineedit в список
+        self.data_point.pop(-1)  # удалим последнюю точку (х,у)
+        self.data_point.pop(-1)
+
+        self.obj_coord.setText(json.dumps(self.data_point))  # запишем в lineedit список
+        self.data_point.clear()  # очистим data_point
+        self.del_all_item()  # очистим item
+        self.draw_all_item(json.loads(self.obj_coord.displayText()))  # нарисуем все заново
+
+    def delete_all_point(self):
+        "Удаление всех координат"
+        if self.obj_coord.displayText() == "":
+            return
+        self.obj_coord.setText("")
+        self.del_all_item()
+
     # Проверки программы
-    def is_there_a_database(self):
+    def is_there_a_database(self) -> bool:
         if self.db_name.text() == "":
             msg = QtWidgets.QMessageBox(self)
             msg.setIcon(QtWidgets.QMessageBox.Warning)
@@ -1027,7 +1121,7 @@ class Painter(QtWidgets.QMainWindow):
             return False
         return True
 
-    def is_there_a_plan(self):
+    def is_there_a_plan(self) -> bool:
         if self.plan_list.currentText() == "--Нет ген.планов--":
             msg = QtWidgets.QMessageBox(self)
             msg.setIcon(QtWidgets.QMessageBox.Warning)
@@ -1037,10 +1131,28 @@ class Painter(QtWidgets.QMainWindow):
             return False
         return True
 
-    def is_var_a_valid(self,check_list:list):
+    def is_var_a_valid(self, check_list: list) -> bool:
         if "" in check_list:
+            msg = QtWidgets.QMessageBox(self)
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+            msg.setWindowTitle("Информация")
+            msg.setText("Введены не все данные")
+            msg.exec()
             return False
         return True
+
+    def zeroing_object(self) -> None:
+        """
+        Функция обнуления объектов при переключении
+        - планов
+        - объектов
+        - переход на корень дерева
+        """
+        self.obj_name.setText("")
+        self.scale_name.setText("")
+        self.obj_coord.setText("")
+        self.obj_type.setCurrentIndex(0)
+
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
@@ -1053,7 +1165,3 @@ if __name__ == '__main__':
     app.installTranslator(app_translator)
     ex = Painter()
     app.exec_()
-
-
-
-
