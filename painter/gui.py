@@ -66,6 +66,7 @@ class Painter(QtWidgets.QMainWindow):
         minus_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/minus.png')
         dbl_minus_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/double_minus.png')
         hand_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/hand.png')
+        risk_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/risk.png')
         # Важные переменные и объекты
         self.scale = 1  # изначально масштаб картинки 1
         self.data_scale = []  # массив хранения данных для масштаба
@@ -142,14 +143,6 @@ class Painter(QtWidgets.QMainWindow):
         self.obj_type.addItems(["Линейный", "Стационарный"])
         self.obj_type.setItemIcon(0, tube_ico)
         self.obj_type.setItemIcon(1, state_ico)
-        # self.obj_save_btn = QtWidgets.QPushButton("Сохранить")
-        # self.obj_save_btn.setIcon(save_ico)
-        # self.obj_save_btn.setToolTip("Сохранить объект")
-        # self.obj_save_btn.clicked.connect(self.save_object)
-        # self.obj_del_btn = QtWidgets.QPushButton("Удалить")
-        # self.obj_del_btn.setIcon(del_ico)
-        # self.obj_del_btn.setToolTip("Удалить объект")
-        # self.obj_del_btn.clicked.connect(self.on_del_object)
 
         # Рамка №4 (то что будет в рамке 4)
         self.model = QtGui.QStandardItemModel(0, 0)  # Создаем модель QStandardItemModel для QTreeView
@@ -186,8 +179,6 @@ class Painter(QtWidgets.QMainWindow):
         layout_obj.addRow("", self.obj_name)
         layout_obj.addRow("", self.obj_coord)
         layout_obj.addRow("", self.obj_type)
-        # layout_obj.addRow("", self.obj_save_btn)
-        # layout_obj.addRow("", self.obj_del_btn)
         GB_obj.setLayout(layout_obj)
         # Рамка №4
         layout_tree = QtWidgets.QVBoxLayout(self)
@@ -399,6 +390,18 @@ class Painter(QtWidgets.QMainWindow):
         del_obj.setStatusTip('Удалить объект')
         del_obj.triggered.connect(self.on_del_object)
 
+        # Рисование объекта
+        draw_all = QtWidgets.QAction(self.main_ico, 'Все объекты', self)
+        draw_all.setStatusTip('Рисовать все объекты')
+        draw_all.triggered.connect(self.draw_all_object)
+
+        draw_one = QtWidgets.QAction(object_ico, 'Один объект', self)
+        draw_one.setStatusTip('Рисовать один объект')
+        draw_one.triggered.connect(self.draw_one_object)
+
+        draw_risk = QtWidgets.QAction(risk_ico, 'Риск', self)
+        draw_risk.setStatusTip('Рисовать риск')
+        draw_risk.triggered.connect(self.draw_risk_object)
 
         # Справка
         help_show = QtWidgets.QAction(question_ico, 'Справка', self)
@@ -427,6 +430,10 @@ class Painter(QtWidgets.QMainWindow):
         edit_menu.addAction(del_all_point)
         edit_menu.addAction(save_obj)
         edit_menu.addAction(del_obj)
+        draw_menu = menubar.addMenu('Рисование')
+        draw_menu.addAction(draw_all)
+        draw_menu.addAction(draw_one)
+        draw_menu.addAction(draw_risk)
         help_menu = menubar.addMenu('Справка')
         help_menu.addAction(help_show)
         help_menu.addAction(about_prog)
@@ -1110,6 +1117,27 @@ class Painter(QtWidgets.QMainWindow):
         self.obj_coord.setText("")
         self.del_all_item()
 
+    # Рисование объектов
+    def draw_all_object(self):
+        print("Draw all")
+        # проверка базы данных
+        if self.is_there_a_database() == False:
+            return
+        # Проверка ген.плана
+        if self.is_there_a_plan() == False:
+            return
+        # Проверка наличия объектов
+        if self.any_objects_in_data_obj() == False:
+            return
+        # Определим сколько объектов есть
+        how_many_obj = len(self.data_obj)
+
+    def draw_one_object(self):
+        print("Draw one")
+
+    def draw_risk_object(self):
+        print("Draw risk")
+
     # Проверки программы
     def is_there_a_database(self) -> bool:
         if self.db_name.text() == "":
@@ -1153,6 +1181,15 @@ class Painter(QtWidgets.QMainWindow):
         self.obj_coord.setText("")
         self.obj_type.setCurrentIndex(0)
 
+    def any_objects_in_data_obj(self):
+        if self.data_obj == {}:
+            msg = QtWidgets.QMessageBox(self)
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+            msg.setWindowTitle("Информация")
+            msg.setText("Нет объектов для рисования.")
+            msg.exec()
+            return False
+        return True
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
