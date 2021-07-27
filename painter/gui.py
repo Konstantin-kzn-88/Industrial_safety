@@ -1178,7 +1178,6 @@ class Painter(QtWidgets.QMainWindow):
                 qp.setPen(pen)
                 # нарисовать линию
                 qp.drawLine(100, 100, 400, 100)
-
                 # Завершить рисование
                 qp.end()
                 # Положим одну картинку на другую
