@@ -1150,9 +1150,13 @@ class Painter(QtWidgets.QMainWindow):
                 qimg = QtGui.QImage.fromData(image_data)
                 pixmap = QtGui.QPixmap.fromImage(qimg)
 
-                qp = QtGui.QPainter(pixmap)
-                qp.begin(pixmap)
+                mask_pm = pixmap.createMaskFromColor(QtGui.QColor(0xff, 0xff, 0xff), QtGui.Qt.MaskOutColor)
+
+                qp = QtGui.QPainter(mask_pm)
+                qp.begin(mask_pm)
                 self.drawLines(qp)
+                qp.setPen(QtGui.QColor(0xaa, 0xaa, 0xaa))
+                qp.drawPixmap(pixmap.rect(), mask_pm, mask_pm.rect())
                 qp.end()
 
                 self.scene.addPixmap(pixmap)
