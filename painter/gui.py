@@ -17,7 +17,6 @@ from PySide2 import QtWidgets, QtGui, QtCore
 from PySide2.QtCore import QTranslator
 from shapely.geometry import LineString, Polygon
 
-
 I18N_QT_PATH = str(os.path.join(os.path.abspath('.'), 'i18n'))
 
 
@@ -1147,39 +1146,72 @@ class Painter(QtWidgets.QMainWindow):
         for row in plant_in_db:
             if str(row[3]) + ',' + str(row[0]) == text:
                 image_data = row[2]
+                # Исходная картинка
                 qimg = QtGui.QImage.fromData(image_data)
                 pixmap = QtGui.QPixmap.fromImage(qimg)
+                # Создадим QPainter
+                qp = QtGui.QPainter(pixmap)
+                # Начнем рисование
+                qp.begin(pixmap)
 
-                mask_pm = pixmap.createMaskFromColor(QtGui.QColor(0xff, 0xff, 0xff), QtGui.Qt.MaskOutColor)
+                # Определим ручку
+                # красный прозрачный
+                pen = QtGui.QPen(QtGui.QColor(255,0,0,100), 60, QtCore.Qt.SolidLine)
+                # со сглаживаниями
+                pen.setJoinStyle(QtCore.Qt.RoundJoin)
+                # закругленный концы
+                pen.setCapStyle(QtCore.Qt.RoundCap)
+                qp.setPen(pen)
+                # нарисовать линию
+                qp.drawLine(100, 100, 400, 100)
 
-                qp = QtGui.QPainter(mask_pm)
-                qp.begin(mask_pm)
-                self.drawLines(qp)
-                qp.setPen(QtGui.QColor(0xaa, 0xaa, 0xaa))
-                qp.drawPixmap(pixmap.rect(), mask_pm, mask_pm.rect())
+                # # Создадим синию прозрачную ручку
+                # cbybq прозрачный
+                pen = QtGui.QPen(QtGui.QColor(0,0,255,100), 40, QtCore.Qt.SolidLine)
+                # со сглаживаниями
+                pen.setJoinStyle(QtCore.Qt.RoundJoin)
+                # закругленный концы
+                pen.setCapStyle(QtCore.Qt.RoundCap)
+                qp.setPen(pen)
+                # нарисовать линию
+                qp.drawLine(100, 100, 400, 100)
+
+                # # Создадим зеленую прозрачную ручку
+                # зеленый прозрачный
+                pen = QtGui.QPen(QtGui.QColor(0,255,0,100), 20, QtCore.Qt.SolidLine)
+                # со сглаживаниями
+                pen.setJoinStyle(QtCore.Qt.RoundJoin)
+                # закругленный концы
+                pen.setCapStyle(QtCore.Qt.RoundCap)
+                qp.setPen(pen)
+                # нарисовать линию
+                qp.drawLine(100, 100, 400, 100)
+                # Завершить рисование
                 qp.end()
-
+                # Разместим на сцене pixmap с линиями
                 self.scene.addPixmap(pixmap)
                 self.scene.setSceneRect(QtCore.QRectF(pixmap.rect()))
 
         sqliteConnection.execute("VACUUM")
         cursorObj.close()
 
-    def drawLines(self, qp):
-        pen = QtGui.QPen(QtGui.Qt.black, 20, QtGui.Qt.SolidLine)
+        sqliteConnection.execute("VACUUM")
+        cursorObj.close()
 
-        qp.setPen(pen)
-        qp.drawLine(20, 40, 250, 40)
-
-        pen.setStyle(QtGui.Qt.SolidLine)
-        pen.setJoinStyle(QtCore.Qt.RoundJoin)
-        pen.setCapStyle(QtCore.Qt.RoundCap)
-
-        pen.setColor(QtGui.Qt.red)
-        qp.setPen(pen)
-        qp.drawLine(20, 80, 250, 80)
-
-
+    # def drawLines(self, qp):
+    #     pen = QtGui.QPen(QtGui.Qt.black, 20, QtGui.Qt.SolidLine)
+    #
+    #     qp.setPen(pen)
+    #     qp.drawLine(20, 40, 250, 40)
+    #
+    #     pen.setStyle(QtGui.Qt.SolidLine)
+    #     pen.setJoinStyle(QtCore.Qt.RoundJoin)
+    #     pen.setCapStyle(QtCore.Qt.RoundCap)
+    #
+    #     pen.setColor(QtGui.Qt.red)
+    #     qp.setPen(pen)
+    #     qp.drawLine(20, 80, 250, 80)
+    #
 
     def draw_one_object(self):
         print("Draw one")
