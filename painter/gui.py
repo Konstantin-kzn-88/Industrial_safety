@@ -14,8 +14,9 @@ import sys
 import os
 from pathlib import Path
 from PySide2 import QtWidgets, QtGui, QtCore
-from shapely.geometry import LineString, Polygon
 from PySide2.QtCore import QTranslator
+from shapely.geometry import LineString, Polygon
+
 
 I18N_QT_PATH = str(os.path.join(os.path.abspath('.'), 'i18n'))
 
@@ -1131,12 +1132,74 @@ class Painter(QtWidgets.QMainWindow):
             return
         # Определим сколько объектов есть
         how_many_obj = len(self.data_obj)
+        print(f'Сейчас объектов: {how_many_obj}')
+        # определим все цвета зон
+        color_zone_arr = self.get_color_for_zone()
+        print(f'Цвета: {color_zone_arr}')
+        # достаем картинку из БД
+        path_str = (f"{self.db_path.text()}/{self.db_name.text()}")
+        path_str = path_str.replace("/", "//")
+        sqliteConnection = sqlite3.connect(path_str)
+        cursorObj = sqliteConnection.cursor()
+        cursorObj.execute("SELECT * FROM objects")
+        plant_in_db = cursorObj.fetchall()
+        text = self.plan_list.currentText()
+        for row in plant_in_db:
+            if str(row[3]) + ',' + str(row[0]) == text:
+                image_data = row[2]
+                qimg = QtGui.QImage.fromData(image_data)
+                pixmap = QtGui.QPixmap.fromImage(qimg)
+
+                qp = QtGui.QPainter(pixmap)
+                qp.begin(pixmap)
+                self.drawLines(qp)
+                qp.end()
+
+                self.scene.addPixmap(pixmap)
+                self.scene.setSceneRect(QtCore.QRectF(pixmap.rect()))
+
+        sqliteConnection.execute("VACUUM")
+        cursorObj.close()
+
+    def drawLines(self, qp):
+        pen = QtGui.QPen(QtGui.Qt.black, 20, QtGui.Qt.SolidLine)
+
+        qp.setPen(pen)
+        qp.drawLine(20, 40, 250, 40)
+
+        pen.setStyle(QtGui.Qt.SolidLine)
+        pen.setJoinStyle(QtCore.Qt.RoundJoin)
+        pen.setCapStyle(QtCore.Qt.RoundCap)
+
+        pen.setColor(QtGui.Qt.red)
+        qp.setPen(pen)
+        qp.drawLine(20, 80, 250, 80)
+
+
 
     def draw_one_object(self):
         print("Draw one")
 
     def draw_risk_object(self):
         print("Draw risk")
+
+    def get_color_for_zone(self) -> list:
+        # по кнопкам определим зоны для рисования
+        color_zone_arr = []
+        color = self.color_zone1_btn.palette().button().color().getRgb()
+        color_zone_arr.append(color)
+        color = self.color_zone2_btn.palette().button().color().getRgb()
+        color_zone_arr.append(color)
+        color = self.color_zone3_btn.palette().button().color().getRgb()
+        color_zone_arr.append(color)
+        color = self.color_zone4_btn.palette().button().color().getRgb()
+        color_zone_arr.append(color)
+        color = self.color_zone5_btn.palette().button().color().getRgb()
+        color_zone_arr.append(color)
+        color = self.color_zone6_btn.palette().button().color().getRgb()
+        color_zone_arr.append(color)
+
+        return color_zone_arr
 
     # Проверки программы
     def is_there_a_database(self) -> bool:
@@ -1190,6 +1253,7 @@ class Painter(QtWidgets.QMainWindow):
             msg.exec()
             return False
         return True
+
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
