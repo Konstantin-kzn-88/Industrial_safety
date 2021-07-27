@@ -1149,14 +1149,17 @@ class Painter(QtWidgets.QMainWindow):
                 # Исходная картинка
                 qimg = QtGui.QImage.fromData(image_data)
                 pixmap = QtGui.QPixmap.fromImage(qimg)
+                # создадим соразмерный pixmap_zone и сделаем его прозрачным
+                pixmap_zone = QtGui.QPixmap(pixmap.width(),pixmap.height())
+                pixmap_zone.fill(QtGui.QColor(0, 0, 0, 0))
                 # Создадим QPainter
-                qp = QtGui.QPainter(pixmap)
+                qp = QtGui.QPainter(pixmap_zone)
                 # Начнем рисование
-                qp.begin(pixmap)
+                qp.begin(pixmap_zone)
 
                 # Определим ручку
                 # красный прозрачный
-                pen = QtGui.QPen(QtGui.QColor(255,0,0,100), 60, QtCore.Qt.SolidLine)
+                pen = QtGui.QPen(QtGui.QColor(255,0,0,150), 60, QtCore.Qt.SolidLine)
                 # со сглаживаниями
                 pen.setJoinStyle(QtCore.Qt.RoundJoin)
                 # закругленный концы
@@ -1166,8 +1169,8 @@ class Painter(QtWidgets.QMainWindow):
                 qp.drawLine(100, 100, 400, 100)
 
                 # # Создадим синию прозрачную ручку
-                # cbybq прозрачный
-                pen = QtGui.QPen(QtGui.QColor(0,0,255,100), 40, QtCore.Qt.SolidLine)
+                # синий прозрачный
+                pen = QtGui.QPen(QtGui.QColor(0,0,255,150), 40, QtCore.Qt.SolidLine)
                 # со сглаживаниями
                 pen.setJoinStyle(QtCore.Qt.RoundJoin)
                 # закругленный концы
@@ -1176,19 +1179,15 @@ class Painter(QtWidgets.QMainWindow):
                 # нарисовать линию
                 qp.drawLine(100, 100, 400, 100)
 
-                # # Создадим зеленую прозрачную ручку
-                # зеленый прозрачный
-                pen = QtGui.QPen(QtGui.QColor(0,255,0,100), 20, QtCore.Qt.SolidLine)
-                # со сглаживаниями
-                pen.setJoinStyle(QtCore.Qt.RoundJoin)
-                # закругленный концы
-                pen.setCapStyle(QtCore.Qt.RoundCap)
-                qp.setPen(pen)
-                # нарисовать линию
-                qp.drawLine(100, 100, 400, 100)
                 # Завершить рисование
                 qp.end()
-                # Разместим на сцене pixmap с линиями
+                # Положим одну картинку на другую
+                painter = QtGui.QPainter(pixmap)
+                painter.begin(pixmap)
+                painter.drawPixmap(0, 0, pixmap)
+                painter.drawPixmap(0, 0, pixmap_zone)
+                painter.end()
+                # Разместим на сцене pixmap с pixmap_zone
                 self.scene.addPixmap(pixmap)
                 self.scene.setSceneRect(QtCore.QRectF(pixmap.rect()))
 
