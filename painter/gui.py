@@ -1159,7 +1159,7 @@ class Painter(QtWidgets.QMainWindow):
 
                 # Определим ручку
                 # красный прозрачный
-                pen = QtGui.QPen(QtGui.QColor(255,0,0,150), 60, QtCore.Qt.SolidLine)
+                pen = QtGui.QPen(QtGui.QColor(255,0,0,255), 60, QtCore.Qt.SolidLine)
                 # со сглаживаниями
                 pen.setJoinStyle(QtCore.Qt.RoundJoin)
                 # закругленный концы
@@ -1170,7 +1170,7 @@ class Painter(QtWidgets.QMainWindow):
 
                 # # Создадим синию прозрачную ручку
                 # синий прозрачный
-                pen = QtGui.QPen(QtGui.QColor(0,0,255,150), 40, QtCore.Qt.SolidLine)
+                pen = QtGui.QPen(QtGui.QColor(0,0,255,255), 40, QtCore.Qt.SolidLine)
                 # со сглаживаниями
                 pen.setJoinStyle(QtCore.Qt.RoundJoin)
                 # закругленный концы
@@ -1183,8 +1183,9 @@ class Painter(QtWidgets.QMainWindow):
                 # Положим одну картинку на другую
                 painter = QtGui.QPainter(pixmap)
                 painter.begin(pixmap)
-                painter.drawPixmap(0, 0, pixmap)
+                painter.setOpacity(0.35)
                 painter.drawPixmap(0, 0, pixmap_zone)
+                painter.restore()
                 painter.end()
                 # Разместим на сцене pixmap с pixmap_zone
                 self.scene.addPixmap(pixmap)
