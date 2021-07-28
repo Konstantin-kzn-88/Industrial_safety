@@ -1166,7 +1166,12 @@ class Painter(QtWidgets.QMainWindow):
                 pen.setCapStyle(QtCore.Qt.RoundCap)
                 qp.setPen(pen)
                 # нарисовать линию
-                qp.drawLine(100, 100, 400, 100)
+                polygon = QtGui.QPolygon([
+                    QtCore.QPoint(20, 150),
+                    QtCore.QPoint(280, 150),
+                    QtCore.QPoint(150, 250)
+                ])
+                qp.drawPolyline(polygon)
 
                 # # Создадим синию прозрачную ручку
                 # синий прозрачный
@@ -1177,7 +1182,12 @@ class Painter(QtWidgets.QMainWindow):
                 pen.setCapStyle(QtCore.Qt.RoundCap)
                 qp.setPen(pen)
                 # нарисовать линию
-                qp.drawLine(100, 100, 400, 100)
+                polygon = QtGui.QPolygon([
+                    QtCore.QPoint(20, 150),
+                    QtCore.QPoint(280, 150),
+                    QtCore.QPoint(150, 250)
+                ])
+                qp.drawPolyline(polygon)
 
                 # # Создадим синию прозрачную ручку
                 # синий прозрачный
@@ -1188,7 +1198,12 @@ class Painter(QtWidgets.QMainWindow):
                 pen.setCapStyle(QtCore.Qt.RoundCap)
                 qp.setPen(pen)
                 # нарисовать линию
-                qp.drawLine(100, 100, 400, 100)
+                polygon = QtGui.QPolygon([
+                    QtCore.QPoint(20, 150),
+                    QtCore.QPoint(280, 150),
+                    QtCore.QPoint(150, 250)
+                ])
+                qp.drawPolyline(polygon)
 
                 # Завершить рисование
                 qp.end()
@@ -1197,7 +1212,6 @@ class Painter(QtWidgets.QMainWindow):
                 painter.begin(pixmap)
                 painter.setOpacity(0.35)
                 painter.drawPixmap(0, 0, pixmap_zone)
-                painter.restore()
                 painter.end()
                 # Разместим на сцене pixmap с pixmap_zone
                 self.scene.addPixmap(pixmap)
