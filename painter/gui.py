@@ -1159,7 +1159,7 @@ class Painter(QtWidgets.QMainWindow):
 
                 # Определим ручку
                 # красный прозрачный
-                pen = QtGui.QPen(QtGui.QColor(255,0,0,255), 60, QtCore.Qt.SolidLine)
+                pen = QtGui.QPen(QtGui.QColor(255,0,0,255), 80, QtCore.Qt.SolidLine)
                 # со сглаживаниями
                 pen.setJoinStyle(QtCore.Qt.RoundJoin)
                 # закругленный концы
@@ -1170,7 +1170,7 @@ class Painter(QtWidgets.QMainWindow):
 
                 # # Создадим синию прозрачную ручку
                 # синий прозрачный
-                pen = QtGui.QPen(QtGui.QColor(0,0,255,255), 40, QtCore.Qt.SolidLine)
+                pen = QtGui.QPen(QtGui.QColor(0,0,255,255), 50, QtCore.Qt.SolidLine)
                 # со сглаживаниями
                 pen.setJoinStyle(QtCore.Qt.RoundJoin)
                 # закругленный концы
@@ -1178,6 +1178,18 @@ class Painter(QtWidgets.QMainWindow):
                 qp.setPen(pen)
                 # нарисовать линию
                 qp.drawLine(100, 100, 400, 100)
+
+                # # Создадим синию прозрачную ручку
+                # синий прозрачный
+                pen = QtGui.QPen(QtGui.QColor(0,255,0,255), 30, QtCore.Qt.SolidLine)
+                # со сглаживаниями
+                pen.setJoinStyle(QtCore.Qt.RoundJoin)
+                # закругленный концы
+                pen.setCapStyle(QtCore.Qt.RoundCap)
+                qp.setPen(pen)
+                # нарисовать линию
+                qp.drawLine(100, 100, 400, 100)
+
                 # Завершить рисование
                 qp.end()
                 # Положим одну картинку на другую
