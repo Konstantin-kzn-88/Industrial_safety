@@ -54,3 +54,14 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     main = Example()
     app.exec_()
+
+
+# from PyQt5.QtGui import QGuiApplication, QPixmap
+# from PyQt5.QtCore import Qt
+#
+#
+# app = QGuiApplication([])
+#
+# pixmap = QPixmap("cat.jpg")
+# pixmap.setMask(pixmap.createHeuristicMask(Qt.transparent))
+# pixmap.save('cat.png')
