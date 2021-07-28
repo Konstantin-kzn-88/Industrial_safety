@@ -1220,23 +1220,6 @@ class Painter(QtWidgets.QMainWindow):
         sqliteConnection.execute("VACUUM")
         cursorObj.close()
 
-        sqliteConnection.execute("VACUUM")
-        cursorObj.close()
-
-    # def drawLines(self, qp):
-    #     pen = QtGui.QPen(QtGui.Qt.black, 20, QtGui.Qt.SolidLine)
-    #
-    #     qp.setPen(pen)
-    #     qp.drawLine(20, 40, 250, 40)
-    #
-    #     pen.setStyle(QtGui.Qt.SolidLine)
-    #     pen.setJoinStyle(QtCore.Qt.RoundJoin)
-    #     pen.setCapStyle(QtCore.Qt.RoundCap)
-    #
-    #     pen.setColor(QtGui.Qt.red)
-    #     qp.setPen(pen)
-    #     qp.drawLine(20, 80, 250, 80)
-    #
 
     def draw_one_object(self):
         print("Draw one")
