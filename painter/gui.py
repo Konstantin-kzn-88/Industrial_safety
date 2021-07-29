@@ -16,6 +16,9 @@ from pathlib import Path
 from PySide2 import QtWidgets, QtGui, QtCore
 from PySide2.QtCore import QTranslator
 from shapely.geometry import LineString, Polygon
+import win32com.client
+
+Excel = win32com.client.Dispatch("Excel.Application")
 
 I18N_QT_PATH = str(os.path.join(os.path.abspath('.'), 'i18n'))
 
@@ -252,7 +255,7 @@ class Painter(QtWidgets.QMainWindow):
         self.get_data_btn = QtWidgets.QPushButton("Загрузить")
         self.get_data_btn.setIcon(excel_ico)
         self.get_data_btn.setToolTip("Загрузить выделенный диапазон")
-        # self.obj_save_btn.clicked.connect(self.on_picture_draw)
+        self.get_data_btn.clicked.connect(self.get_data_excel)
 
         # Упаковываем все на вкладку таба "0" (делаем все в QGroupBox
         # т.к. элементы будут добавляться и их
@@ -1136,6 +1139,7 @@ class Painter(QtWidgets.QMainWindow):
         color_zone_arr = self.get_color_for_zone()
         print(f'Цвета: {color_zone_arr}')
         # достаем картинку из БД
+        image_data = ''  # переменная хранения blob из базы данных
         path_str = (f"{self.db_path.text()}/{self.db_name.text()}")
         path_str = path_str.replace("/", "//")
         sqliteConnection = sqlite3.connect(path_str)
@@ -1146,80 +1150,122 @@ class Painter(QtWidgets.QMainWindow):
         for row in plant_in_db:
             if str(row[3]) + ',' + str(row[0]) == text:
                 image_data = row[2]
-                # Исходная картинка
-                qimg = QtGui.QImage.fromData(image_data)
-                pixmap = QtGui.QPixmap.fromImage(qimg)
-                # создадим соразмерный pixmap_zone и сделаем его прозрачным
-                pixmap_zone = QtGui.QPixmap(pixmap.width(),pixmap.height())
-                pixmap_zone.fill(QtGui.QColor(0, 0, 0, 0))
-                # Создадим QPainter
-                qp = QtGui.QPainter(pixmap_zone)
-                # Начнем рисование
-                qp.begin(pixmap_zone)
-
-                # Определим ручку
-                # красный прозрачный
-                pen = QtGui.QPen(QtGui.QColor(255,0,0,255), 80, QtCore.Qt.SolidLine)
-                # со сглаживаниями
-                pen.setJoinStyle(QtCore.Qt.RoundJoin)
-                # закругленный концы
-                pen.setCapStyle(QtCore.Qt.RoundCap)
-                qp.setPen(pen)
-                # нарисовать линию
-                polygon = QtGui.QPolygon([
-                    QtCore.QPoint(20, 150),
-                    QtCore.QPoint(280, 150),
-                    QtCore.QPoint(150, 250)
-                ])
-                qp.drawPolyline(polygon)
-
-                # # Создадим синию прозрачную ручку
-                # синий прозрачный
-                pen = QtGui.QPen(QtGui.QColor(0,0,255,255), 50, QtCore.Qt.SolidLine)
-                # со сглаживаниями
-                pen.setJoinStyle(QtCore.Qt.RoundJoin)
-                # закругленный концы
-                pen.setCapStyle(QtCore.Qt.RoundCap)
-                qp.setPen(pen)
-                # нарисовать линию
-                polygon = QtGui.QPolygon([
-                    QtCore.QPoint(20, 150),
-                    QtCore.QPoint(280, 150),
-                    QtCore.QPoint(150, 250)
-                ])
-                qp.drawPolyline(polygon)
-
-                # # Создадим синию прозрачную ручку
-                # синий прозрачный
-                pen = QtGui.QPen(QtGui.QColor(0,255,0,255), 30, QtCore.Qt.SolidLine)
-                # со сглаживаниями
-                pen.setJoinStyle(QtCore.Qt.RoundJoin)
-                # закругленный концы
-                pen.setCapStyle(QtCore.Qt.RoundCap)
-                qp.setPen(pen)
-                # нарисовать линию
-                polygon = QtGui.QPolygon([
-                    QtCore.QPoint(20, 150),
-                    QtCore.QPoint(280, 150),
-                    QtCore.QPoint(150, 250)
-                ])
-                qp.drawPolyline(polygon)
-
-                # Завершить рисование
-                qp.end()
-                # Положим одну картинку на другую
-                painter = QtGui.QPainter(pixmap)
-                painter.begin(pixmap)
-                painter.setOpacity(0.35)
-                painter.drawPixmap(0, 0, pixmap_zone)
-                painter.end()
-                # Разместим на сцене pixmap с pixmap_zone
-                self.scene.addPixmap(pixmap)
-                self.scene.setSceneRect(QtCore.QRectF(pixmap.rect()))
-
         sqliteConnection.execute("VACUUM")
         cursorObj.close()
 
+        if image_data == '':  # значит картинку не получили
+            print("нет картинки")
+            return
+        if self.data_excel.text() == '':
+            print("данных из экселя нет")
+            return
+
+        excel = eval(self.data_excel.text())
+        print(excel)
+        # На основе исходной картинки создадим QImage и QPixmap
+        qimg = QtGui.QImage.fromData(image_data)
+        pixmap = QtGui.QPixmap.fromImage(qimg)
+        # создадим соразмерный pixmap_zone и сделаем его прозрачным
+        pixmap_zone = QtGui.QPixmap(pixmap.width(), pixmap.height())
+        pixmap_zone.fill(QtGui.QColor(0, 0, 0, 0))
+        # Создадим QPainter
+        qp = QtGui.QPainter(pixmap_zone)
+
+        # Начнем рисование
+        qp.begin(pixmap_zone)
+        objects = self.data_obj.values()
+        i = 0
+        for obj in objects:
+
+            # возьмем масштаб объекта
+            scale_name = float(obj.get("scale_name"))
+            # возьмем координаты объекта
+            obj_coord = obj.get("obj_coord")
+            # возьмем тип объекта
+            obj_type = obj.get("obj_type")
+            # # начинаем рисовать с последнего цвета
+            color = color_zone_arr[-1]
+            zone = float(excel[i][-1])*scale_name
+            i += 1
+            print(f'color {color}')
+            print(f'zone {zone}')
+            # определим ручку
+            pen = QtGui.QPen(QtGui.QColor(color[0], color[1], color[2], color[3]), zone, QtCore.Qt.SolidLine)
+            # со сглаживаниями
+            pen.setJoinStyle(QtCore.Qt.RoundJoin)
+            # закругленный концы
+            pen.setCapStyle(QtCore.Qt.RoundCap)
+            qp.setPen(pen)
+            if obj_type == 0:
+                print("объект линейный")
+                # получим полигон
+                obj_coord = self.get_polygon(eval(obj_coord))
+                qp.drawPolyline(obj_coord)
+            else:
+                print("объект стационарный")
+                # получим полигон
+                obj_coord = self.get_polygon(eval(obj_coord))
+                qp.drawPolyline(obj_coord)
+
+        #         # Определим ручку
+        #         # красный прозрачный
+        #         pen = QtGui.QPen(QtGui.QColor(255,0,0,255), 80, QtCore.Qt.SolidLine)
+        #         # со сглаживаниями
+        #         pen.setJoinStyle(QtCore.Qt.RoundJoin)
+        #         # закругленный концы
+        #         pen.setCapStyle(QtCore.Qt.RoundCap)
+        #         qp.setPen(pen)
+        #         # нарисовать линию
+        #         polygon = QtGui.QPolygon([
+        #             QtCore.QPoint(20, 150),
+        #             QtCore.QPoint(280, 150),
+        #             QtCore.QPoint(150, 250)
+        #         ])
+        #         qp.drawPolyline(polygon)
+        #
+        #         # # Создадим синию прозрачную ручку
+        #         # синий прозрачный
+        #         pen = QtGui.QPen(QtGui.QColor(0,0,255,255), 50, QtCore.Qt.SolidLine)
+        #         # со сглаживаниями
+        #         pen.setJoinStyle(QtCore.Qt.RoundJoin)
+        #         # закругленный концы
+        #         pen.setCapStyle(QtCore.Qt.RoundCap)
+        #         qp.setPen(pen)
+        #         # нарисовать линию
+        #         polygon = QtGui.QPolygon([
+        #             QtCore.QPoint(20, 150),
+        #             QtCore.QPoint(280, 150),
+        #             QtCore.QPoint(150, 250)
+        #         ])
+        #         qp.drawPolyline(polygon)
+        #
+        #         # # Создадим синию прозрачную ручку
+        #         # синий прозрачный
+        #         pen = QtGui.QPen(QtGui.QColor(0,255,0,255), 30, QtCore.Qt.SolidLine)
+        #         # со сглаживаниями
+        #         pen.setJoinStyle(QtCore.Qt.RoundJoin)
+        #         # закругленный концы
+        #         pen.setCapStyle(QtCore.Qt.RoundCap)
+        #         qp.setPen(pen)
+        #         # нарисовать линию
+        #         polygon = QtGui.QPolygon([
+        #             QtCore.QPoint(20, 150),
+        #             QtCore.QPoint(280, 150),
+        #             QtCore.QPoint(150, 250)
+        #         ])
+        #         qp.drawPolyline(polygon)
+        #
+        # Завершить рисование
+        qp.end()
+        # Положим одну картинку на другую
+        painter = QtGui.QPainter(pixmap)
+        painter.begin(pixmap)
+        painter.setOpacity(0.35)
+        painter.drawPixmap(0, 0, pixmap_zone)
+        painter.end()
+        # Разместим на сцене pixmap с pixmap_zone
+        self.scene.addPixmap(pixmap)
+        self.scene.setSceneRect(QtCore.QRectF(pixmap.rect()))
 
     def draw_one_object(self):
         print("Draw one")
@@ -1244,6 +1290,38 @@ class Painter(QtWidgets.QMainWindow):
         color_zone_arr.append(color)
 
         return color_zone_arr
+
+    def get_data_excel(self):
+        """
+        Получение данных из файла excel.
+        Количество столбцов не более 6, т.к. зон всего 6
+        Количество строк равно равно количеству объектов
+        """
+        try:
+            vals = Excel.Selection.Value
+            if len(self.data_obj) != len(vals):
+                print("строк больше чем объектов")
+                self.data_excel.setText("")
+            elif len(vals[0]) != 6:
+                print("столбцов больше 6")
+                self.data_excel.setText("")
+            else:
+                self.data_excel.setText(str(vals))
+        except:
+            print("Ошибка при считывании данных в экселе")
+            self.data_excel.setText("")
+
+    def get_polygon(self, coordinate):
+        "На основе координат создает по QPoint QPolygon"
+        i = 0
+        points = []
+        while i < len(coordinate):
+            point = QtCore.QPoint(int(float(coordinate[i])), int(float(coordinate[i + 1])))
+            points.append(point)
+            i += 2
+        polygon = QtGui.QPolygon(points)
+
+        return polygon
 
     # Проверки программы
     def is_there_a_database(self) -> bool:
