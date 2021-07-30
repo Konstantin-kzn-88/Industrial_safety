@@ -256,6 +256,12 @@ class Painter(QtWidgets.QMainWindow):
         self.get_data_btn.setIcon(excel_ico)
         self.get_data_btn.setToolTip("Загрузить выделенный диапазон")
         self.get_data_btn.clicked.connect(self.get_data_excel)
+        # Рамка №5 (то что будет в рамке 5)
+        self.opacity = QtWidgets.QDoubleSpinBox()
+        self.opacity.setDecimals(2)
+        self.opacity.setRange(0, 1)
+        self.opacity.setSingleStep(0.01)
+
 
         # Упаковываем все на вкладку таба "0" (делаем все в QGroupBox
         # т.к. элементы будут добавляться и их
@@ -297,12 +303,19 @@ class Painter(QtWidgets.QMainWindow):
         layout_xl.addRow("", self.data_excel)
         layout_xl.addRow("", self.get_data_btn)
         GB_xl.setLayout(layout_xl)
+        # Рамка №5
+        layout_opacity = QtWidgets.QFormLayout(self)
+        GB_opacity = QtWidgets.QGroupBox('Прозрачность')
+        GB_opacity.setStyleSheet("QGroupBox { font-weight : bold; }")
+        layout_opacity.addRow("", self.opacity)
+        GB_opacity.setLayout(layout_opacity)
 
         # Размещаем на табе
         self.tab_settings.layout.addWidget(GB_db)
         self.tab_settings.layout.addWidget(GB_plan)
         self.tab_settings.layout.addWidget(GB_zone)
         self.tab_settings.layout.addWidget(GB_xl)
+        self.tab_settings.layout.addWidget(GB_opacity)
         # Размещаем на табе
         self.tab_settings.setLayout(self.tab_settings.layout)
 
@@ -1215,7 +1228,7 @@ class Painter(QtWidgets.QMainWindow):
         # Положим одну картинку на другую
         painter = QtGui.QPainter(pixmap)
         painter.begin(pixmap)
-        painter.setOpacity(0.35)
+        painter.setOpacity(self.opacity.value())
         painter.drawPixmap(0, 0, pixmap_zone)
         painter.end()
         # Разместим на сцене pixmap с pixmap_zone
