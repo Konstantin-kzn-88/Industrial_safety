@@ -1186,26 +1186,29 @@ class Painter(QtWidgets.QMainWindow):
                 obj_type = obj.get("obj_type")
                 # # начинаем рисовать с последнего цвета
                 color = color_zone_arr[zone_index]
-                zone = float(excel[i][zone_index]) * scale_name * 2 # т.к. на вход радиус, а нужен диаметр
+                zone = float(excel[i][zone_index]) * scale_name * 2  # т.к. на вход радиус, а нужен диаметр
                 i += 1
                 # зона может быть 0 тогда ничего рисовать не надо
                 if zone == 0:
                     continue
-                # определим ручку
+                # определим ручку и кисточку
                 pen = QtGui.QPen(QtGui.QColor(color[0], color[1], color[2], color[3]), zone, QtCore.Qt.SolidLine)
+                brush = QtGui.QBrush(QtGui.QColor(color[0], color[1], color[2], color[3]))
                 # со сглаживаниями
                 pen.setJoinStyle(QtCore.Qt.RoundJoin)
                 # закругленный концы
                 pen.setCapStyle(QtCore.Qt.RoundCap)
                 qp.setPen(pen)
+                qp.setBrush(brush)
                 if obj_type == 0:
                     # получим полигон
                     obj_coord = self.get_polygon(eval(obj_coord))
                     qp.drawPolyline(obj_coord)
                 else:
-                    # получим полигон
+                    # стац. об. получим полигон
                     obj_coord = self.get_polygon(eval(obj_coord))
                     qp.drawPolyline(obj_coord)
+                    qp.drawPolygon(obj_coord, QtCore.Qt.OddEvenFill)
 
         # Завершить рисование
         qp.end()
