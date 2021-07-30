@@ -1174,87 +1174,39 @@ class Painter(QtWidgets.QMainWindow):
         # Начнем рисование
         qp.begin(pixmap_zone)
         objects = self.data_obj.values()
-        i = 0
-        for obj in objects:
 
-            # возьмем масштаб объекта
-            scale_name = float(obj.get("scale_name"))
-            # возьмем координаты объекта
-            obj_coord = obj.get("obj_coord")
-            # возьмем тип объекта
-            obj_type = obj.get("obj_type")
-            # # начинаем рисовать с последнего цвета
-            color = color_zone_arr[-1]
-            zone = float(excel[i][-1])*scale_name
-            i += 1
-            print(f'color {color}')
-            print(f'zone {zone}')
-            # определим ручку
-            pen = QtGui.QPen(QtGui.QColor(color[0], color[1], color[2], color[3]), zone, QtCore.Qt.SolidLine)
-            # со сглаживаниями
-            pen.setJoinStyle(QtCore.Qt.RoundJoin)
-            # закругленный концы
-            pen.setCapStyle(QtCore.Qt.RoundCap)
-            qp.setPen(pen)
-            if obj_type == 0:
-                print("объект линейный")
-                # получим полигон
-                obj_coord = self.get_polygon(eval(obj_coord))
-                qp.drawPolyline(obj_coord)
-            else:
-                print("объект стационарный")
-                # получим полигон
-                obj_coord = self.get_polygon(eval(obj_coord))
-                qp.drawPolyline(obj_coord)
+        for zone_index in range(-1, -7, -1):
+            i = 0
+            for obj in objects:
+                # возьмем масштаб оборудования
+                scale_name = float(obj.get("scale_name"))
+                # возьмем координаты оборудования
+                obj_coord = obj.get("obj_coord")
+                # возьмем тип объекта
+                obj_type = obj.get("obj_type")
+                # # начинаем рисовать с последнего цвета
+                color = color_zone_arr[zone_index]
+                zone = float(excel[i][zone_index]) * scale_name * 2 # т.к. на вход радиус, а нужен диаметр
+                i += 1
+                # зона может быть 0 тогда ничего рисовать не надо
+                if zone == 0:
+                    continue
+                # определим ручку
+                pen = QtGui.QPen(QtGui.QColor(color[0], color[1], color[2], color[3]), zone, QtCore.Qt.SolidLine)
+                # со сглаживаниями
+                pen.setJoinStyle(QtCore.Qt.RoundJoin)
+                # закругленный концы
+                pen.setCapStyle(QtCore.Qt.RoundCap)
+                qp.setPen(pen)
+                if obj_type == 0:
+                    # получим полигон
+                    obj_coord = self.get_polygon(eval(obj_coord))
+                    qp.drawPolyline(obj_coord)
+                else:
+                    # получим полигон
+                    obj_coord = self.get_polygon(eval(obj_coord))
+                    qp.drawPolyline(obj_coord)
 
-        #         # Определим ручку
-        #         # красный прозрачный
-        #         pen = QtGui.QPen(QtGui.QColor(255,0,0,255), 80, QtCore.Qt.SolidLine)
-        #         # со сглаживаниями
-        #         pen.setJoinStyle(QtCore.Qt.RoundJoin)
-        #         # закругленный концы
-        #         pen.setCapStyle(QtCore.Qt.RoundCap)
-        #         qp.setPen(pen)
-        #         # нарисовать линию
-        #         polygon = QtGui.QPolygon([
-        #             QtCore.QPoint(20, 150),
-        #             QtCore.QPoint(280, 150),
-        #             QtCore.QPoint(150, 250)
-        #         ])
-        #         qp.drawPolyline(polygon)
-        #
-        #         # # Создадим синию прозрачную ручку
-        #         # синий прозрачный
-        #         pen = QtGui.QPen(QtGui.QColor(0,0,255,255), 50, QtCore.Qt.SolidLine)
-        #         # со сглаживаниями
-        #         pen.setJoinStyle(QtCore.Qt.RoundJoin)
-        #         # закругленный концы
-        #         pen.setCapStyle(QtCore.Qt.RoundCap)
-        #         qp.setPen(pen)
-        #         # нарисовать линию
-        #         polygon = QtGui.QPolygon([
-        #             QtCore.QPoint(20, 150),
-        #             QtCore.QPoint(280, 150),
-        #             QtCore.QPoint(150, 250)
-        #         ])
-        #         qp.drawPolyline(polygon)
-        #
-        #         # # Создадим синию прозрачную ручку
-        #         # синий прозрачный
-        #         pen = QtGui.QPen(QtGui.QColor(0,255,0,255), 30, QtCore.Qt.SolidLine)
-        #         # со сглаживаниями
-        #         pen.setJoinStyle(QtCore.Qt.RoundJoin)
-        #         # закругленный концы
-        #         pen.setCapStyle(QtCore.Qt.RoundCap)
-        #         qp.setPen(pen)
-        #         # нарисовать линию
-        #         polygon = QtGui.QPolygon([
-        #             QtCore.QPoint(20, 150),
-        #             QtCore.QPoint(280, 150),
-        #             QtCore.QPoint(150, 250)
-        #         ])
-        #         qp.drawPolyline(polygon)
-        #
         # Завершить рисование
         qp.end()
         # Положим одну картинку на другую
