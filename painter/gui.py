@@ -1147,10 +1147,8 @@ class Painter(QtWidgets.QMainWindow):
             return
         # Определим сколько объектов есть
         how_many_obj = len(self.data_obj)
-        print(f'Сейчас объектов: {how_many_obj}')
         # определим все цвета зон
         color_zone_arr = self.get_color_for_zone()
-        print(f'Цвета: {color_zone_arr}')
         # достаем картинку из БД
         image_data = ''  # переменная хранения blob из базы данных
         path_str = (f"{self.db_path.text()}/{self.db_name.text()}")
@@ -1187,10 +1185,12 @@ class Painter(QtWidgets.QMainWindow):
         # Начнем рисование
         qp.begin(pixmap_zone)
         objects = self.data_obj.values()
+        print(f'objects {objects}')
 
         for zone_index in range(-1, -7, -1):
             i = 0
             for obj in objects:
+
                 # возьмем масштаб оборудования
                 scale_name = float(obj.get("scale_name"))
                 # возьмем координаты оборудования
@@ -1237,6 +1237,109 @@ class Painter(QtWidgets.QMainWindow):
 
     def draw_one_object(self):
         print("Draw one")
+        self.del_all_item()
+        index = self.view_tree.selectedIndexes()[0]
+        item = index.model().itemFromIndex(index)
+        if not item.parent() is None and item.parent().text().startswith('Объект'):
+            if item.text().startswith('Объект'):
+                return
+
+        # проверка базы данных
+        if self.is_there_a_database() == False:
+            return
+        # Проверка ген.плана
+        if self.is_there_a_plan() == False:
+            return
+        # Проверка наличия объектов
+        if self.any_objects_in_data_obj() == False:
+            return
+        # определим все цвета зон
+        color_zone_arr = self.get_color_for_zone()
+        # достаем картинку из БД
+        image_data = ''  # переменная хранения blob из базы данных
+        path_str = (f"{self.db_path.text()}/{self.db_name.text()}")
+        path_str = path_str.replace("/", "//")
+        sqliteConnection = sqlite3.connect(path_str)
+        cursorObj = sqliteConnection.cursor()
+        cursorObj.execute("SELECT * FROM objects")
+        plant_in_db = cursorObj.fetchall()
+        text = self.plan_list.currentText()
+        for row in plant_in_db:
+            if str(row[3]) + ',' + str(row[0]) == text:
+                image_data = row[2]
+        sqliteConnection.execute("VACUUM")
+        cursorObj.close()
+
+        if image_data == '':  # значит картинку не получили
+            print("нет картинки")
+            return
+        if self.data_excel.text() == '':
+            print("данных из экселя нет")
+            return
+
+        excel = eval(self.data_excel.text())
+        # На основе исходной картинки создадим QImage и QPixmap
+        qimg = QtGui.QImage.fromData(image_data)
+        pixmap = QtGui.QPixmap.fromImage(qimg)
+        # создадим соразмерный pixmap_zone и сделаем его прозрачным
+        pixmap_zone = QtGui.QPixmap(pixmap.width(), pixmap.height())
+        pixmap_zone.fill(QtGui.QColor(0, 0, 0, 0))
+        # Создадим QPainter
+        qp = QtGui.QPainter(pixmap_zone)
+
+        # Начнем рисование
+        qp.begin(pixmap_zone)
+        objects = self.data_obj.values()
+
+        for zone_index in range(-1, -7, -1):
+            i = 0
+            for obj in objects:
+                obj_name = obj.get("obj_name")
+                if obj_name != item.text():
+                    continue
+                # возьмем масштаб оборудования
+                scale_name = float(obj.get("scale_name"))
+                # возьмем координаты оборудования
+                obj_coord = obj.get("obj_coord")
+                # возьмем тип объекта
+                obj_type = obj.get("obj_type")
+                # # начинаем рисовать с последнего цвета
+                color = color_zone_arr[zone_index]
+                zone = float(excel[i][zone_index]) * scale_name * 2  # т.к. на вход радиус, а нужен диаметр
+                i += 1
+                # зона может быть 0 тогда ничего рисовать не надо
+                if zone == 0:
+                    continue
+                # определим ручку и кисточку
+                pen = QtGui.QPen(QtGui.QColor(color[0], color[1], color[2], color[3]), zone, QtCore.Qt.SolidLine)
+                brush = QtGui.QBrush(QtGui.QColor(color[0], color[1], color[2], color[3]))
+                # со сглаживаниями
+                pen.setJoinStyle(QtCore.Qt.RoundJoin)
+                # закругленный концы
+                pen.setCapStyle(QtCore.Qt.RoundCap)
+                qp.setPen(pen)
+                qp.setBrush(brush)
+                if obj_type == 0:
+                    # получим полигон
+                    obj_coord = self.get_polygon(eval(obj_coord))
+                    qp.drawPolyline(obj_coord)
+                else:
+                    # стац. об. получим полигон
+                    obj_coord = self.get_polygon(eval(obj_coord))
+                    qp.drawPolyline(obj_coord)
+                    qp.drawPolygon(obj_coord, QtCore.Qt.OddEvenFill)
+
+        # Завершить рисование
+        qp.end()
+        # Положим одну картинку на другую
+        painter = QtGui.QPainter(pixmap)
+        painter.begin(pixmap)
+        painter.setOpacity(self.opacity.value())
+        painter.drawPixmap(0, 0, pixmap_zone)
+        painter.end()
+        # Разместим на сцене pixmap с pixmap_zone
+        self.scene.addPixmap(pixmap)
+        self.scene.setSceneRect(QtCore.QRectF(pixmap.rect()))
 
     def draw_risk_object(self):
         print("Draw risk")
