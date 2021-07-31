@@ -1144,6 +1144,9 @@ class Painter(QtWidgets.QMainWindow):
         # Проверка наличия объектов
         if self.any_objects_in_data_obj() == False:
             return
+        # проверка равенства объектов Эксель и объектов карты
+        if self.equality_obj() == False:
+            return
         # определим все цвета зон
         color_zone_arr = self.get_color_for_zone()
         # достаем картинку из БД
@@ -1457,6 +1460,26 @@ class Painter(QtWidgets.QMainWindow):
             msg.exec()
             return False
         return True
+
+    def equality_obj(self):
+        if self.data_excel.text() == "":
+            msg = QtWidgets.QMessageBox(self)
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+            msg.setWindowTitle("Информация")
+            msg.setText("Количество выделенных в Excel объектов не равно количеству объектов.")
+            msg.exec()
+            return False
+        if len(eval(self.data_excel.text())) != len(self.data_obj):
+            msg = QtWidgets.QMessageBox(self)
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+            msg.setWindowTitle("Информация")
+            msg.setText("Количество выделенных в Excel объектов не равно количеству объектов.")
+            msg.exec()
+            return False
+        return True
+
+
+
 
 
 if __name__ == '__main__':
