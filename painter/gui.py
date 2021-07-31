@@ -1135,7 +1135,6 @@ class Painter(QtWidgets.QMainWindow):
 
     # Рисование объектов
     def draw_all_object(self):
-        print("Draw all")
         # проверка базы данных
         if self.is_there_a_database() == False:
             return
@@ -1145,8 +1144,6 @@ class Painter(QtWidgets.QMainWindow):
         # Проверка наличия объектов
         if self.any_objects_in_data_obj() == False:
             return
-        # Определим сколько объектов есть
-        how_many_obj = len(self.data_obj)
         # определим все цвета зон
         color_zone_arr = self.get_color_for_zone()
         # достаем картинку из БД
@@ -1172,7 +1169,6 @@ class Painter(QtWidgets.QMainWindow):
             return
 
         excel = eval(self.data_excel.text())
-        print(excel)
         # На основе исходной картинки создадим QImage и QPixmap
         qimg = QtGui.QImage.fromData(image_data)
         pixmap = QtGui.QPixmap.fromImage(qimg)
@@ -1185,7 +1181,6 @@ class Painter(QtWidgets.QMainWindow):
         # Начнем рисование
         qp.begin(pixmap_zone)
         objects = self.data_obj.values()
-        print(f'objects {objects}')
 
         for zone_index in range(-1, -7, -1):
             i = 0
@@ -1194,7 +1189,7 @@ class Painter(QtWidgets.QMainWindow):
                 # возьмем масштаб оборудования
                 scale_name = float(obj.get("scale_name"))
                 # возьмем координаты оборудования
-                obj_coord = obj.get("obj_coord")
+                obj_coord = eval(obj.get("obj_coord"))
                 # возьмем тип объекта
                 obj_type = obj.get("obj_type")
                 # # начинаем рисовать с последнего цвета
@@ -1213,15 +1208,22 @@ class Painter(QtWidgets.QMainWindow):
                 pen.setCapStyle(QtCore.Qt.RoundCap)
                 qp.setPen(pen)
                 qp.setBrush(brush)
-                if obj_type == 0:
-                    # получим полигон
-                    obj_coord = self.get_polygon(eval(obj_coord))
-                    qp.drawPolyline(obj_coord)
-                else:
-                    # стац. об. получим полигон
-                    obj_coord = self.get_polygon(eval(obj_coord))
-                    qp.drawPolyline(obj_coord)
-                    qp.drawPolygon(obj_coord, QtCore.Qt.OddEvenFill)
+
+                if len(obj_coord) > 2: # координаты можно преобразовать в полигон
+                    if obj_type == 0:
+                        # линейн. получим полигон
+                        obj_coord = self.get_polygon(obj_coord)
+                        qp.drawPolyline(obj_coord)
+                    else:
+                        # стац. об. получим полигон
+                        obj_coord = self.get_polygon(obj_coord)
+                        qp.drawPolyline(obj_coord)
+                        qp.drawPolygon(obj_coord, QtCore.Qt.OddEvenFill)
+                else:# не получается полигон, значит точка
+                    pen_point = QtGui.QPen(QtGui.QColor(color[0], color[1], color[2], color[3]), 1, QtCore.Qt.SolidLine)
+                    qp.setPen(pen_point)
+                    point = QtCore.QPoint(int(float(obj_coord[0])), int(float(obj_coord[1])))
+                    qp.drawEllipse(point, zone/2, zone/2) # т.к. нужен радиус
 
         # Завершить рисование
         qp.end()
@@ -1236,7 +1238,6 @@ class Painter(QtWidgets.QMainWindow):
         self.scene.setSceneRect(QtCore.QRectF(pixmap.rect()))
 
     def draw_one_object(self):
-        print("Draw one")
         self.del_all_item()
         index = self.view_tree.selectedIndexes()[0]
         item = index.model().itemFromIndex(index)
@@ -1296,39 +1297,49 @@ class Painter(QtWidgets.QMainWindow):
             for obj in objects:
                 obj_name = obj.get("obj_name")
                 if obj_name != item.text():
+                    i += 1
                     continue
-                # возьмем масштаб оборудования
-                scale_name = float(obj.get("scale_name"))
-                # возьмем координаты оборудования
-                obj_coord = obj.get("obj_coord")
-                # возьмем тип объекта
-                obj_type = obj.get("obj_type")
-                # # начинаем рисовать с последнего цвета
-                color = color_zone_arr[zone_index]
-                zone = float(excel[i][zone_index]) * scale_name * 2  # т.к. на вход радиус, а нужен диаметр
-                i += 1
-                # зона может быть 0 тогда ничего рисовать не надо
-                if zone == 0:
-                    continue
-                # определим ручку и кисточку
-                pen = QtGui.QPen(QtGui.QColor(color[0], color[1], color[2], color[3]), zone, QtCore.Qt.SolidLine)
-                brush = QtGui.QBrush(QtGui.QColor(color[0], color[1], color[2], color[3]))
-                # со сглаживаниями
-                pen.setJoinStyle(QtCore.Qt.RoundJoin)
-                # закругленный концы
-                pen.setCapStyle(QtCore.Qt.RoundCap)
-                qp.setPen(pen)
-                qp.setBrush(brush)
-                if obj_type == 0:
-                    # получим полигон
-                    obj_coord = self.get_polygon(eval(obj_coord))
-                    qp.drawPolyline(obj_coord)
                 else:
-                    # стац. об. получим полигон
-                    obj_coord = self.get_polygon(eval(obj_coord))
-                    qp.drawPolyline(obj_coord)
-                    qp.drawPolygon(obj_coord, QtCore.Qt.OddEvenFill)
+                    # возьмем масштаб оборудования
+                    scale_name = float(obj.get("scale_name"))
+                    # возьмем координаты оборудования
+                    obj_coord = eval(obj.get("obj_coord"))
+                    # возьмем тип объекта
+                    obj_type = obj.get("obj_type")
+                    # # начинаем рисовать с последнего цвета
+                    color = color_zone_arr[zone_index]
+                    zone = float(excel[i][zone_index]) * scale_name * 2  # т.к. на вход радиус, а нужен диаметр
+                    i += 1
+                    # зона может быть 0 тогда ничего рисовать не надо
+                    if zone == 0:
+                        continue
+                    # определим ручку и кисточку
+                    pen = QtGui.QPen(QtGui.QColor(color[0], color[1], color[2], color[3]), zone, QtCore.Qt.SolidLine)
+                    brush = QtGui.QBrush(QtGui.QColor(color[0], color[1], color[2], color[3]))
+                    # со сглаживаниями
+                    pen.setJoinStyle(QtCore.Qt.RoundJoin)
+                    # закругленный концы
+                    pen.setCapStyle(QtCore.Qt.RoundCap)
+                    qp.setPen(pen)
+                    qp.setBrush(brush)
 
+                    if len(obj_coord) > 2: # координаты можно преобразовать в полигон
+                        if obj_type == 0:
+                            # линейн. получим полигон
+                            obj_coord = self.get_polygon(obj_coord)
+                            qp.drawPolyline(obj_coord)
+                        else:
+                            # стац. об. получим полигон
+                            obj_coord = self.get_polygon(obj_coord)
+                            qp.drawPolyline(obj_coord)
+                            qp.drawPolygon(obj_coord, QtCore.Qt.OddEvenFill)
+                    else:# не получается полигон, значит точка
+                        pen_point = QtGui.QPen(QtGui.QColor(color[0], color[1], color[2], color[3]), 1, QtCore.Qt.SolidLine)
+                        qp.setPen(pen_point)
+                        point = QtCore.QPoint(int(float(obj_coord[0])), int(float(obj_coord[1])))
+                        qp.drawEllipse(point, zone/2, zone/2) # т.к. нужен радиус
+
+        #
         # Завершить рисование
         qp.end()
         # Положим одну картинку на другую

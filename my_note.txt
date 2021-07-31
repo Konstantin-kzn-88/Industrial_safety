@@ -2,23 +2,4 @@ https://github.com/Konstantin-kzn-88/Industrial_safety.git
 ctrl+alt+l - отступы по коду
 
 
-
-1. Сделать классы:
-                    а) painter рисование зон из экселя
-                    б) report_oil сборный класс для расчета нефтянки
-
-
-from mysql.connector import connect, Error
-
-try:
-    with connect(
-        host="server167.hosting.reg.ru",
-        user="u1082920_default",
-        password="!Fq3pKcK",
-    ) as connection:
-        print(connection)
-except Error as e:
-    print(e)
-
-if __name__ == '__main__':
-    print("start")
+1.Файл Экселя должен быть открыт до программы (исправить)
