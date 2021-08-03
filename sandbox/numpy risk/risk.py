@@ -47,20 +47,20 @@ probit_all = [probit_point_1, probit_point_2, probit_point_3, probit_point_4,
               probit_point_5, probit_point_6, probit_point_7]
 
 # for line_obj
-probit_line = [power, [i for i in range(100)]]
-coord_line = LineString([(70, 70), (30, 400)])
-
-probit_line_2 = [power, [i for i in range(100)]]
-coord_line_2 = LineString([(100, 100), (100, 400)])
-
-probit_line_3 = [power, [i for i in range(100)]]
-coord_line_3 = LineString([(450, 10), (450, 10)])
-
-probit_line_4 = [[0.99, 0.7, 0.3, 0.2, 0.1], [1, 2, 3, 4, 5]]
-coord_line_4 = LineString([(0, 100), (300, 0)])
-
-probit_line_all = [probit_line, probit_line_2, probit_line_3, probit_line_4]
-coord_line_all = [coord_line, coord_line_2, coord_line_3, coord_line_4]
+# probit_line = [power, [i for i in range(100)]]
+# coord_line = LineString([(70, 70), (30, 400)])
+#
+# probit_line_2 = [power, [i for i in range(100)]]
+# coord_line_2 = LineString([(100, 100), (100, 400)])
+#
+# probit_line_3 = [power, [i for i in range(100)]]
+# coord_line_3 = LineString([(450, 10), (450, 10)])
+#
+# probit_line_4 = [[0.99, 0.7, 0.3, 0.2, 0.1], [1, 2, 3, 4, 5]]
+# coord_line_4 = LineString([(0, 100), (300, 0)])
+#
+# probit_line_all = [probit_line, probit_line_2, probit_line_3, probit_line_4]
+# coord_line_all = [coord_line, coord_line_2, coord_line_3, coord_line_4]
 
 # сделаем нулевую матрицу по размерам картинки
 zeors_array = np.zeros((width, height))
@@ -124,28 +124,28 @@ for elem in coord_all:
     # вызовем функцию суммарного воздействия
     calc_el_zeors_array_for_point(width, height, coord_all[find_index], probit_all[find_index])
 
-for elem_line in coord_line_all:
-    find_index_line = coord_line_all.index(elem_line)
-    print(find_index_line)
-    print(probit_line_all[find_index_line])
-    print(coord_line_all[find_index_line])
-    calc_el_zeors_array_for_line(width, height, coord_line_all[find_index_line], probit_line)
+# for elem_line in coord_line_all:
+#     find_index_line = coord_line_all.index(elem_line)
+#     print(find_index_line)
+#     print(probit_line_all[find_index_line])
+#     print(coord_line_all[find_index_line])
+#     calc_el_zeors_array_for_line(width, height, coord_line_all[find_index_line], probit_line)
 
 # представим суммарное воздействие от точек
-for x in range(width):
-    for y in range(height):
-        if zeors_array[x, y] >= 0.9:
-            px[x, y] = red
-        elif 0.9 > zeors_array[x, y] >= 0.7:
-            px[x, y] = yellow
-        elif 0.7 > zeors_array[x, y] >= 0.5:
-            px[x, y] = light_blue
-        elif 0.5 > zeors_array[x, y] >= 0.3:
-            px[x, y] = green
-        elif 0.3 > zeors_array[x, y] >= 0.2:
-            px[x, y] = blue
-        elif 0.2 > zeors_array[x, y] >= 0.1:
-            px[x, y] = purple
+# for x in range(width):
+#     for y in range(height):
+#         if zeors_array[x, y] >= 0.9:
+#             px[x, y] = red
+#         elif 0.9 > zeors_array[x, y] >= 0.7:
+#             px[x, y] = yellow
+#         elif 0.7 > zeors_array[x, y] >= 0.5:
+#             px[x, y] = light_blue
+#         elif 0.5 > zeors_array[x, y] >= 0.3:
+#             px[x, y] = green
+#         elif 0.3 > zeors_array[x, y] >= 0.2:
+#             px[x, y] = blue
+#         elif 0.2 > zeors_array[x, y] >= 0.1:
+#             px[x, y] = purple
 
 # выведем результат как картинку
 im.show(title="result")
