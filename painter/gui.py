@@ -118,7 +118,7 @@ class Painter(QtWidgets.QMainWindow):
         self.scale_name = QtWidgets.QLineEdit()
         self.scale_name.setPlaceholderText("Масштаб")
         self.scale_name.setToolTip("В одном пикселе метров")
-        self.scale_name.setReadOnly(True)
+        # self.scale_name.setReadOnly(True)
 
         # Рамка №2 (то что будет в рамке 2)
         self.type_act = QtWidgets.QComboBox()
