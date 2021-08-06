@@ -16,11 +16,11 @@ blue = (0, 0, 255, 70)
 purple = (255, 0, 255, 70)
 
 # возьмем чистую картинку
-# im = Image.open('image.jpg')
+im = Image.open('image.jpg')
 # измерим размер
-width, height = 5000, 5000
+width, height = im.size
 # загрузим в память
-# px = im.load()
+px = im.load()
 
 # Сделаем несколько точек и покажем их воздействие
 # точки с координатами
@@ -134,22 +134,22 @@ for elem_line in coord_line_all:
     calc_el_zeors_array_for_line(width, height, coord_line_all[find_index_line], probit_line)
 
 # представим суммарное воздействие от точек
-# for x in range(width):
-#     for y in range(height):
-#         if zeors_array[x, y] >= 0.9:
-#             px[x, y] = red
-#         elif 0.9 > zeors_array[x, y] >= 0.7:
-#             px[x, y] = yellow
-#         elif 0.7 > zeors_array[x, y] >= 0.5:
-#             px[x, y] = light_blue
-#         elif 0.5 > zeors_array[x, y] >= 0.3:
-#             px[x, y] = green
-#         elif 0.3 > zeors_array[x, y] >= 0.2:
-#             px[x, y] = blue
-#         elif 0.2 > zeors_array[x, y] >= 0.1:
-#             px[x, y] = purple
+for x in range(width):
+    for y in range(height):
+        if zeors_array[x, y] >= 0.9:
+            px[x, y] = red
+        elif 0.9 > zeors_array[x, y] >= 0.7:
+            px[x, y] = yellow
+        elif 0.7 > zeors_array[x, y] >= 0.5:
+            px[x, y] = light_blue
+        elif 0.5 > zeors_array[x, y] >= 0.3:
+            px[x, y] = green
+        elif 0.3 > zeors_array[x, y] >= 0.2:
+            px[x, y] = blue
+        elif 0.2 > zeors_array[x, y] >= 0.1:
+            px[x, y] = purple
 #
 # # выведем результат как картинку
-# im.show(title="result")
+im.show(title="result")
 
 print("--- %s секунд ---" % (time.time() - start_time))
