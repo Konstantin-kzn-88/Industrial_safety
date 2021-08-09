@@ -5,7 +5,7 @@ def power_data(max_r=60):
     power = [i / 100 for i in range(100)]
 
     for i in power:
-        radius.append(max_r*i)
+        radius.append(int(max_r*i))
     power.sort(reverse=True)
     power_data = [power, radius]
     return power_data
