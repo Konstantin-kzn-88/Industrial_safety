@@ -13,10 +13,13 @@ import time
 import sys
 import os
 from pathlib import Path
+
+import numpy as np
 from PySide2 import QtWidgets, QtGui, QtCore
 from PySide2.QtCore import QTranslator
-from shapely.geometry import LineString, Polygon
+from shapely.geometry import Point, LineString, Polygon
 import win32com.client
+import matplotlib.pyplot as plt
 
 Excel = win32com.client.Dispatch("Excel.Application")
 
@@ -75,6 +78,7 @@ class Painter(QtWidgets.QMainWindow):
         self.data_scale = []  # массив хранения данных для масштаба
         self.data_point = []  # массив для хранения точек (измерение дистанции и площади)
         self.data_obj = {}  # словарь всех объектов
+        self.last_risk_arr = None
 
         # Главное окно
         self.setGeometry(300, 300, 350, 250)
@@ -261,7 +265,6 @@ class Painter(QtWidgets.QMainWindow):
         self.opacity.setDecimals(2)
         self.opacity.setRange(0, 1)
         self.opacity.setSingleStep(0.01)
-
 
         # Упаковываем все на вкладку таба "0" (делаем все в QGroupBox
         # т.к. элементы будут добавляться и их
@@ -1212,7 +1215,7 @@ class Painter(QtWidgets.QMainWindow):
                 qp.setPen(pen)
                 qp.setBrush(brush)
 
-                if len(obj_coord) > 2: # координаты можно преобразовать в полигон
+                if len(obj_coord) > 2:  # координаты можно преобразовать в полигон
                     if obj_type == 0:
                         # линейн. получим полигон
                         obj_coord = self.get_polygon(obj_coord)
@@ -1222,11 +1225,11 @@ class Painter(QtWidgets.QMainWindow):
                         obj_coord = self.get_polygon(obj_coord)
                         qp.drawPolyline(obj_coord)
                         qp.drawPolygon(obj_coord, QtCore.Qt.OddEvenFill)
-                else:# не получается полигон, значит точка
+                else:  # не получается полигон, значит точка
                     pen_point = QtGui.QPen(QtGui.QColor(color[0], color[1], color[2], color[3]), 1, QtCore.Qt.SolidLine)
                     qp.setPen(pen_point)
                     point = QtCore.QPoint(int(float(obj_coord[0])), int(float(obj_coord[1])))
-                    qp.drawEllipse(point, zone/2, zone/2) # т.к. нужен радиус
+                    qp.drawEllipse(point, zone / 2, zone / 2)  # т.к. нужен радиус
 
         # Завершить рисование
         qp.end()
@@ -1326,7 +1329,7 @@ class Painter(QtWidgets.QMainWindow):
                     qp.setPen(pen)
                     qp.setBrush(brush)
 
-                    if len(obj_coord) > 2: # координаты можно преобразовать в полигон
+                    if len(obj_coord) > 2:  # координаты можно преобразовать в полигон
                         if obj_type == 0:
                             # линейн. получим полигон
                             obj_coord = self.get_polygon(obj_coord)
@@ -1336,11 +1339,12 @@ class Painter(QtWidgets.QMainWindow):
                             obj_coord = self.get_polygon(obj_coord)
                             qp.drawPolyline(obj_coord)
                             qp.drawPolygon(obj_coord, QtCore.Qt.OddEvenFill)
-                    else:# не получается полигон, значит точка
-                        pen_point = QtGui.QPen(QtGui.QColor(color[0], color[1], color[2], color[3]), 1, QtCore.Qt.SolidLine)
+                    else:  # не получается полигон, значит точка
+                        pen_point = QtGui.QPen(QtGui.QColor(color[0], color[1], color[2], color[3]), 1,
+                                               QtCore.Qt.SolidLine)
                         qp.setPen(pen_point)
                         point = QtCore.QPoint(int(float(obj_coord[0])), int(float(obj_coord[1])))
-                        qp.drawEllipse(point, zone/2, zone/2) # т.к. нужен радиус
+                        qp.drawEllipse(point, zone / 2, zone / 2)  # т.к. нужен радиус
 
         #
         # Завершить рисование
@@ -1357,6 +1361,87 @@ class Painter(QtWidgets.QMainWindow):
 
     def draw_risk_object(self):
         print("Draw risk")
+        # проверка базы данных
+        if self.is_there_a_database() == False:
+            return
+        # Проверка ген.плана
+        if self.is_there_a_plan() == False:
+            return
+        # Проверка наличия объектов
+        if self.any_objects_in_data_obj() == False:
+            return
+        # проверка равенства объектов Эксель и объектов карты
+        if self.equality_obj() == False:
+            return
+        # достаем картинку из БД
+        image_data = ''  # переменная хранения blob из базы данных
+        path_str = (f"{self.db_path.text()}/{self.db_name.text()}")
+        path_str = path_str.replace("/", "//")
+        sqliteConnection = sqlite3.connect(path_str)
+        cursorObj = sqliteConnection.cursor()
+        cursorObj.execute("SELECT * FROM objects")
+        plant_in_db = cursorObj.fetchall()
+        text = self.plan_list.currentText()
+        for row in plant_in_db:
+            if str(row[3]) + ',' + str(row[0]) == text:
+                image_data = row[2]
+        sqliteConnection.execute("VACUUM")
+        cursorObj.close()
+
+        if image_data == '':  # значит картинку не получили
+            print("нет картинки")
+            return
+        if self.data_excel.text() == '':
+            print("данных из экселя нет")
+            return
+
+        # На основе исходной картинки создадим QImage и QPixmap
+        qimg = QtGui.QImage.fromData(image_data)
+        pixmap = QtGui.QPixmap.fromImage(qimg)
+        # создадим соразмерный pixmap_zone и сделаем его прозрачным
+        width, height = pixmap.width(), pixmap.height()
+        # сделаем нулевую матрицу по размерам картинки
+        zeors_array = np.zeros((width, height))
+
+        excel = eval(self.data_excel.text())
+        objects = self.data_obj.values()
+
+        index = 0
+        for obj in objects:
+            # возьмем масштаб оборудования
+            scale_name = float(obj.get("scale_name"))
+            # возьмем координаты оборудования
+            obj_coord = eval(obj.get("obj_coord"))
+            # возьмем тип объекта
+            obj_type = obj.get("obj_type")
+            max_radius = excel[index][0] * scale_name
+            power = self.power_data(max_radius)
+            index += 1
+
+            if len(obj_coord) > 2:  # координаты можно преобразовать в полигон или линию
+                if obj_type == 0:
+                    # линейн. получим полигон
+                    obj_coord = self.get_polyline_shapely(obj_coord)
+                    self.calc_el_zeors_array(width,height,obj_coord,power,zeors_array,scale_name)
+
+
+                else:
+                    # стац. об. получим полигон
+                    obj_coord = self.get_polygon_shapely(obj_coord)
+                    # print(obj_coord)
+                    self.calc_el_zeors_array(width, height, obj_coord, power, zeors_array,scale_name)
+
+            else:  # не получается полигон, значит точка
+                obj_coord = Point(float(obj_coord[0]), float(obj_coord[1]))
+                # print(obj_coord)
+                self.calc_el_zeors_array(width, height, obj_coord, power, zeors_array,scale_name)
+
+        plt.pcolormesh(zeors_array, cmap=plt.get_cmap('jet'), alpha=1)  # levels=levels сглаживание
+        # plt.axis('off')
+        plt.gca().invert_yaxis()
+        plt.colorbar()
+        plt.show()
+
 
     def get_color_for_zone(self) -> list:
         # по кнопкам определим зоны для рисования
@@ -1407,6 +1492,60 @@ class Painter(QtWidgets.QMainWindow):
         polygon = QtGui.QPolygon(points)
 
         return polygon
+
+    def get_polyline_shapely(self, coordinate):
+
+        i = 0
+        points = []
+        while i < len(coordinate):
+            point = (int(float(coordinate[i])), int(float(coordinate[i + 1])))
+            points.append(point)
+            i += 2
+        polyline = LineString(points)
+
+        return polyline
+
+    def get_polygon_shapely(self, coordinate):
+
+        i = 0
+        points = []
+        while i < len(coordinate):
+            point = (int(float(coordinate[i])), int(float(coordinate[i + 1])))
+            points.append(point)
+            i += 2
+        polygon = Polygon(points)
+
+        return polygon
+
+    def calc_el_zeors_array(self, width, height, object, power, zeors_array,scale_name):
+        # power = [[power],[dist]]
+        for x in range(width):
+            for y in range(height):
+                dist = round(Point(x, y).distance(object))*scale_name
+                if dist == 0:
+                    zeors_array[x, y] = zeors_array[x, y] + power[0][0]
+                elif dist in power[1]:
+                    find_index = power[1].index(dist)
+                    zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                #     self.last_risk_arr = zeors_array[x, y]
+                # else:
+                #     if self.last_risk_arr == None:
+                #         zeors_array[x, y] = 0
+                #     else:
+                #         zeors_array[x, y] = self.last_risk_arr
+        return
+
+    def power_data(self, max_r):
+
+        radius = []
+        power = [i / 100 for i in range(100)]
+
+        for i in power:
+            radius.append(max_r * i)
+        power.sort(reverse=True)
+        power_data = [power, radius]
+
+        return power_data
 
     # Проверки программы
     def is_there_a_database(self) -> bool:
@@ -1477,9 +1616,6 @@ class Painter(QtWidgets.QMainWindow):
             msg.exec()
             return False
         return True
-
-
-
 
 
 if __name__ == '__main__':
