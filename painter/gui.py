@@ -1533,7 +1533,14 @@ class Painter(QtWidgets.QMainWindow):
                             find_index = power[1].index(i)
                             zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
                             break
-
+                        if abs(dist-i)<0.5:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            break
+                        if abs(dist-i)<1:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            break
         return
 
     def power_data(self, max_r):
