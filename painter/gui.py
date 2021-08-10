@@ -15,6 +15,7 @@ import os
 from pathlib import Path
 
 import numpy as np
+from PIL import Image
 from PySide2 import QtWidgets, QtGui, QtCore
 from PySide2.QtCore import QTranslator
 from shapely.geometry import Point, LineString, Polygon
@@ -1397,9 +1398,9 @@ class Painter(QtWidgets.QMainWindow):
 
         # На основе исходной картинки создадим QImage и QPixmap
         qimg = QtGui.QImage.fromData(image_data)
-        pixmap = QtGui.QPixmap.fromImage(qimg)
-        # создадим соразмерный pixmap_zone и сделаем его прозрачным
-        width, height = pixmap.width(), pixmap.height()
+        qimg.save("load_fig.png")
+        im = Image.open("load_fig.png")
+        width, height = im.size
         # сделаем нулевую матрицу по размерам картинки
         zeors_array = np.zeros((width, height))
 
@@ -1414,7 +1415,9 @@ class Painter(QtWidgets.QMainWindow):
             obj_coord = eval(obj.get("obj_coord"))
             # возьмем тип объекта
             obj_type = obj.get("obj_type")
-            max_radius = excel[index][0] * scale_name
+            max_radius = excel[index][-1] * scale_name
+            print(max_radius)
+            probability = excel[index][0]
             power = self.power_data(max_radius)
             index += 1
 
@@ -1423,24 +1426,68 @@ class Painter(QtWidgets.QMainWindow):
                     # линейн. получим полигон
                     obj_coord = self.get_polyline_shapely(obj_coord)
                     self.calc_el_zeors_array(width,height,obj_coord,power,zeors_array,scale_name)
-
-
                 else:
                     # стац. об. получим полигон
                     obj_coord = self.get_polygon_shapely(obj_coord)
                     # print(obj_coord)
                     self.calc_el_zeors_array(width, height, obj_coord, power, zeors_array,scale_name)
-
             else:  # не получается полигон, значит точка
                 obj_coord = Point(float(obj_coord[0]), float(obj_coord[1]))
                 # print(obj_coord)
                 self.calc_el_zeors_array(width, height, obj_coord, power, zeors_array,scale_name)
 
+        zeors_array = zeors_array * probability
+        qimg = QtGui.QImage.fromData(image_data)
+        qimg.save("load_fig.png")
+        im = plt.imread('load_fig.png')
+        plt.imshow(im)
         plt.pcolormesh(zeors_array, cmap=plt.get_cmap('jet'), alpha=1)  # levels=levels сглаживание
-        # plt.axis('off')
-        plt.gca().invert_yaxis()
+        plt.axis('off')
+        #plt.gca().inv//ert_yaxis()
         plt.colorbar()
-        plt.show()
+        # сохранить тепловую карту
+        plt.savefig('save_fig.png')
+        # Заменить все белые и синие пиксели
+        img = Image.open('save_fig.png')
+        img = img.convert("RGBA")
+        pixdata = img.load()
+        width, height = img.size
+        for y in range(height):
+            for x in range(width):
+                if pixdata[x, y] == (255, 255, 255, 255):
+                    pixdata[x, y] = (0, 0, 0, 0)
+                if pixdata[x, y] == (0, 0, 128, 255):
+                    pixdata[x, y] = (0, 0, 0, 0)
+        img.save("save_fig2.png", "PNG")
+        # Удалить файл без прозрачности
+        os.path.isfile("save_fig.png")
+        # очистить график и нарисовать на карте подложку
+        plt.clf()
+        qimg = QtGui.QImage.fromData(image_data)
+        qimg.save("load_fig.png")
+        im = plt.imread('load_fig.png')
+        plt.imshow(im)
+        plt.pcolormesh(zeors_array, cmap=plt.get_cmap('jet'), alpha=0)
+        plt.colorbar()
+        plt.axis('off')
+        plt.savefig('save_fig3.png')
+        # Положим одну картинку на другую
+        pixmap = QtGui.QPixmap('save_fig3.png')
+        painter = QtGui.QPainter()
+        painter.begin(pixmap)
+        painter.setOpacity(self.opacity.value())
+        painter.drawPixmap(0, 0, QtGui.QPixmap('save_fig2.png'))
+        painter.end()
+        # Разместим на сцене pixmap с pixmap_zone
+        self.scene.clear()
+        self.scene.addPixmap(pixmap)
+        self.scene.setSceneRect(QtCore.QRectF(pixmap.rect()))
+        # Удалить файлы лишние
+        os.path.isfile("save_fig2.png")
+        os.path.isfile("save_fig3.png")
+
+
+
 
 
     def get_color_for_zone(self) -> list:
@@ -1529,7 +1576,7 @@ class Painter(QtWidgets.QMainWindow):
                     zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
                 else:
                     for i in power[1]:
-                        if abs(dist-i)<0.001:
+                        if abs(dist-i)<0.1:
                             find_index = power[1].index(i)
                             zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
                             break
@@ -1538,6 +1585,22 @@ class Painter(QtWidgets.QMainWindow):
                             zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
                             break
                         if abs(dist-i)<1:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            break
+                        if abs(dist-i)<1.5:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            break
+                        if abs(dist-i)<2:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            break
+                        if abs(dist-i)<2.5:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            break
+                        if abs(dist-i)<3:
                             find_index = power[1].index(i)
                             zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
                             break
