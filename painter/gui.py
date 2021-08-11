@@ -1362,6 +1362,13 @@ class Painter(QtWidgets.QMainWindow):
 
     def draw_risk_object(self):
         print("Draw risk")
+        # цвета для отображения результата
+        red = (255, 0, 0, 255)
+        yellow = (255, 255, 0, 255)
+        light_blue = (0, 255, 255, 255)
+        green = (0, 255, 0, 255)
+        blue = (0, 0, 255, 255)
+        purple = (255, 0, 255, 255)
         # проверка базы данных
         if self.is_there_a_database() == False:
             return
@@ -1398,9 +1405,13 @@ class Painter(QtWidgets.QMainWindow):
 
         # На основе исходной картинки создадим QImage и QPixmap
         qimg = QtGui.QImage.fromData(image_data)
-        qimg.save("load_fig.png")
-        im = Image.open("load_fig.png")
-        width, height = im.size
+        pixmap = QtGui.QPixmap.fromImage(qimg)
+        # создадим соразмерный pixmap_zone и сделаем его прозрачным
+        width, height = pixmap.width(), pixmap.height()
+        pixmap_zone = QtGui.QPixmap(width, height)
+        pixmap_zone.fill(QtGui.QColor(0, 0, 0, 0))
+        qimg_zone = pixmap_zone.toImage()
+
         # сделаем нулевую матрицу по размерам картинки
         zeors_array = np.zeros((width, height))
 
@@ -1417,7 +1428,6 @@ class Painter(QtWidgets.QMainWindow):
             obj_type = obj.get("obj_type")
             max_radius = excel[index][-1] * scale_name
             print(max_radius)
-            probability = excel[index][0]
             power = self.power_data(max_radius)
             index += 1
 
@@ -1436,55 +1446,32 @@ class Painter(QtWidgets.QMainWindow):
                 # print(obj_coord)
                 self.calc_el_zeors_array(width, height, obj_coord, power, zeors_array,scale_name)
 
-        zeors_array = zeors_array * probability
-        qimg = QtGui.QImage.fromData(image_data)
-        qimg.save("load_fig.png")
-        im = plt.imread('load_fig.png')
-        plt.imshow(im)
-        plt.pcolormesh(zeors_array, cmap=plt.get_cmap('jet'), alpha=1)  # levels=levels сглаживание
-        plt.axis('off')
-        #plt.gca().inv//ert_yaxis()
-        plt.colorbar()
-        # сохранить тепловую карту
-        plt.savefig('save_fig.png')
-        # Заменить все белые и синие пиксели
-        img = Image.open('save_fig.png')
-        img = img.convert("RGBA")
-        pixdata = img.load()
-        width, height = img.size
-        for y in range(height):
-            for x in range(width):
-                if pixdata[x, y] == (255, 255, 255, 255):
-                    pixdata[x, y] = (0, 0, 0, 0)
-                if pixdata[x, y] == (0, 0, 128, 255):
-                    pixdata[x, y] = (0, 0, 0, 0)
-        img.save("save_fig2.png", "PNG")
-        # Удалить файл без прозрачности
-        os.path.isfile("save_fig.png")
-        # очистить график и нарисовать на карте подложку
-        plt.clf()
-        qimg = QtGui.QImage.fromData(image_data)
-        qimg.save("load_fig.png")
-        im = plt.imread('load_fig.png')
-        plt.imshow(im)
-        plt.pcolormesh(zeors_array, cmap=plt.get_cmap('jet'), alpha=0)
-        plt.colorbar()
-        plt.axis('off')
-        plt.savefig('save_fig3.png')
+        for x in range(width):
+            for y in range(height):
+                if zeors_array[x, y] >= 0.9:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(red[0], red[1], red[2], red[3]))
+                elif 0.9 > zeors_array[x, y] >= 0.7:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(yellow[0], yellow[1], yellow[2], yellow[3]))
+                elif 0.7 > zeors_array[x, y] >= 0.5:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(light_blue[0], light_blue[1], light_blue[2], light_blue[3]))
+                elif 0.5 > zeors_array[x, y] >= 0.3:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(green[0], green[1], green[2], green[3]))
+                elif 0.3 > zeors_array[x, y] >= 0.2:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(blue[0], blue[1], blue[2], blue[3]))
+                elif 0.2 > zeors_array[x, y] >= 0.1:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(purple[0], purple[1], purple[2], purple[3]))
+
+        pixmap_zone = QtGui.QPixmap.fromImage(qimg_zone)
         # Положим одну картинку на другую
-        pixmap = QtGui.QPixmap('save_fig3.png')
-        painter = QtGui.QPainter()
+        painter = QtGui.QPainter(pixmap)
         painter.begin(pixmap)
         painter.setOpacity(self.opacity.value())
-        painter.drawPixmap(0, 0, QtGui.QPixmap('save_fig2.png'))
+        painter.drawPixmap(0, 0, pixmap_zone)
         painter.end()
         # Разместим на сцене pixmap с pixmap_zone
-        self.scene.clear()
         self.scene.addPixmap(pixmap)
         self.scene.setSceneRect(QtCore.QRectF(pixmap.rect()))
-        # Удалить файлы лишние
-        os.path.isfile("save_fig2.png")
-        os.path.isfile("save_fig3.png")
+
 
 
 
