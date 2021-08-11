@@ -1362,13 +1362,6 @@ class Painter(QtWidgets.QMainWindow):
 
     def draw_risk_object(self):
         print("Draw risk")
-        # цвета для отображения результата
-        red = (255, 0, 0, 255)
-        yellow = (255, 255, 0, 255)
-        light_blue = (0, 255, 255, 255)
-        green = (0, 255, 0, 255)
-        blue = (0, 0, 255, 255)
-        purple = (255, 0, 255, 255)
         # проверка базы данных
         if self.is_there_a_database() == False:
             return
@@ -1435,31 +1428,174 @@ class Painter(QtWidgets.QMainWindow):
                 if obj_type == 0:
                     # линейн. получим полигон
                     obj_coord = self.get_polyline_shapely(obj_coord)
-                    self.calc_el_zeors_array(width,height,obj_coord,power,zeors_array,scale_name)
+                    self.calc_el_zeors_array(width, height, obj_coord, power, zeors_array, scale_name)
                 else:
                     # стац. об. получим полигон
                     obj_coord = self.get_polygon_shapely(obj_coord)
                     # print(obj_coord)
-                    self.calc_el_zeors_array(width, height, obj_coord, power, zeors_array,scale_name)
+                    self.calc_el_zeors_array(width, height, obj_coord, power, zeors_array, scale_name)
             else:  # не получается полигон, значит точка
                 obj_coord = Point(float(obj_coord[0]), float(obj_coord[1]))
                 # print(obj_coord)
-                self.calc_el_zeors_array(width, height, obj_coord, power, zeors_array,scale_name)
+                self.calc_el_zeors_array(width, height, obj_coord, power, zeors_array, scale_name)
 
+        max_el = zeors_array.max()
         for x in range(width):
             for y in range(height):
-                if zeors_array[x, y] >= 0.9:
-                    qimg_zone.setPixelColor(x, y, QtGui.QColor(red[0], red[1], red[2], red[3]))
-                elif 0.9 > zeors_array[x, y] >= 0.7:
-                    qimg_zone.setPixelColor(x, y, QtGui.QColor(yellow[0], yellow[1], yellow[2], yellow[3]))
-                elif 0.7 > zeors_array[x, y] >= 0.5:
-                    qimg_zone.setPixelColor(x, y, QtGui.QColor(light_blue[0], light_blue[1], light_blue[2], light_blue[3]))
-                elif 0.5 > zeors_array[x, y] >= 0.3:
-                    qimg_zone.setPixelColor(x, y, QtGui.QColor(green[0], green[1], green[2], green[3]))
-                elif 0.3 > zeors_array[x, y] >= 0.2:
-                    qimg_zone.setPixelColor(x, y, QtGui.QColor(blue[0], blue[1], blue[2], blue[3]))
-                elif 0.2 > zeors_array[x, y] >= 0.1:
-                    qimg_zone.setPixelColor(x, y, QtGui.QColor(purple[0], purple[1], purple[2], purple[3]))
+                if zeors_array[x, y] >= max_el:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(255, 0, 0, 255))
+                elif max_el* 0.99 > zeors_array[x, y] >= max_el * 0.98:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(255, 10, 0, 255))
+                elif max_el* 0.98 > zeors_array[x, y] >= max_el * 0.97:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(255, 20, 0, 255))
+                elif max_el* 0.97 > zeors_array[x, y] >= max_el * 0.96:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(255, 30, 0, 255))
+                elif max_el* 0.96 > zeors_array[x, y] >= max_el * 0.95:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(255, 40, 0, 255))
+                elif max_el* 0.95 > zeors_array[x, y] >= max_el * 0.94:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(255, 50, 0, 255))
+                elif max_el* 0.94 > zeors_array[x, y] >= max_el * 0.93:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(255, 60, 0, 255))
+                elif max_el* 0.93 > zeors_array[x, y] >= max_el * 0.92:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(255, 70, 0, 255))
+                elif max_el* 0.92 > zeors_array[x, y] >= max_el * 0.91:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(255, 80, 0, 255))
+                elif max_el* 0.91 > zeors_array[x, y] >= max_el * 0.90:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(255, 90, 0, 255))
+                elif max_el* 0.90 > zeors_array[x, y] >= max_el * 0.89:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(255, 100, 0, 255))
+                elif max_el* 0.89 > zeors_array[x, y] >= max_el * 0.88:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(255, 110, 0, 255))
+                elif max_el* 0.88 > zeors_array[x, y] >= max_el * 0.87:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(255, 120, 0, 255))
+                elif max_el* 0.87 > zeors_array[x, y] >= max_el * 0.86:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(255, 130, 0, 255))
+                elif max_el* 0.86 > zeors_array[x, y] >= max_el * 0.85:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(255, 140, 0, 255))
+                elif max_el* 0.85 > zeors_array[x, y] >= max_el * 0.84:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(255, 150, 0, 255))
+                elif max_el* 0.84 > zeors_array[x, y] >= max_el * 0.83:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(255, 160, 0, 255))
+                elif max_el* 0.83 > zeors_array[x, y] >= max_el * 0.82:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(255, 170, 0, 255))
+                elif max_el* 0.82 > zeors_array[x, y] >= max_el * 0.81:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(255, 180, 0, 255))
+                elif max_el* 0.81 > zeors_array[x, y] >= max_el * 0.80:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(255, 190, 0, 255))
+                elif max_el* 0.80 > zeors_array[x, y] >= max_el * 0.79:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(255, 200, 0, 255))
+                elif max_el* 0.79 > zeors_array[x, y] >= max_el * 0.78:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(255, 210, 0, 255))
+                elif max_el* 0.78 > zeors_array[x, y] >= max_el * 0.77:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(255, 220, 0, 255))
+                elif max_el* 0.77 > zeors_array[x, y] >= max_el * 0.76:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(255, 230, 0, 255))
+                elif max_el* 0.76 > zeors_array[x, y] >= max_el * 0.75:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(255, 240, 0, 255))
+                elif max_el* 0.75 > zeors_array[x, y] >= max_el * 0.74:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(255, 255, 0, 255))
+                elif max_el* 0.74 > zeors_array[x, y] >= max_el * 0.73:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(240, 255, 0, 255))
+                elif max_el* 0.73 > zeors_array[x, y] >= max_el * 0.72:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(230, 255, 0, 255))
+                elif max_el* 0.72 > zeors_array[x, y] >= max_el * 0.71:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(220, 255, 0, 255))
+                elif max_el* 0.71 > zeors_array[x, y] >= max_el * 0.70:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(210, 255, 0, 255))
+                elif max_el* 0.70 > zeors_array[x, y] >= max_el * 0.69:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(200, 255, 0, 255))
+                elif max_el* 0.69 > zeors_array[x, y] >= max_el * 0.68:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(190, 255, 0, 255))
+                elif max_el* 0.68 > zeors_array[x, y] >= max_el * 0.67:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(180, 255, 0, 255))
+                elif max_el* 0.67 > zeors_array[x, y] >= max_el * 0.66:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(170, 255, 0, 255))
+                elif max_el* 0.66 > zeors_array[x, y] >= max_el * 0.65:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(160, 255, 0, 255))
+                elif max_el* 0.65 > zeors_array[x, y] >= max_el * 0.64:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(150, 255, 0, 255))
+                elif max_el* 0.64 > zeors_array[x, y] >= max_el * 0.63:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(140, 255, 0, 255))
+                elif max_el* 0.63 > zeors_array[x, y] >= max_el * 0.62:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(130, 255, 0, 255))
+                elif max_el* 0.62 > zeors_array[x, y] >= max_el * 0.61:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(120, 255, 0, 255))
+                elif max_el* 0.61 > zeors_array[x, y] >= max_el * 0.60:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(110, 255, 0, 255))
+                elif max_el* 0.60 > zeors_array[x, y] >= max_el * 0.59:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(100, 255, 0, 255))
+                elif max_el* 0.59 > zeors_array[x, y] >= max_el * 0.58:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(90, 255, 0, 255))
+                elif max_el* 0.58 > zeors_array[x, y] >= max_el * 0.57:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(80, 255, 0, 255))
+                elif max_el* 0.57 > zeors_array[x, y] >= max_el * 0.56:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(70, 255, 0, 255))
+                elif max_el* 0.56 > zeors_array[x, y] >= max_el * 0.55:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(60, 255, 0, 255))
+                elif max_el* 0.55 > zeors_array[x, y] >= max_el * 0.54:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(50, 255, 0, 255))
+                elif max_el* 0.54 > zeors_array[x, y] >= max_el * 0.53:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(40, 255, 0, 255))
+                elif max_el* 0.53 > zeors_array[x, y] >= max_el * 0.52:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(30, 255, 0, 255))
+                elif max_el* 0.52 > zeors_array[x, y] >= max_el * 0.51:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(20, 255, 0, 255))
+                elif max_el* 0.51 > zeors_array[x, y] >= max_el * 0.50:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(10, 255, 0, 255))
+                elif max_el* 0.50 > zeors_array[x, y] >= max_el * 0.49:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 255, 0, 255))
+                elif max_el* 0.49 > zeors_array[x, y] >= max_el * 0.48:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 235, 255, 255))
+                elif max_el* 0.48 > zeors_array[x, y] >= max_el * 0.47:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 235, 255, 255))
+                elif max_el* 0.47 > zeors_array[x, y] >= max_el * 0.46:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 225, 255, 255))
+                elif max_el* 0.46 > zeors_array[x, y] >= max_el * 0.45:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 215, 255, 255))
+                elif max_el* 0.45 > zeors_array[x, y] >= max_el * 0.44:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 205, 255, 255))
+                elif max_el* 0.44 > zeors_array[x, y] >= max_el * 0.43:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 195, 255, 255))
+                elif max_el* 0.43 > zeors_array[x, y] >= max_el * 0.42:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 185, 255, 255))
+                elif max_el* 0.42 > zeors_array[x, y] >= max_el * 0.41:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 175, 255, 255))
+                elif max_el* 0.41 > zeors_array[x, y] >= max_el * 0.40:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 165, 255, 255))
+                elif max_el* 0.40 > zeors_array[x, y] >= max_el * 0.39:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 155, 255, 255))
+                elif max_el* 0.39 > zeors_array[x, y] >= max_el * 0.38:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 145, 255, 255))
+                elif max_el* 0.38 > zeors_array[x, y] >= max_el * 0.37:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 135, 255, 255))
+                elif max_el* 0.37 > zeors_array[x, y] >= max_el * 0.36:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 125, 255, 255))
+                elif max_el* 0.36 > zeors_array[x, y] >= max_el * 0.35:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 115, 255, 255))
+                elif max_el* 0.35 > zeors_array[x, y] >= max_el * 0.34:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 105, 255, 255))
+                elif max_el* 0.34 > zeors_array[x, y] >= max_el * 0.33:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 95, 255, 255))
+                elif max_el* 0.33 > zeors_array[x, y] >= max_el * 0.32:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 85, 255, 255))
+                elif max_el* 0.32 > zeors_array[x, y] >= max_el * 0.31:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 75, 255, 255))
+                elif max_el* 0.31 > zeors_array[x, y] >= max_el * 0.30:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 65, 255, 255))
+                elif max_el* 0.30 > zeors_array[x, y] >= max_el * 0.29:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 55, 255, 255))
+                elif max_el* 0.29 > zeors_array[x, y] >= max_el * 0.28:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 45, 255, 255))
+                elif max_el* 0.28 > zeors_array[x, y] >= max_el * 0.27:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 35, 255, 255))
+                elif max_el* 0.27 > zeors_array[x, y] >= max_el * 0.26:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 25, 255, 255))
+                elif max_el* 0.26 > zeors_array[x, y] >= max_el * 0.25:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 25, 255, 255))
+                elif max_el* 0.25 > zeors_array[x, y] >= max_el * 0.1:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 0, 255, 255))
+
+
 
         pixmap_zone = QtGui.QPixmap.fromImage(qimg_zone)
         # Положим одну картинку на другую
@@ -1471,11 +1607,6 @@ class Painter(QtWidgets.QMainWindow):
         # Разместим на сцене pixmap с pixmap_zone
         self.scene.addPixmap(pixmap)
         self.scene.setSceneRect(QtCore.QRectF(pixmap.rect()))
-
-
-
-
-
 
     def get_color_for_zone(self) -> list:
         # по кнопкам определим зоны для рисования
@@ -1551,11 +1682,11 @@ class Painter(QtWidgets.QMainWindow):
 
         return polygon
 
-    def calc_el_zeors_array(self, width, height, object, power, zeors_array,scale_name):
+    def calc_el_zeors_array(self, width, height, object, power, zeors_array, scale_name):
         # power = [[power],[dist]]
         for x in range(width):
             for y in range(height):
-                dist = round(Point(x, y).distance(object))*scale_name
+                dist = round(Point(x, y).distance(object)) * scale_name
                 if dist == 0:
                     zeors_array[x, y] = zeors_array[x, y] + power[0][0]
                 elif dist in power[1]:
@@ -1563,34 +1694,20 @@ class Painter(QtWidgets.QMainWindow):
                     zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
                 else:
                     for i in power[1]:
-                        if abs(dist-i)<0.1:
+
+                        if abs(dist - i) < 0.1:
                             find_index = power[1].index(i)
                             zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
                             break
-                        if abs(dist-i)<0.5:
+                        if abs(dist - i) < 0.5:
                             find_index = power[1].index(i)
                             zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
                             break
-                        if abs(dist-i)<1:
+                        if abs(dist - i) < 1:
                             find_index = power[1].index(i)
                             zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
                             break
-                        if abs(dist-i)<1.5:
-                            find_index = power[1].index(i)
-                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
-                            break
-                        if abs(dist-i)<2:
-                            find_index = power[1].index(i)
-                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
-                            break
-                        if abs(dist-i)<2.5:
-                            find_index = power[1].index(i)
-                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
-                            break
-                        if abs(dist-i)<3:
-                            find_index = power[1].index(i)
-                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
-                            break
+
         return
 
     def power_data(self, max_r):
