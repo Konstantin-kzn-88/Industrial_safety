@@ -1420,8 +1420,10 @@ class Painter(QtWidgets.QMainWindow):
             # возьмем тип объекта
             obj_type = obj.get("obj_type")
             max_radius = excel[index][-1] * scale_name
+            probit = excel[index][0]
             print(max_radius)
-            power = self.power_data(max_radius)
+            power = self.power_data(max_radius, probit)
+            print(power)
             index += 1
 
             # Определим рамку для поиска риска
@@ -1600,6 +1602,8 @@ class Painter(QtWidgets.QMainWindow):
                     qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 25, 255, 255))
                 elif max_el * 0.25 > zeors_array[x, y] >= max_el * 0.1:
                     qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 0, 255, 255))
+                # else:
+                #     print(f'zer_arr{zeors_array[x,y]}')
 
         pixmap_zone = QtGui.QPixmap.fromImage(qimg_zone)
         # Положим одну картинку на другую
@@ -1704,18 +1708,85 @@ class Painter(QtWidgets.QMainWindow):
                             find_index = power[1].index(i)
                             zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
                             break
-                        if abs(dist - i) < 0.5:
+                        elif abs(dist - i) < 0.5:
                             find_index = power[1].index(i)
                             zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
                             break
-                        if abs(dist - i) < 1:
+                        elif abs(dist - i) < 1:
                             find_index = power[1].index(i)
                             zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
                             break
-
+                        elif abs(dist - i) < 1.5:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            break
+                        elif abs(dist - i) < 2:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            break
+                        elif abs(dist - i) < 2.5:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            break
+                        elif abs(dist - i) < 3.0:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            break
+                        elif abs(dist - i) < 3.5:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            break
+                        elif abs(dist - i) < 4:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            break
+                        elif abs(dist - i) < 4.5:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            break
+                        elif abs(dist - i) < 5:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            break
+                        elif abs(dist - i) < 5.5:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            break
+                        elif abs(dist - i) < 6:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            break
+                        elif abs(dist - i) < 6.5:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            break
+                        elif abs(dist - i) < 7.0:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            break
+                        elif abs(dist - i) < 7.5:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            break
+                        elif abs(dist - i) < 8.0:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            break
+                        elif abs(dist - i) < 9.0:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            break
+                        elif abs(dist - i) < 9.5:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            break
+                        elif abs(dist - i) < 10:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            break
         return
 
-    def power_data(self, max_r):
+    def power_data(self, max_r, probit):
 
         radius = []
         power = [i / 100 for i in range(100)]
@@ -1723,7 +1794,9 @@ class Painter(QtWidgets.QMainWindow):
         for i in power:
             radius.append(max_r * i)
         power.sort(reverse=True)
+        power = [i * probit for i in power]
         power_data = [power, radius]
+        # print(powe/r_data)
 
         return power_data
 
