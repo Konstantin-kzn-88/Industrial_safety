@@ -1787,7 +1787,6 @@ class Painter(QtWidgets.QMainWindow):
         return
 
     def power_data(self, max_r, probit):
-
         radius = []
         power = [i / 100 for i in range(100)]
 
