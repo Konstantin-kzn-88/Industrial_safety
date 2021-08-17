@@ -1600,7 +1600,7 @@ class Painter(QtWidgets.QMainWindow):
                     qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 25, 255, 255))
                 elif max_el * 0.26 > zeors_array[x, y] >= max_el * 0.25:
                     qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 25, 255, 255))
-                elif max_el * 0.25 > zeors_array[x, y] >= max_el * 0.1:
+                elif max_el * 0.25 > zeors_array[x, y] >= max_el * 0.05:
                     qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 0, 255, 255))
                 # else:
                 #     print(f'zer_arr{zeors_array[x,y]}')
