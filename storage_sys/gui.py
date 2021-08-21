@@ -8,17 +8,27 @@
 import sys
 import os
 from pathlib import Path
-from PySide2 import QtWidgets, QtGui
+from PySide2 import QtWidgets, QtGui, QtSql
 
+db = QtSql.QSqlDatabase("QSQLITE")
+db.setDatabaseName("data.db")
+db.open()
 
-class Painter(QtWidgets.QMainWindow):
+class Storage_app(QtWidgets.QMainWindow):
 
     def __init__(self, parent=None) -> None:
         super().__init__()
         # Иконки
         self.main_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/data_base.png')
-        db_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/data_base.png')
+        state_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/state.png')
         ok_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/ok.png')
+        object_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/object.png')
+        doc_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/doc.png')
+
+
+
+
+
         replace_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/replace.png')
         save_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/save.png')
         clear_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/clear.png')
@@ -27,7 +37,6 @@ class Painter(QtWidgets.QMainWindow):
         scale_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/scale.png')
         dist_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/polyline.png')
         area_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/area.png')
-        object_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/object.png')
         settings_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/settings.png')
         draw_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/draw.png')
         exit_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/exit.png')
@@ -42,22 +51,13 @@ class Painter(QtWidgets.QMainWindow):
         # окно для ввода данных
         central_widget = QtWidgets.QWidget()
         grid = QtWidgets.QGridLayout(self)
-        grid.setColumnStretch(0, 7)
-        grid.setColumnStretch(1, 1)
-        # В первой колонке создаем место под ген.план
-        # создаем сцену  #создаем сцену и плосы прокрутки картинки
-        self.scene = QtWidgets.QGraphicsScene(self)
-        # создаем полосы прокрутки
-        self.area = QtWidgets.QScrollArea(self)
-        # добавляем картинку
-        self.pixmap = QtGui.QPixmap()
-        self.scene.addPixmap(self.pixmap)
-        # создаем обработчик клика мыши по сцене
-        # self.scene.mousePressEvent = self.m_press_event
-        # создаем вид который визуализирует сцену
-        self.view = QtWidgets.QGraphicsView(self.scene, self)
-        self.area.setWidget(self.view)
-        self.area.setWidgetResizable(True)
+        grid.setColumnStretch(0, 5)
+        grid.setColumnStretch(1, 2)
+        # В первой колонке создаем место под вид БД
+        self.table = QtWidgets.QTableView()
+        self.model = QtSql.QSqlRelationalTableModel(db=db)
+        self.table.setModel(self.model)
+        self.model.setTable("company")
 
         # т.к. данных  много создадим
         # вкладки табов
@@ -149,74 +149,58 @@ class Painter(QtWidgets.QMainWindow):
         # Размещаем на табе
         self.tab_settings.setLayout(self.tab_settings.layout)
 
-        grid.addWidget(self.area, 0, 0, 1, 1)
+        grid.addWidget(self.table, 0, 0, 1, 1)
         grid.addWidget(self.tabs, 0, 1, 1, 1)
         central_widget.setLayout(grid)
         self.setCentralWidget(central_widget)
 
         # База данных (меню)
-        db_menu = QtWidgets.QMenu('База данных', self)
-        db_create = QtWidgets.QAction(ok_ico, 'Создать', self)
-        db_create.setStatusTip('Создать новую базу данных')
-        db_create.triggered.connect(self.db_create)
-        db_menu.addAction(db_create)
-        db_connect = QtWidgets.QAction(db_ico, 'Подключиться', self)
-        db_connect.setStatusTip('Подключиться к существующей базе данных')
-        db_connect.triggered.connect(self.db_connect)
-        db_menu.addAction(db_connect)
+        main_menu = QtWidgets.QMenu('База данных', self)
+        file_is_open = QtWidgets.QAction(ok_ico, 'Подключение', self)
+        file_is_open.setStatusTip('Подключиться к базе данных')
+        file_is_open.triggered.connect(self.file_is_open)
+        main_menu.addAction(file_is_open)
 
-        # Генплан (меню)
-        plan_menu = QtWidgets.QMenu('Ген.план', self)
-        plan_add = QtWidgets.QAction(ok_ico, 'Добавить', self)
-        plan_add.setStatusTip('Добавить новый план объекта')
-        plan_add.setShortcut('Ctrl+N')
-        plan_add.triggered.connect(self.plan_add)
-        plan_menu.addAction(plan_add)
-        plan_replace = QtWidgets.QAction(replace_ico, 'Заменить', self)
-        plan_replace.setStatusTip('Заменить план объекта')
-        plan_replace.setShortcut('Ctrl+R')
-        plan_replace.triggered.connect(self.plan_replace)
-        plan_menu.addAction(plan_replace)
-        plan_save = QtWidgets.QAction(save_ico, 'Coхранить', self)
-        plan_save.setStatusTip('Сохранить текущее изображение плана объекта как файл')
-        plan_save.setShortcut('Ctrl+S')
-        plan_save.triggered.connect(self.plan_save)
-        plan_menu.addAction(plan_save)
-        plan_clear = QtWidgets.QAction(clear_ico, 'Очистить', self)
-        plan_clear.setStatusTip('Очистить план объекта')
-        plan_clear.setShortcut('Ctrl+С')
-        plan_clear.triggered.connect(self.plan_clear)
-        plan_menu.addAction(plan_clear)
-        plan_del = QtWidgets.QAction(del_ico, 'Удалить', self)
-        plan_del.setStatusTip('Удалить изображение плана объекта')
-        plan_del.setShortcut('Ctrl+X')
-        plan_del.triggered.connect(self.plan_del)
-        plan_menu.addAction(plan_del)
+        # Формы добавления информации в БД (меню)
+        add_menu = QtWidgets.QMenu('Информация в базу данных', self)
+        company_add = QtWidgets.QAction(state_ico, 'Добавить компанию', self)
+        company_add.setStatusTip('Добавить новую компанию')
+        # company_add.triggered.connect(self.company_add)
+        add_menu.addAction(company_add)
+        opo_add = QtWidgets.QAction(object_ico, 'Добавить ОПО', self)
+        opo_add.setStatusTip('Добавить новый опасный производственный объект')
+        # opo_add.triggered.connect(self.company_add)
+        add_menu.addAction(opo_add)
+        doc_add = QtWidgets.QAction(doc_ico, 'Добавить документацию объекта', self)
+        doc_add.setStatusTip('Добавить документацию опасного производственного объекта')
+        # doc_add.triggered.connect(self.company_add)
+        add_menu.addAction(doc_add)
 
         # Выход из приложения
         exit_prog = QtWidgets.QAction(exit_ico, 'Выход', self)
         exit_prog.setShortcut('Ctrl+Q')
-        exit_prog.setStatusTip('Выход из Painter')
+        exit_prog.setStatusTip('Выход из Storage_app')
         exit_prog.triggered.connect(self.close_event)
 
         # Справка
         help_show = QtWidgets.QAction(question_ico, 'Справка', self)
         help_show.setShortcut('F1')
-        help_show.setStatusTip('Открыть справку Painter')
+        help_show.setStatusTip('Открыть справку Storage_app')
         help_show.triggered.connect(self.help_show)
 
         # О приложении
         about_prog = QtWidgets.QAction(info_ico, 'О приложении', self)
         about_prog.setShortcut('F2')
-        about_prog.setStatusTip('О приложении Painter')
+        about_prog.setStatusTip('О приложении Storage_app')
         about_prog.triggered.connect(self.about_programm)
 
         # Меню приложения (верхняя плашка)
         menubar = self.menuBar()
         file_menu = menubar.addMenu('Файл')
-        file_menu.addMenu(db_menu)
-        file_menu.addMenu(plan_menu)
+        file_menu.addMenu(main_menu)
         file_menu.addAction(exit_prog)
+        db_menu = menubar.addMenu('База данных')
+        db_menu.addMenu(add_menu)
         help_menu = menubar.addMenu('Справка')
         help_menu.addAction(help_show)
         help_menu.addAction(about_prog)
@@ -231,15 +215,23 @@ class Painter(QtWidgets.QMainWindow):
 
     # 1. Вкладка ФАЙЛ
     # Функции базы данных
-    def db_connect(self):
-        print("db_connect")
+    def file_is_open(self):
+        messageBox = QtWidgets.QMessageBox(
+            QtWidgets.QMessageBox.Question,
+            "Соединение с базой данных",
+            "Соединение с базой данных проверяется"
+            "только для серверных баз данных",
+            (QtWidgets.QMessageBox.Ok)
+        )
+        messageBox.setWindowIcon(self.main_ico)
+        resultCode = messageBox.exec_()
+        if resultCode == QtWidgets.QMessageBox.Ok:
+            return
 
-    def db_create(self):
-        print("db_create")
 
-    # Функции генплана
-    def plan_add(self):
-        print("plan_add")
+    # Функции добавления в БД
+    def company_add(self):
+        print("company_add")
 
     def plan_replace(self):
         print("plan_replace")
@@ -282,9 +274,8 @@ class Painter(QtWidgets.QMainWindow):
         messageBox = QtWidgets.QMessageBox(
             QtWidgets.QMessageBox.Information,
             "О программе",
-            """Программа <b>Painter</b>. Предназначена для отрисовки зон действия 
-поражающих факторов и построения полей потенциального риска 
-на основе данных из Excel. Разрабочик: <b>npfgsk.ru</b>""",
+            """Программа <b>Storage_app</b>. Предназначена для хранения данных об опасных производственных объектах.
+Разрабочик: <b>npfgsk.ru</b>""",
             (QtWidgets.QMessageBox.Ok)
         )
         messageBox.setWindowIcon(self.main_ico)
@@ -294,5 +285,5 @@ class Painter(QtWidgets.QMainWindow):
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     app.setStyle('Fusion')
-    ex = Painter()
+    ex = Storage_app()
     app.exec_()
