@@ -1903,6 +1903,7 @@ class Painter(QtWidgets.QMainWindow):
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
+    app.setStyle('Fusion')
     locale = 'ru_RU'
     qt_translator = QTranslator(app)
     qt_translator.load('{}/qtbase_{}.qm'.format(I18N_QT_PATH, locale))
