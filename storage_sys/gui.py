@@ -20,10 +20,13 @@ class Storage_app(QtWidgets.QMainWindow):
         super().__init__()
         # Иконки
         self.main_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/data_base.png')
+        company_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/company.png')
         state_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/state.png')
         ok_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/ok.png')
         object_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/object.png')
-        doc_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/doc.png')
+        doc_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/document.png')
+        line_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/tube.png')
+
 
 
 
@@ -32,7 +35,7 @@ class Storage_app(QtWidgets.QMainWindow):
         replace_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/replace.png')
         save_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/save.png')
         clear_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/clear.png')
-        del_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/del.png')
+        # del_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/del.png')
         question_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/question.png')
         scale_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/scale.png')
         dist_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/polyline.png')
@@ -163,7 +166,7 @@ class Storage_app(QtWidgets.QMainWindow):
 
         # Формы добавления информации в БД (меню)
         add_menu = QtWidgets.QMenu('Информация в базу данных', self)
-        company_add = QtWidgets.QAction(state_ico, 'Добавить компанию', self)
+        company_add = QtWidgets.QAction(company_ico, 'Добавить компанию', self)
         company_add.setStatusTip('Добавить новую компанию')
         # company_add.triggered.connect(self.company_add)
         add_menu.addAction(company_add)
@@ -175,6 +178,14 @@ class Storage_app(QtWidgets.QMainWindow):
         doc_add.setStatusTip('Добавить документацию опасного производственного объекта')
         # doc_add.triggered.connect(self.company_add)
         add_menu.addAction(doc_add)
+        line_obj_add = QtWidgets.QAction(line_ico, 'Добавить линейный объект', self)
+        line_obj_add.setStatusTip('Добавить линейный объект')
+        # doc_add.triggered.connect(self.company_add)
+        add_menu.addAction(line_obj_add)
+        state_obj_add = QtWidgets.QAction(state_ico, 'Добавить стационарный объект', self)
+        state_obj_add.setStatusTip('Добавить новый стационарный объект')
+        # company_add.triggered.connect(self.company_add)
+        add_menu.addAction(state_obj_add)
 
         # Выход из приложения
         exit_prog = QtWidgets.QAction(exit_ico, 'Выход', self)
