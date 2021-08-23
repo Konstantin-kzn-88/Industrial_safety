@@ -9,10 +9,10 @@ def create_all_tabble():
     create_state_obj_table()
     create_build_obj_table()
     create_project_table()
-    create_conservation_table()
+    create_epb_table()
 
 
-def create_conservation_table():
+def create_epb_table():
     """
     Создание восьмой таблицы таблицы "Консервация".
     Удаление производится для того что-бы не опасть на ошибку
@@ -21,16 +21,16 @@ def create_conservation_table():
         cur = con.cursor()
 
         # DEL
-        cur.execute("DROP TABLE IF EXISTS сonservation")  # will delete the table if it exists
+        cur.execute("DROP TABLE IF EXISTS epb")  # will delete the table if it exists
 
         # CREATE
-        cur.execute("""CREATE TABLE IF NOT EXISTS сonservation (
-                            id INTEGER PRIMARY KEY AUTOINCREMENT, 
-                            name_project TEXT NOT NULL,
-                            date_project DATE NOT NULL, 
-                            epb_project BLOB NOT NULL,
-                            project BLOB NOT NULL,
-                            id_opo INTEGER NOT NULL, 
+        cur.execute("""CREATE TABLE IF NOT EXISTS epb (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            name_doc TEXT NOT NULL,
+                            date_doc DATE NOT NULL,
+                            epb_doc BLOB NOT NULL,
+                            project_doc BLOB NOT NULL,
+                            id_opo INTEGER NOT NULL,
                             FOREIGN KEY (id_opo) REFERENCES opo(id));
                     """)
 

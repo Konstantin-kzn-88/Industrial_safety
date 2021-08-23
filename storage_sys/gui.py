@@ -18,6 +18,9 @@ class Storage_app(QtWidgets.QMainWindow):
 
     def __init__(self, parent=None) -> None:
         super().__init__()
+        # Создадим для добавления информации в базу данных
+        self.dialog_company_add = Company_add()
+
         # Иконки
         self.main_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/data_base.png')
         company_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/company.png')
@@ -26,6 +29,9 @@ class Storage_app(QtWidgets.QMainWindow):
         object_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/object.png')
         doc_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/document.png')
         line_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/tube.png')
+        build_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/build.png')
+        project_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/project.png')
+        project2_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/project2.png')
 
 
 
@@ -165,27 +171,74 @@ class Storage_app(QtWidgets.QMainWindow):
         main_menu.addAction(file_is_open)
 
         # Формы добавления информации в БД (меню)
-        add_menu = QtWidgets.QMenu('Информация в базу данных', self)
-        company_add = QtWidgets.QAction(company_ico, 'Добавить компанию', self)
+        add_menu = QtWidgets.QMenu('Добавить в базу данных', self)
+        company_add = QtWidgets.QAction(company_ico, 'Компания', self)
         company_add.setStatusTip('Добавить новую компанию')
-        # company_add.triggered.connect(self.company_add)
+        company_add.triggered.connect(self.company_add)
         add_menu.addAction(company_add)
-        opo_add = QtWidgets.QAction(object_ico, 'Добавить ОПО', self)
+        opo_add = QtWidgets.QAction(object_ico, 'Опасный производственный объект', self)
         opo_add.setStatusTip('Добавить новый опасный производственный объект')
         # opo_add.triggered.connect(self.company_add)
         add_menu.addAction(opo_add)
-        doc_add = QtWidgets.QAction(doc_ico, 'Добавить документацию объекта', self)
+        doc_add = QtWidgets.QAction(doc_ico, 'Документация объекта', self)
         doc_add.setStatusTip('Добавить документацию опасного производственного объекта')
         # doc_add.triggered.connect(self.company_add)
         add_menu.addAction(doc_add)
-        line_obj_add = QtWidgets.QAction(line_ico, 'Добавить линейный объект', self)
+        line_obj_add = QtWidgets.QAction(line_ico, 'Линейный объект', self)
         line_obj_add.setStatusTip('Добавить линейный объект')
         # doc_add.triggered.connect(self.company_add)
         add_menu.addAction(line_obj_add)
-        state_obj_add = QtWidgets.QAction(state_ico, 'Добавить стационарный объект', self)
+        state_obj_add = QtWidgets.QAction(state_ico, 'Стационарный объект', self)
         state_obj_add.setStatusTip('Добавить новый стационарный объект')
         # company_add.triggered.connect(self.company_add)
         add_menu.addAction(state_obj_add)
+        build_obj_add = QtWidgets.QAction(build_ico, 'Здание/сооружение', self)
+        build_obj_add.setStatusTip('Добавить новое здание/сооружение')
+        # company_add.triggered.connect(self.company_add)
+        add_menu.addAction(build_obj_add)
+        project_add = QtWidgets.QAction(project_ico, 'Проект', self)
+        project_add.setStatusTip('Добавить новую проектную документацию')
+        # company_add.triggered.connect(self.company_add)
+        add_menu.addAction(project_add)
+        epb_add = QtWidgets.QAction(project2_ico, 'Документация с ЭПБ', self)
+        epb_add.setStatusTip('Добавить новую документацию c ЭПБ')
+        # company_add.triggered.connect(self.company_add)
+        add_menu.addAction(epb_add)
+
+        # Формы удаления информации из БД (меню)
+        del_menu = QtWidgets.QMenu('Удалить из базы данных', self)
+        company_del = QtWidgets.QAction(company_ico, 'Компания', self)
+        company_del.setStatusTip('Удалить компанию')
+        # company_del.triggered.connect(self.company_del)
+        del_menu.addAction(company_del)
+        opo_del = QtWidgets.QAction(object_ico, 'Опасный производственный объект', self)
+        opo_del.setStatusTip('Добавить новый опасный производственный объект')
+        # opo_del.triggered.connect(self.company_del)
+        del_menu.addAction(opo_del)
+        doc_del = QtWidgets.QAction(doc_ico, 'Документация объекта', self)
+        doc_del.setStatusTip('Добавить документацию опасного производственного объекта')
+        # doc_del.triggered.connect(self.company_del)
+        del_menu.addAction(doc_del)
+        line_obj_del = QtWidgets.QAction(line_ico, 'Линейный объект', self)
+        line_obj_del.setStatusTip('Добавить линейный объект')
+        # doc_del.triggered.connect(self.company_del)
+        del_menu.addAction(line_obj_del)
+        state_obj_del = QtWidgets.QAction(state_ico, 'Стационарный объект', self)
+        state_obj_del.setStatusTip('Добавить новый стационарный объект')
+        # company_del.triggered.connect(self.company_del)
+        del_menu.addAction(state_obj_del)
+        build_obj_del = QtWidgets.QAction(build_ico, 'Здание/сооружение', self)
+        build_obj_del.setStatusTip('Добавить новое здание/сооружение')
+        # company_del.triggered.connect(self.company_del)
+        del_menu.addAction(build_obj_del)
+        project_del = QtWidgets.QAction(project_ico, 'Проект', self)
+        project_del.setStatusTip('Добавить новую проектную документацию')
+        # company_del.triggered.connect(self.company_del)
+        del_menu.addAction(project_del)
+        epb_del = QtWidgets.QAction(project2_ico, 'Документация с ЭПБ', self)
+        epb_del.setStatusTip('Добавить новую документацию c ЭПБ')
+        # company_del.triggered.connect(self.company_del)
+        del_menu.addAction(epb_del)
 
         # Выход из приложения
         exit_prog = QtWidgets.QAction(exit_ico, 'Выход', self)
@@ -212,6 +265,7 @@ class Storage_app(QtWidgets.QMainWindow):
         file_menu.addAction(exit_prog)
         db_menu = menubar.addMenu('База данных')
         db_menu.addMenu(add_menu)
+        db_menu.addMenu(del_menu)
         help_menu = menubar.addMenu('Справка')
         help_menu.addAction(help_show)
         help_menu.addAction(about_prog)
@@ -225,7 +279,6 @@ class Storage_app(QtWidgets.QMainWindow):
             self.show()
 
     # 1. Вкладка ФАЙЛ
-    # Функции базы данных
     def file_is_open(self):
         messageBox = QtWidgets.QMessageBox(
             QtWidgets.QMessageBox.Question,
@@ -238,23 +291,6 @@ class Storage_app(QtWidgets.QMainWindow):
         resultCode = messageBox.exec_()
         if resultCode == QtWidgets.QMessageBox.Ok:
             return
-
-
-    # Функции добавления в БД
-    def company_add(self):
-        print("company_add")
-
-    def plan_replace(self):
-        print("plan_replace")
-
-    def plan_save(self):
-        print("plan_save")
-
-    def plan_clear(self):
-        print("plan_clear")
-
-    def plan_del(self):
-        print("plan_del")
 
     #     Функция выхода из программы
     def close_event(self) -> None:
@@ -275,6 +311,25 @@ class Storage_app(QtWidgets.QMainWindow):
             return self.close()
 
 
+    # 2. База данных
+    def company_add(self):
+        print("company_add")
+        self.dialog_company_add.show()
+
+    def plan_replace(self):
+        print("plan_replace")
+
+    def plan_save(self):
+        print("plan_save")
+
+    def plan_clear(self):
+        print("plan_clear")
+
+    def plan_del(self):
+        print("plan_del")
+
+
+
     # 2. Вкладка СПРАВКА
     # функция справки
     def help_show(self):
@@ -291,6 +346,99 @@ class Storage_app(QtWidgets.QMainWindow):
         )
         messageBox.setWindowIcon(self.main_ico)
         messageBox.exec_()
+
+    # ОБЩИЕ ФУНКЦИИ
+    def convertToBinaryData(self, file_path):
+        # Конвертирование в BLOB
+        with open(file_path, 'rb') as file:
+            blobData = file.read()
+        return blobData
+
+class Company_add(QtWidgets.QWidget):
+    def __init__(self):
+        super().__init__()
+        main_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/data_base.png')
+        folder_file_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/folder_file.png')
+        self.setWindowTitle('Запрос данных о компании')
+        self.setWindowIcon(main_ico)
+        #  Создаем валидаторы для полей ввода
+        onlyInt = QtGui.QIntValidator()  # only int
+        # Рамка №1 (то что будет в рамке 1)
+        name_company = QtWidgets.QLineEdit()
+        name_company.setPlaceholderText("Наименование компании")
+        full_name_manager = QtWidgets.QLineEdit()
+        full_name_manager.setPlaceholderText("Ф.И.О. руководителя")
+        ur_address = QtWidgets.QLineEdit()
+        ur_address.setPlaceholderText("Юридический адрес")
+        post_address = QtWidgets.QLineEdit()
+        post_address.setPlaceholderText("Почтовый адрес")
+        telephone = QtWidgets.QLineEdit()
+        telephone.setPlaceholderText("Телефон")
+        telephone.setValidator(onlyInt)
+        fax = QtWidgets.QLineEdit()
+        fax.setPlaceholderText("Факс")
+        fax.setValidator(onlyInt)
+        inn_number = QtWidgets.QLineEdit()
+        inn_number.setPlaceholderText("ИНН")
+        inn_number.setValidator(onlyInt)
+        kpp_number = QtWidgets.QLineEdit()
+        kpp_number.setPlaceholderText("КПП")
+        kpp_number.setValidator(onlyInt)
+        ogrn_number = QtWidgets.QLineEdit()
+        ogrn_number.setPlaceholderText("ОГРН")
+        ogrn_number.setValidator(onlyInt)
+
+        self.license_opo = QtWidgets.QLineEdit()
+        self.license_opo.setPlaceholderText("Лицензия (выберете файл)")
+        self.license_opo.setReadOnly(True)
+        license_opo_btn = QtWidgets.QPushButton("")
+        license_opo_btn.setIcon(folder_file_ico)
+        license_opo_btn.clicked.connect(self.folder_file_license)
+        hbox_license_opo = QtWidgets.QHBoxLayout()
+        hbox_license_opo.addWidget(self.license_opo)
+        hbox_license_opo.addWidget(license_opo_btn)
+        # Рамка №2 (то что будет в рамке 2)
+        save_in_db_btn = QtWidgets.QPushButton("Отправить")
+        save_in_db_btn.clicked.connect(self.func)
+
+        # Упаковываем все  (делаем все в QGroupBox
+        # т.к. элементы будут добавляться и их
+        # потом нужно будет объединять в группы
+        # Рамка №1
+        layout_info = QtWidgets.QFormLayout(self)
+        GB_info = QtWidgets.QGroupBox('Данные о компании добавляемые в базу данных')
+        GB_info.setStyleSheet("QGroupBox { font-weight : bold; }")
+        layout_info.addRow("1. ", name_company)
+        layout_info.addRow("2. ", full_name_manager)
+        layout_info.addRow("3. ", ur_address)
+        layout_info.addRow("4. ", post_address)
+        layout_info.addRow("5. ", telephone)
+        layout_info.addRow("6. ", fax)
+        layout_info.addRow("7. ", inn_number)
+        layout_info.addRow("8. ", kpp_number)
+        layout_info.addRow("9. ", ogrn_number)
+        layout_info.addRow("10. ", hbox_license_opo)
+
+        GB_info.setLayout(layout_info)
+        # Рамка №2
+        layout_btn = QtWidgets.QFormLayout(self)
+        GB_btn = QtWidgets.QGroupBox('Записать')
+        GB_btn.setStyleSheet("QGroupBox { font-weight : bold; }")
+        layout_btn.addRow("", save_in_db_btn)
+        GB_btn.setLayout(layout_btn)
+
+        vbox = QtWidgets.QVBoxLayout()
+        vbox.addWidget(GB_info)
+        vbox.addWidget(GB_btn)
+        self.setLayout(vbox)
+
+    def func(self):
+        self.close()
+
+    def folder_file_license(self):
+        path = QtWidgets.QFileDialog.getOpenFileName(self, 'Файл лицензии', "/home", ("PDF (*.pdf)"))[0]
+        self.license_opo.setText(path)
+
 
 
 if __name__ == '__main__':
