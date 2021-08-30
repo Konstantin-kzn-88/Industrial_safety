@@ -357,36 +357,36 @@ class Storage_app(QtWidgets.QMainWindow):
 class Company_add(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
-        main_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/data_base.png')
+        self.main_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/data_base.png')
         folder_file_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/folder_file.png')
-        self.setWindowTitle('Запрос данных о компании')
-        self.setWindowIcon(main_ico)
+        self.setWindowTitle('Данные о компании')
+        self.setWindowIcon(self.main_ico)
         #  Создаем валидаторы для полей ввода
         onlyInt = QtGui.QIntValidator()  # only int
         # Рамка №1 (то что будет в рамке 1)
-        name_company = QtWidgets.QLineEdit()
-        name_company.setPlaceholderText("Наименование компании")
-        full_name_manager = QtWidgets.QLineEdit()
-        full_name_manager.setPlaceholderText("Ф.И.О. руководителя")
-        ur_address = QtWidgets.QLineEdit()
-        ur_address.setPlaceholderText("Юридический адрес")
-        post_address = QtWidgets.QLineEdit()
-        post_address.setPlaceholderText("Почтовый адрес")
-        telephone = QtWidgets.QLineEdit()
-        telephone.setPlaceholderText("Телефон")
-        telephone.setValidator(onlyInt)
-        fax = QtWidgets.QLineEdit()
-        fax.setPlaceholderText("Факс")
-        fax.setValidator(onlyInt)
-        inn_number = QtWidgets.QLineEdit()
-        inn_number.setPlaceholderText("ИНН")
-        inn_number.setValidator(onlyInt)
-        kpp_number = QtWidgets.QLineEdit()
-        kpp_number.setPlaceholderText("КПП")
-        kpp_number.setValidator(onlyInt)
-        ogrn_number = QtWidgets.QLineEdit()
-        ogrn_number.setPlaceholderText("ОГРН")
-        ogrn_number.setValidator(onlyInt)
+        self.name_company = QtWidgets.QLineEdit()
+        self.name_company.setPlaceholderText("Наименование компании")
+        self.full_name_manager = QtWidgets.QLineEdit()
+        self.full_name_manager.setPlaceholderText("Ф.И.О. руководителя")
+        self.ur_address = QtWidgets.QLineEdit()
+        self.ur_address.setPlaceholderText("Юридический адрес")
+        self.post_address = QtWidgets.QLineEdit()
+        self.post_address.setPlaceholderText("Почтовый адрес")
+        self.telephone = QtWidgets.QLineEdit()
+        self.telephone.setPlaceholderText("Телефон")
+        self.telephone.setValidator(onlyInt)
+        self.fax = QtWidgets.QLineEdit()
+        self.fax.setPlaceholderText("Факс")
+        self.fax.setValidator(onlyInt)
+        self.inn_number = QtWidgets.QLineEdit()
+        self.inn_number.setPlaceholderText("ИНН")
+        self.inn_number.setValidator(onlyInt)
+        self.kpp_number = QtWidgets.QLineEdit()
+        self.kpp_number.setPlaceholderText("КПП")
+        self.kpp_number.setValidator(onlyInt)
+        self.ogrn_number = QtWidgets.QLineEdit()
+        self.ogrn_number.setPlaceholderText("ОГРН")
+        self.ogrn_number.setValidator(onlyInt)
 
         self.license_opo = QtWidgets.QLineEdit()
         self.license_opo.setPlaceholderText("Лицензия (выберете файл)")
@@ -397,9 +397,39 @@ class Company_add(QtWidgets.QWidget):
         hbox_license_opo = QtWidgets.QHBoxLayout()
         hbox_license_opo.addWidget(self.license_opo)
         hbox_license_opo.addWidget(license_opo_btn)
+
+        self.reg_opo = QtWidgets.QLineEdit()
+        self.reg_opo.setPlaceholderText("Регистрация ОПО (выберете файл)")
+        self.reg_opo.setReadOnly(True)
+        reg_opo_btn = QtWidgets.QPushButton("")
+        reg_opo_btn.setIcon(folder_file_ico)
+        reg_opo_btn.clicked.connect(self.folder_file_reg)
+        hbox_reg_opo = QtWidgets.QHBoxLayout()
+        hbox_reg_opo.addWidget(self.reg_opo)
+        hbox_reg_opo.addWidget(reg_opo_btn)
+
+        self.position_pk = QtWidgets.QLineEdit()
+        self.position_pk.setPlaceholderText("Положение о ПК (выберете файл)")
+        self.position_pk.setReadOnly(True)
+        position_pk_btn = QtWidgets.QPushButton("")
+        position_pk_btn.setIcon(folder_file_ico)
+        position_pk_btn.clicked.connect(self.folder_file_pk)
+        hbox_position_pk = QtWidgets.QHBoxLayout()
+        hbox_position_pk.addWidget(self.position_pk)
+        hbox_position_pk.addWidget(position_pk_btn)
+
+        self.position_crash = QtWidgets.QLineEdit()
+        self.position_crash.setPlaceholderText("Положение об инцендентах (выберете файл)")
+        self.position_crash.setReadOnly(True)
+        position_crash_btn = QtWidgets.QPushButton("")
+        position_crash_btn.setIcon(folder_file_ico)
+        position_crash_btn.clicked.connect(self.folder_file_crash)
+        hbox_position_crash = QtWidgets.QHBoxLayout()
+        hbox_position_crash.addWidget(self.position_crash)
+        hbox_position_crash.addWidget(position_crash_btn)
         # Рамка №2 (то что будет в рамке 2)
-        save_in_db_btn = QtWidgets.QPushButton("Отправить")
-        save_in_db_btn.clicked.connect(self.func)
+        save_in_db_btn = QtWidgets.QPushButton("Записать в базу данных")
+        save_in_db_btn.clicked.connect(self.write_in_db)
 
         # Упаковываем все  (делаем все в QGroupBox
         # т.к. элементы будут добавляться и их
@@ -408,21 +438,24 @@ class Company_add(QtWidgets.QWidget):
         layout_info = QtWidgets.QFormLayout(self)
         GB_info = QtWidgets.QGroupBox('Данные о компании добавляемые в базу данных')
         GB_info.setStyleSheet("QGroupBox { font-weight : bold; }")
-        layout_info.addRow("1. ", name_company)
-        layout_info.addRow("2. ", full_name_manager)
-        layout_info.addRow("3. ", ur_address)
-        layout_info.addRow("4. ", post_address)
-        layout_info.addRow("5. ", telephone)
-        layout_info.addRow("6. ", fax)
-        layout_info.addRow("7. ", inn_number)
-        layout_info.addRow("8. ", kpp_number)
-        layout_info.addRow("9. ", ogrn_number)
+        layout_info.addRow("1. ", self.name_company)
+        layout_info.addRow("2. ", self.full_name_manager)
+        layout_info.addRow("3. ", self.ur_address)
+        layout_info.addRow("4. ", self.post_address)
+        layout_info.addRow("5. ", self.telephone)
+        layout_info.addRow("6. ", self.fax)
+        layout_info.addRow("7. ", self.inn_number)
+        layout_info.addRow("8. ", self.kpp_number)
+        layout_info.addRow("9. ", self.ogrn_number)
         layout_info.addRow("10. ", hbox_license_opo)
+        layout_info.addRow("11. ", hbox_reg_opo)
+        layout_info.addRow("12. ", hbox_position_pk)
+        layout_info.addRow("13. ", hbox_position_crash)
 
         GB_info.setLayout(layout_info)
         # Рамка №2
         layout_btn = QtWidgets.QFormLayout(self)
-        GB_btn = QtWidgets.QGroupBox('Записать')
+        GB_btn = QtWidgets.QGroupBox('Действие')
         GB_btn.setStyleSheet("QGroupBox { font-weight : bold; }")
         layout_btn.addRow("", save_in_db_btn)
         GB_btn.setLayout(layout_btn)
@@ -432,13 +465,69 @@ class Company_add(QtWidgets.QWidget):
         vbox.addWidget(GB_btn)
         self.setLayout(vbox)
 
-    def func(self):
-        self.close()
-
     def folder_file_license(self):
         path = QtWidgets.QFileDialog.getOpenFileName(self, 'Файл лицензии', "/home", ("PDF (*.pdf)"))[0]
         self.license_opo.setText(path)
 
+    def folder_file_reg(self):
+        path = QtWidgets.QFileDialog.getOpenFileName(self, 'Файл свидетельства орегистрации',
+                                                     "/home", ("PDF (*.pdf)"))[0]
+        self.reg_opo.setText(path)
+
+    def folder_file_pk(self):
+        path = QtWidgets.QFileDialog.getOpenFileName(self, 'Файл положения о ПК', "/home", ("PDF (*.pdf)"))[0]
+        self.position_pk.setText(path)
+
+
+    def folder_file_crash(self):
+        path = QtWidgets.QFileDialog.getOpenFileName(self, 'Файл положения о инцендентах', "/home", ("PDF (*.pdf)"))[0]
+        self.position_crash.setText(path)
+
+    def write_in_db(self):
+        print("Start write in DB")
+        check = self.check_data()
+        if check:
+            print("Идем дальше данные введены")
+            
+        else:
+            messageBox = QtWidgets.QMessageBox(
+                QtWidgets.QMessageBox.Warning,
+                "Запись данных",
+                """Запись не выполненна!""",
+                (QtWidgets.QMessageBox.Ok)
+            )
+            messageBox.setWindowIcon(self.main_ico)
+            messageBox.exec_()
+
+    def check_data(self):
+        data = (
+            self.name_company.text(),
+            self.full_name_manager.text(),
+            self.ur_address.text(),
+            self.post_address.text(),
+            self.telephone.text(),
+            self.fax.text(),
+            self.inn_number.text(),
+            self.kpp_number.text(),
+            self.ogrn_number.text(),
+            self.license_opo.text(),
+            self.reg_opo.text(),
+            self.position_pk.text(),
+            self.position_crash.text()
+        )
+
+        for i in data:
+            if i == '':
+                messageBox = QtWidgets.QMessageBox(
+                    QtWidgets.QMessageBox.Warning,
+                    "Проверка данных",
+                    """Данные введены не верно. Проверьте заполнение!""",
+                    (QtWidgets.QMessageBox.Ok)
+                )
+                messageBox.setWindowIcon(self.main_ico)
+                messageBox.exec_()
+                return False
+        return True
 
 
 if __name__ == '__main__':
