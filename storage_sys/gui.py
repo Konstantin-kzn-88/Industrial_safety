@@ -488,7 +488,7 @@ class Company_add(QtWidgets.QWidget):
         check = self.check_data()
         if check:
             print("Идем дальше данные введены")
-            
+
         else:
             messageBox = QtWidgets.QMessageBox(
                 QtWidgets.QMessageBox.Warning,
