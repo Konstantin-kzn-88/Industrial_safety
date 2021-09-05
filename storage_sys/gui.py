@@ -44,7 +44,7 @@ class Storage_app(QtWidgets.QMainWindow):
         super().__init__()
 
         self.createConnection() # проверка подключения базы данных
-        self.fillTable()  # !!! тестовое заполнение базы данных
+        # self.fillTable()  # !!! тестовое заполнение базы данных
         self.createModel() # создание модели
         self.initUI() # отображение UI
 
@@ -55,11 +55,14 @@ class Storage_app(QtWidgets.QMainWindow):
         btnAdd.clicked.connect(self.addRecord)
         btnDel = QtWidgets.QPushButton("&Удалить запись")
         btnDel.clicked.connect(self.delRecord)
+        btn_any_table = QtWidgets.QPushButton("&Поменять таблицу")
+        btn_any_table.clicked.connect(self.any_table)
         # Упакуем все в QVBoxLayout
         layout = QtWidgets.QVBoxLayout(self.centralWidget)
         layout.addWidget(self.view)
         layout.addWidget(btnAdd)
         layout.addWidget(btnDel)
+        layout.addWidget(btn_any_table)
 
     def createConnection(self):
         """
@@ -210,6 +213,21 @@ class Storage_app(QtWidgets.QMainWindow):
         self.model.setHeaderData(6, QtCore.Qt.Horizontal, "Свидетельство о регистрации")
         self.set_relation()
         self.model.select()
+
+    def any_table(self):
+        print('1')
+        self.model.setTable("company")
+        # self.model.setHeaderData(0, QtCore.Qt.Horizontal, "id")
+        # self.model.setHeaderData(1, QtCore.Qt.Horizontal, "Наименование организации")
+        # self.model.setHeaderData(2, QtCore.Qt.Horizontal, "Наименование ОПО")
+        # self.model.setHeaderData(3, QtCore.Qt.Horizontal, "Адрес ОПО")
+        # self.model.setHeaderData(4, QtCore.Qt.Horizontal, "Рег.номер ОПО")
+        # self.model.setHeaderData(5, QtCore.Qt.Horizontal, "Класс ОПО")
+        # self.model.setHeaderData(6, QtCore.Qt.Horizontal, "Свидетельство о регистрации")
+        # self.set_relation()
+        self.model.select()
+        print("2")
+
 
     def initUI(self):
         self.view = QtWidgets.QTableView()
