@@ -41,15 +41,17 @@ class Storage_app(QtWidgets.QMainWindow):
     Основной класс базы данных реализующий представление
     базы данных ОПО
     """
-    def __init__(self, parent=None)-> None:
+
+    def __init__(self, parent=None) -> None:
         super().__init__()
-        self.createConnection() # проверка подключения базы данных
-        self.fillTable()  # !!! тестовое заполнение базы данных
-        self.createModel() # создание модели
-        self.initUI() # отображение UI
+        self.createConnection()  # проверка подключения базы данных
+        # self.fillTable()  # !!! тестовое заполнение базы данных
+        self.createModel()  # создание модели
+
+        self.initUI()  # отображение UI
 
         self.centralWidget = QtWidgets.QWidget()
-        self.setCentralWidget(self.centralWidget) # установим центральный виждет как QWidget
+        self.setCentralWidget(self.centralWidget)  # установим центральный виждет как QWidget
         # Добавим кнопки
         btnAdd = QtWidgets.QPushButton("&Добавить запись")
         btnAdd.clicked.connect(self.addRecord)
@@ -63,6 +65,8 @@ class Storage_app(QtWidgets.QMainWindow):
         layout.addWidget(btnAdd)
         layout.addWidget(btnDel)
         layout.addWidget(btn_any_table)
+
+
 
         if not parent:
             self.show()
@@ -113,10 +117,10 @@ class Storage_app(QtWidgets.QMainWindow):
         # Вставка тестовых значений
         query = QtSql.QSqlQuery()
         query.prepare("INSERT INTO company (id, name_company, full_name_manager, "
-                  "ur_address, post_address, telephone, email, fax, inn_number, kpp_number, ogrn_number, "
-                  "license_opo, reg_opo, position_pk, position_crash) "
+                      "ur_address, post_address, telephone, email, fax, inn_number, kpp_number, ogrn_number, "
+                      "license_opo, reg_opo, position_pk, position_crash) "
                       "VALUES (:id, :name_company, :full_name_manager, :ur_address,:post_address, :telephone, :email, "
-                  ":fax, :inn_number, :kpp_number, :ogrn_number, :license_opo, :reg_opo, :position_pk, :position_crash)")
+                      ":fax, :inn_number, :kpp_number, :ogrn_number, :license_opo, :reg_opo, :position_pk, :position_crash)")
 
         query.bindValue(":id", 1)
         query.bindValue(":name_company", 'АО МЕЛЛЯНЕФТЬ')
@@ -159,7 +163,6 @@ class Storage_app(QtWidgets.QMainWindow):
         query.bindValue(":position_crash", test_BLOB)
         query.exec_()
 
-
         #                             vvv
         q.exec_("DROP TABLE IF EXISTS opo;")
         q.exec_("CREATE TABLE opo ("
@@ -172,8 +175,8 @@ class Storage_app(QtWidgets.QMainWindow):
 
         query = QtSql.QSqlQuery()
         query.prepare("INSERT INTO opo (id, id_company, name_opo, "
-                  "address_opo, reg_number_opo, class_opo)"
-                  "VALUES (:id, :id_company, :name_opo, :address_opo,:reg_number_opo, :class_opo)")
+                      "address_opo, reg_number_opo, class_opo)"
+                      "VALUES (:id, :id_company, :name_opo, :address_opo,:reg_number_opo, :class_opo)")
 
         query.bindValue(":id", 1)
         query.bindValue(":id_company", 1)
@@ -185,8 +188,8 @@ class Storage_app(QtWidgets.QMainWindow):
 
         query = QtSql.QSqlQuery()
         query.prepare("INSERT INTO opo (id, id_company, name_opo, "
-                  "address_opo, reg_number_opo, class_opo)"
-                  "VALUES (:id, :id_company, :name_opo, :address_opo,:reg_number_opo, :class_opo)")
+                      "address_opo, reg_number_opo, class_opo)"
+                      "VALUES (:id, :id_company, :name_opo, :address_opo,:reg_number_opo, :class_opo)")
 
         query.bindValue(":id", 2)
         query.bindValue(":id_company", 2)
@@ -208,7 +211,7 @@ class Storage_app(QtWidgets.QMainWindow):
 
         query = QtSql.QSqlQuery()
         query.prepare("INSERT INTO documentation (id, id_opo, type_doc, reg_doc, date_doc, doc)"
-                  "VALUES (:id, :id_opo, :type_doc, :reg_doc,:date_doc, :doc)")
+                      "VALUES (:id, :id_opo, :type_doc, :reg_doc,:date_doc, :doc)")
 
         query.bindValue(":id", 1)
         query.bindValue(":id_opo", 1)
@@ -220,7 +223,7 @@ class Storage_app(QtWidgets.QMainWindow):
 
         query = QtSql.QSqlQuery()
         query.prepare("INSERT INTO documentation (id, id_opo, type_doc, reg_doc, date_doc, doc)"
-                  "VALUES (:id, :id_opo, :type_doc, :reg_doc,:date_doc, :doc)")
+                      "VALUES (:id, :id_opo, :type_doc, :reg_doc,:date_doc, :doc)")
 
         query.bindValue(":id", 2)
         query.bindValue(":id_opo", 2)
@@ -250,7 +253,7 @@ class Storage_app(QtWidgets.QMainWindow):
         query = QtSql.QSqlQuery()
         query.prepare("INSERT INTO line_obj (id, id_opo, reg_number, name_obj, substance, lenght,"
                       "diameter, pressure, status, date_manufacture, date_entry, date_upto, passport)"
-                  "VALUES (:id, :id_opo, :reg_number, :name_obj,:substance, :lenght,"
+                      "VALUES (:id, :id_opo, :reg_number, :name_obj,:substance, :lenght,"
                       ":diameter, :pressure, :status, :date_manufacture, :date_entry, :date_upto, :passport)")
 
         query.bindValue(":id", 1)
@@ -271,7 +274,7 @@ class Storage_app(QtWidgets.QMainWindow):
         query = QtSql.QSqlQuery()
         query.prepare("INSERT INTO line_obj (id, id_opo, reg_number, name_obj, substance, lenght,"
                       "diameter, pressure, status, date_manufacture, date_entry, date_upto, passport)"
-                  "VALUES (:id, :id_opo, :reg_number, :name_obj,:substance, :lenght,"
+                      "VALUES (:id, :id_opo, :reg_number, :name_obj,:substance, :lenght,"
                       ":diameter, :pressure, :status, :date_manufacture, :date_entry, :date_upto, :passport)")
 
         query.bindValue(":id", 2)
@@ -289,6 +292,198 @@ class Storage_app(QtWidgets.QMainWindow):
         query.bindValue(":passport", test_BLOB)
         query.exec_()
 
+        #                             vvvvvvvvv
+        q.exec_("DROP TABLE IF EXISTS state_obj;")
+        q.exec_("CREATE TABLE state_obj ("
+                "id INT PRIMARY KEY, "
+                "id_opo INT NOT NULL, "
+                "reg_number INT NOT NULL, "
+                "name_obj TEXT NOT NULL, "
+                "substance TEXT NOT NULL, "
+                "volume DECIMAL NOT NULL, "
+                "temperature DECIMAL NOT NULL, "
+                "pressure DECIMAL NOT NULL, "
+                "alpha DECIMAL NOT NULL, "
+                "status TEXT NOT NULL, "
+                "date_manufacture TEXT NOT NULL, "
+                "date_entry TEXT NOT NULL, "
+                "date_upto TEXT NOT NULL, "
+                "passport BLOB NOT NULL );")
+
+        query = QtSql.QSqlQuery()
+        query.prepare("INSERT INTO state_obj (id, id_opo, reg_number, name_obj, substance, volume,"
+                      "temperature, pressure, alpha, status, date_manufacture, date_entry, date_upto, passport)"
+                      "VALUES (:id, :id_opo, :reg_number, :name_obj,:substance, :volume,"
+                      ":temperature, :pressure, :alpha, :status, :date_manufacture, :date_entry, :date_upto, :passport)")
+
+        query.bindValue(":id", 1)
+        query.bindValue(":id_opo", 1)
+        query.bindValue(":reg_number", '12589')
+        query.bindValue(":name_obj", 'Емкость Е-1')
+        query.bindValue(":substance", 'нефть')
+        query.bindValue(":volume", 200)
+        query.bindValue(":temperature", 55)
+        query.bindValue(":pressure", 0.23)
+        query.bindValue(":alpha", 0.25)
+        query.bindValue(":status", 'Действующий')
+        query.bindValue(":date_manufacture", '01-01-1988')
+        query.bindValue(":date_entry", '01-05-1988')
+        query.bindValue(":date_upto", '01-01-2020')
+        query.bindValue(":passport", test_BLOB)
+        query.exec_()
+
+        query = QtSql.QSqlQuery()
+        query.prepare("INSERT INTO state_obj (id, id_opo, reg_number, name_obj, substance, volume,"
+                      "temperature, pressure, alpha, status, date_manufacture, date_entry, date_upto, passport)"
+                      "VALUES (:id, :id_opo, :reg_number, :name_obj,:substance, :volume,"
+                      ":temperature, :pressure, :alpha, :status, :date_manufacture, :date_entry, :date_upto, :passport)")
+
+        query.bindValue(":id", 2)
+        query.bindValue(":id_opo", 2)
+        query.bindValue(":reg_number", '2589')
+        query.bindValue(":name_obj", 'Нефтесепаратор НГС-2')
+        query.bindValue(":substance", 'нефть')
+        query.bindValue(":volume", 100)
+        query.bindValue(":temperature", 55)
+        query.bindValue(":pressure", 0.23)
+        query.bindValue(":alpha", 0.25)
+        query.bindValue(":status", 'Действующий')
+        query.bindValue(":date_manufacture", '01-01-2005')
+        query.bindValue(":date_entry", '01-05-2006')
+        query.bindValue(":date_upto", '01-01-2027')
+        query.bindValue(":passport", test_BLOB)
+        query.exec_()
+
+        #                             vvvvvvvvvv
+        q.exec_("DROP TABLE IF EXISTS build_obj;")
+        q.exec_("CREATE TABLE build_obj ("
+                "id INT PRIMARY KEY, "
+                "id_opo INT NOT NULL, "
+                "name_obj TEXT NOT NULL, "
+                "status TEXT NOT NULL, "
+                "date_manufacture TEXT NOT NULL, "
+                "date_entry TEXT NOT NULL, "
+                "date_upto TEXT NOT NULL, "
+                "doc BLOB NOT NULL );")
+
+        query = QtSql.QSqlQuery()
+        query.prepare("INSERT INTO build_obj (id, id_opo, name_obj, status, "
+                      "date_manufacture, date_entry, date_upto, doc)"
+                      "VALUES (:id, :id_opo, :name_obj, :status, :date_manufacture, :date_entry, "
+                      ":date_upto, :doc)")
+
+        query.bindValue(":id", 1)
+        query.bindValue(":id_opo", 1)
+        query.bindValue(":name_obj", 'Операторная')
+        query.bindValue(":status", 'Консервация')
+        query.bindValue(":date_manufacture", '14-12-2018')
+        query.bindValue(":date_entry", '14-12-2018')
+        query.bindValue(":date_upto", '14-12-2028')
+        query.bindValue(":doc", test_BLOB)
+        query.exec_()
+
+        query = QtSql.QSqlQuery()
+        query.prepare("INSERT INTO build_obj (id, id_opo, name_obj, status, "
+                      "date_manufacture, date_entry, date_upto, doc)"
+                      "VALUES (:id, :id_opo, :name_obj, :status, :date_manufacture, :date_entry, "
+                      ":date_upto, :doc)")
+
+        query.bindValue(":id", 2)
+        query.bindValue(":id_opo", 2)
+        query.bindValue(":name_obj", 'Лаборатория')
+        query.bindValue(":status", 'Дествующая')
+        query.bindValue(":date_manufacture", '14-12-2010')
+        query.bindValue(":date_entry", '14-12-2013')
+        query.bindValue(":date_upto", '14-12-2038')
+        query.bindValue(":doc", test_BLOB)
+        query.exec_()
+
+        #                             vvvvvvv
+        q.exec_("DROP TABLE IF EXISTS project;")
+        q.exec_("CREATE TABLE project ("
+                "id INT PRIMARY KEY, "
+                "id_opo INT NOT NULL, "
+                "name_project TEXT NOT NULL, "
+                "date_project TEXT NOT NULL, "
+                "pz_project BLOB NOT NULL, "
+                "pzu_project BLOB NOT NULL, "
+                "kr_project BLOB NOT NULL, "
+                "ios_project BLOB NOT NULL, "
+                "pos_project BLOB NOT NULL, "
+                "another_project BLOB NOT NULL );")
+
+        query = QtSql.QSqlQuery()
+        query.prepare("INSERT INTO project (id, id_opo, name_project, date_project, "
+                      "pz_project, pzu_project, kr_project, ios_project,"
+                      "pos_project, another_project)"
+                      "VALUES (:id, :id_opo, :name_project, :date_project, :pz_project, :pzu_project, "
+                      ":kr_project, :ios_project, :pos_project, :another_project)")
+
+        query.bindValue(":id", 1)
+        query.bindValue(":id_opo", 1)
+        query.bindValue(":name_project", 'Обустройство кустов скважин')
+        query.bindValue(":date_project", '14-12-2018')
+        query.bindValue(":pz_project", test_BLOB)
+        query.bindValue(":pzu_project", test_BLOB)
+        query.bindValue(":kr_project", test_BLOB)
+        query.bindValue(":ios_project", test_BLOB)
+        query.bindValue(":pos_project", test_BLOB)
+        query.bindValue(":another_project", test_BLOB)
+        query.exec_()
+
+        query = QtSql.QSqlQuery()
+        query.prepare("INSERT INTO project (id, id_opo, name_project, date_project, "
+                      "pz_project, pzu_project, kr_project, ios_project,"
+                      "pos_project, another_project)"
+                      "VALUES (:id, :id_opo, :name_project, :date_project, :pz_project, :pzu_project, "
+                      ":kr_project, :ios_project, :pos_project, :another_project)")
+
+        query.bindValue(":id", 2)
+        query.bindValue(":id_opo", 2)
+        query.bindValue(":name_project", 'Обустройство куста скважин')
+        query.bindValue(":date_project", '14-12-2015')
+        query.bindValue(":pz_project", test_BLOB)
+        query.bindValue(":pzu_project", test_BLOB)
+        query.bindValue(":kr_project", test_BLOB)
+        query.bindValue(":ios_project", test_BLOB)
+        query.bindValue(":pos_project", test_BLOB)
+        query.bindValue(":another_project", test_BLOB)
+        query.exec_()
+
+        #                             vvv
+        q.exec_("DROP TABLE IF EXISTS epb;")
+        q.exec_("CREATE TABLE epb ("
+                "id INT PRIMARY KEY, "
+                "id_opo INT NOT NULL, "
+                "name_doc TEXT NOT NULL, "
+                "date_doc TEXT NOT NULL, "
+                "epb_doc BLOB NOT NULL );")
+
+        query = QtSql.QSqlQuery()
+        query.prepare("INSERT INTO epb (id, id_opo, name_doc, date_doc, epb_doc)"
+                      "VALUES (:id, :id_opo, :name_doc, :date_doc, :epb_doc)")
+
+        query.bindValue(":id", 1)
+        query.bindValue(":id_opo", 1)
+        query.bindValue(":name_doc", 'ЭПБ на задвижку')
+        query.bindValue(":date_doc", '14-12-2018')
+        query.bindValue(":epb_doc", test_BLOB)
+        query.exec_()
+
+        query = QtSql.QSqlQuery()
+        query.prepare("INSERT INTO epb (id, id_opo, name_doc, date_doc, epb_doc)"
+                      "VALUES (:id, :id_opo, :name_doc, :date_doc, :epb_doc)")
+
+        query.bindValue(":id", 2)
+        query.bindValue(":id_opo", 2)
+        query.bindValue(":name_doc", 'ЭПБ на трубу')
+        query.bindValue(":date_doc", '14-12-2018')
+        query.bindValue(":epb_doc", test_BLOB)
+        query.exec_()
+
+
+
+
         self.db.commit()
 
     def createModel(self):
@@ -296,22 +491,16 @@ class Storage_app(QtWidgets.QMainWindow):
         Создание модели для отображения
         """
         self.model = QtSql.QSqlRelationalTableModel()
-        self.model.setTable("line_obj")
+        self.model.setTable("epb")
         self.model.setHeaderData(0, QtCore.Qt.Horizontal, "id")
-        self.model.setHeaderData(1, QtCore.Qt.Horizontal, "Наименование ОПО")
-        self.model.setHeaderData(2, QtCore.Qt.Horizontal, "Рег.№")
-        self.model.setHeaderData(3, QtCore.Qt.Horizontal, "Наименование")
-        self.model.setHeaderData(4, QtCore.Qt.Horizontal, "Вещество")
-        self.model.setHeaderData(5, QtCore.Qt.Horizontal, "Длина")
-        self.model.setHeaderData(6, QtCore.Qt.Horizontal, "Диаметр")
-        self.model.setHeaderData(7, QtCore.Qt.Horizontal, "Давление")
-        self.model.setHeaderData(8, QtCore.Qt.Horizontal, "Статус")
-        self.model.setHeaderData(9, QtCore.Qt.Horizontal, "Выпуск")
-        self.model.setHeaderData(10, QtCore.Qt.Horizontal, "Вввод")
-        self.model.setHeaderData(11, QtCore.Qt.Horizontal, "Выход")
-        self.model.setHeaderData(12, QtCore.Qt.Horizontal, "Паспорт")
+        self.model.setHeaderData(1, QtCore.Qt.Horizontal, "НаименованиеОПО")
+        self.model.setHeaderData(2, QtCore.Qt.Horizontal, "Наименование ЭПБ")
+        self.model.setHeaderData(3, QtCore.Qt.Horizontal, "Дата")
+        self.model.setHeaderData(4, QtCore.Qt.Horizontal, "Док-ты")
         self.set_relation()
         self.model.select()
+        # print(self.view)
+
 
     def any_table(self):
         print('1')
@@ -326,7 +515,6 @@ class Storage_app(QtWidgets.QMainWindow):
         # self.set_relation()
         self.model.select()
         print("2")
-
 
     def initUI(self):
         # Иконки
@@ -460,11 +648,15 @@ class Storage_app(QtWidgets.QMainWindow):
         # toolbar = self.addToolBar('Выход')
         # toolbar.addAction(exitAction)
 
-
         self.view = QtWidgets.QTableView()
         self.view.setModel(self.model)
         mode = QtWidgets.QAbstractItemView.SingleSelection
         self.view.setSelectionMode(mode)
+        # выравнивание по содержимому
+        self.view.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+        self.view.horizontalHeader().setMinimumSectionSize(0)
+        # запрет на редактирование
+        self.view.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
 
     def closeEvent(self, event):
         if (self.db.open()):
@@ -489,7 +681,7 @@ class Storage_app(QtWidgets.QMainWindow):
         category = inputDialog.line_edit_category.text()
         if (not name) or (not quantity) or (not category):
             msg = QtWidgets.QMessageBox.information(self,
-                                          'Внимание', 'Заполните пожалуйста все поля.')
+                                                    'Внимание', 'Заполните пожалуйста все поля.')
             return
 
         r = self.model.record()
@@ -504,7 +696,7 @@ class Storage_app(QtWidgets.QMainWindow):
         row = self.view.currentIndex().row()
         if row == -1:
             msg = QtWidgets.QMessageBox.information(self,
-                                          'Внимание', 'Выберите запись для удаления.')
+                                                    'Внимание', 'Выберите запись для удаления.')
             return
 
         name = self.model.record(row).value(0)
@@ -536,14 +728,12 @@ class Storage_app(QtWidgets.QMainWindow):
             print()
         return blobData
 
+
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     app.setStyle('Fusion')
     w = Storage_app()
     app.exec_()
-
-
-
 
 # import sys
 # import os
