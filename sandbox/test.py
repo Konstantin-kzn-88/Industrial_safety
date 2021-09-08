@@ -1,9 +1,26 @@
 
 import sys
 import os
-from PySide2 import QtSql
+from pathlib import Path
+
+from PySide2 import QtSql, QtGui
 from PySide2 import QtWidgets
 from PySide2 import QtCore
+from PySide2.QtCore import Qt, QModelIndex
+from PySide2.QtGui import QImage, QPixmap
+from PySide2.QtSql import QSqlRelationalTableModel
+
+
+class RelationalTableModelWithIcon(QSqlRelationalTableModel):
+
+    def data(self, index, role=Qt.DisplayRole): # Переопределяем метод data
+        if index.column() == 2 and role == Qt.DisplayRole: # для второго столбца, скроем выводимый текст
+            return ""
+        if index.column() == 2 and role == Qt.DecorationRole: # и для него же выведем иконку в качестве декора
+            return QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/company.png')
+        return QSqlRelationalTableModel.data(self,index, role) # все остальное должно штатно обработаться qsqltablemodel
+
+
 
 
 class Storage_app(QtWidgets.QMainWindow):
@@ -73,7 +90,7 @@ class Storage_app(QtWidgets.QMainWindow):
         """
         Создание модели для отображения
         """
-        self.model = QtSql.QSqlRelationalTableModel()
+        self.model = RelationalTableModelWithIcon(db = self.db)
         self.model.setTable("company")
         self.model.setHeaderData(0, QtCore.Qt.Horizontal, "id")
         self.model.setHeaderData(1, QtCore.Qt.Horizontal, "Наиманование")
