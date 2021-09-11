@@ -1421,9 +1421,7 @@ class Painter(QtWidgets.QMainWindow):
             obj_type = obj.get("obj_type")
             max_radius = excel[index][-1] * scale_name
             probit = excel[index][0]
-            print(max_radius)
             power = self.power_data(max_radius, probit)
-            print(power)
             index += 1
 
             # Определим рамку для поиска риска
@@ -1786,20 +1784,62 @@ class Painter(QtWidgets.QMainWindow):
                             break
         return
 
-    def power_data(self, max_r, probit):
-        radius = []
-        power = [i / 100 for i in range(100)]
+    ########## УДАЛИТЬ ПОСЛЕ ТЕСТОВЫХ ПРОГОНОВ ##################################
+    # def power_data(self, max_r, probit):                                      #
+    #     """                                                                   #
+    #     Функция которая в зависимости от максимального радиуса и вероятности  #
+    #     дает распределение ероятности поражение                               #
+    #     """
+    #     radius = []
+    #     power = [i / 100 for i in range(100)]
+    #
+    #     for i in power:
+    #         radius.append(max_r * i)
+    #     power.sort(reverse=True)
+    #     power = [i * probit for i in power]
+    #     power_data = [power, radius]
+    #
+    #     return power_data
+    ########## УДАЛИТЬ ПОСЛЕ ТЕСТОВЫХ ПРОГОНОВ ##################################
 
-        for i in power:
-            radius.append(max_r * i)
+
+    def power_data(max_r, probit):
+        """
+        Функция которая в зависимости от максимального радиуса и вероятности
+        дает распределение ероятности поражение
+        """
+
+        def mod_tan(x):
+            """
+            Функция тангенсального распределения
+            (больше всего подходит на настоящий пробит)
+            """
+            var = math.tan(x)
+            if var > 1:
+                result = 1
+            else:
+                result = var
+            return result
+
+        radius = []
+        L = [i / 100 for i in range(100)]
+        power = list(map(lambda x: mod_tan(x), L))
+
+        rad_list = [i / 100 for i in range(100)]
+        for i in rad_list:
+            radius.append(round((max_r * i), 2))
         power.sort(reverse=True)
         power = [i * probit for i in power]
         power_data = [power, radius]
-        # print(powe/r_data)
 
         return power_data
 
+
     def rect_coord_calc(self, coordinate, dist, width, height):
+        """
+        Функция предназнгачена для определения максимально искомых координат,
+        что бы не бегать циклом через всю картинку
+        """
         i = 0
         x = []
         y = []
