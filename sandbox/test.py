@@ -1,57 +1,37 @@
-import math
+import numpy as np
 
 
-def power_data_old(max_r, probit):
-    """
-    Функция которая в зависимости от максимального радиуса и вероятности
-    дает распределение ероятности поражение
-    """
-    radius = []
-    power = [i / 100 for i in range(100)]
+def func_test(width_min, height_min, width_max, height_max, arr):
+    i_min = min(width_min, height_min)
+    i_max = min(width_max, height_max)
 
-    for i in power:
-        radius.append(max_r * i)
-    power.sort(reverse=True)
-    power = [i * probit for i in power]
-    power_data = [power, radius]
+    for i in range(i_min, i_max, 5):
+        for x in range(width_min, width_max, 5):
+            x = x + 2
+            for y in range(height_min + i, height_max, 5):
+                y = y + 2
+                # print(f"Нужно замерить дистанцию")
+                print(f"x={x},y={y}")
+                arr[x, y] = arr[x - 2, y - 2] = \
+                    arr[x - 2, y - 1] = arr[x - 2, y] = \
+                    arr[x - 2, y + 1] = arr[x - 2, y + 2] = \
+                    arr[x - 1, y - 2] = \
+                    arr[x - 1, y - 1] = arr[x - 1, y] = \
+                    arr[x - 1, y + 1] = arr[x - 1, y + 2] = \
+                    arr[x, y - 2] = arr[x, y - 1] =  \
+                    arr[x, y + 1] = arr[x, y + 2] = \
+                    arr[x + 1, y - 2] = \
+                    arr[x + 1, y - 1] = arr[x + 1, y] = \
+                    arr[x + 1, y + 1] = arr[x + 1, y + 2] = \
+                    arr[x + 2, y - 2] = \
+                    arr[x + 2, y - 1] = arr[x + 2, y] = \
+                    arr[x + 2, y + 1] = arr[x + 2, y + 2] = 1
 
-    return power_data
+                break
+    return arr
 
-
-def power_data(max_r, probit):
-    """
-    Функция которая в зависимости от максимального радиуса и вероятности
-    дает распределение ероятности поражение
-    """
-
-    def mod_tan(x):
-        """
-        Функция тангенсального распределения
-        (больше всего подходит на настоящий пробит)
-        """
-        var = math.tan(x)
-        if var > 1:
-            result = 1
-        else:
-            result = var
-        return result
-
-    radius = []
-    L = [i / 100 for i in range(100)]
-    power = list(map(lambda x: mod_tan(x), L))
-
-    for i in L:
-        radius.append(round((max_r * i),2))
-    power.sort(reverse=True)
-    power = [i * probit for i in power]
-    power_data = [power, radius]
-
-    return power_data
 
 if __name__ == '__main__':
-    pwd = power_data_old(60, 1)
-    print(pwd)
-    print("-" * 200)
-    pwd = power_data(60, 1)
-    print(pwd)
-    print("-" * 200)
+    zeors_array = np.zeros((10, 10))
+    arr = func_test(0, 0, 9, 9, zeors_array)
+    print(arr)

@@ -1690,120 +1690,135 @@ class Painter(QtWidgets.QMainWindow):
 
     def calc_el_zeors_array(self, width_min, height_min, width_max, height_max,
                             object, power, zeors_array, scale_name):
-        # power = [[power],[dist]]
-        for x in range(width_min, width_max, 1):
-            for y in range(height_min, height_max, 1):
+
+        def speed_calc(zeors_array, x, y):
+            zeors_array[x + 1, y] = zeors_array[x, y]
+            zeors_array[x + 1, y + 1] = zeors_array[x, y]
+            zeors_array[x, y + 1] = zeors_array[x, y]
+
+            zeors_array[x + 2, y] = zeors_array[x, y]
+            zeors_array[x + 2, y + 1] = zeors_array[x, y]
+            zeors_array[x + 2, y + 2] = zeors_array[x, y]
+
+            zeors_array[x, y + 2] = zeors_array[x, y]
+            zeors_array[x + 1, y + 2] = zeors_array[x, y]
+
+        for x in range(width_min, width_max, 3):
+            for y in range(height_min, height_max, 3):
                 dist = round(Point(x, y).distance(object)) * scale_name
                 if dist == 0:
                     zeors_array[x, y] = zeors_array[x, y] + power[0][0]
+                    speed_calc(zeors_array, x, y)
                 elif dist in power[1]:
                     find_index = power[1].index(dist)
                     zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                    speed_calc(zeors_array, x, y)
                 else:
                     for i in power[1]:
 
                         if abs(dist - i) < 0.1:
                             find_index = power[1].index(i)
                             zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
                             break
                         elif abs(dist - i) < 0.5:
                             find_index = power[1].index(i)
                             zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
                             break
                         elif abs(dist - i) < 1:
                             find_index = power[1].index(i)
                             zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
                             break
                         elif abs(dist - i) < 1.5:
                             find_index = power[1].index(i)
                             zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
                             break
                         elif abs(dist - i) < 2:
                             find_index = power[1].index(i)
                             zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
                             break
                         elif abs(dist - i) < 2.5:
                             find_index = power[1].index(i)
                             zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
                             break
                         elif abs(dist - i) < 3.0:
                             find_index = power[1].index(i)
                             zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
                             break
                         elif abs(dist - i) < 3.5:
                             find_index = power[1].index(i)
                             zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
                             break
                         elif abs(dist - i) < 4:
                             find_index = power[1].index(i)
                             zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
                             break
                         elif abs(dist - i) < 4.5:
                             find_index = power[1].index(i)
                             zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
                             break
                         elif abs(dist - i) < 5:
                             find_index = power[1].index(i)
                             zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
                             break
                         elif abs(dist - i) < 5.5:
                             find_index = power[1].index(i)
                             zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
                             break
                         elif abs(dist - i) < 6:
                             find_index = power[1].index(i)
                             zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
                             break
                         elif abs(dist - i) < 6.5:
                             find_index = power[1].index(i)
                             zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
                             break
                         elif abs(dist - i) < 7.0:
                             find_index = power[1].index(i)
                             zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
                             break
                         elif abs(dist - i) < 7.5:
                             find_index = power[1].index(i)
                             zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
                             break
                         elif abs(dist - i) < 8.0:
                             find_index = power[1].index(i)
                             zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
                             break
                         elif abs(dist - i) < 9.0:
                             find_index = power[1].index(i)
                             zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
                             break
                         elif abs(dist - i) < 9.5:
                             find_index = power[1].index(i)
                             zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
                             break
                         elif abs(dist - i) < 10:
                             find_index = power[1].index(i)
                             zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
                             break
         return
 
-    ########## УДАЛИТЬ ПОСЛЕ ТЕСТОВЫХ ПРОГОНОВ ##################################
-    # def power_data(self, max_r, probit):                                      #
-    #     """                                                                   #
-    #     Функция которая в зависимости от максимального радиуса и вероятности  #
-    #     дает распределение ероятности поражение                               #
-    #     """
-    #     radius = []
-    #     power = [i / 100 for i in range(100)]
-    #
-    #     for i in power:
-    #         radius.append(max_r * i)
-    #     power.sort(reverse=True)
-    #     power = [i * probit for i in power]
-    #     power_data = [power, radius]
-    #
-    #     return power_data
-    ########## УДАЛИТЬ ПОСЛЕ ТЕСТОВЫХ ПРОГОНОВ ##################################
-
-
-    def power_data(max_r, probit):
+    def power_data(self, max_r, probit):
         """
         Функция которая в зависимости от максимального радиуса и вероятности
         дает распределение ероятности поражение
@@ -1833,7 +1848,6 @@ class Painter(QtWidgets.QMainWindow):
         power_data = [power, radius]
 
         return power_data
-
 
     def rect_coord_calc(self, coordinate, dist, width, height):
         """
