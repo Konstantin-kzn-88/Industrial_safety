@@ -44,27 +44,174 @@ class Storage_app(QtWidgets.QMainWindow):
 
     def __init__(self, parent=None) -> None:
         super().__init__()
-        self.createConnection()  # проверка подключения базы данных
-        # self.fillTable()  # !!! тестовое заполнение базы данных
-        self.createModel()  # создание модели
 
-        self.initUI()  # отображение UI
+        # Иконки
+        self.main_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/data_base.png')
+        company_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/company.png')
+        state_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/state.png')
+        ok_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/ok.png')
+        object_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/object.png')
+        doc_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/document.png')
+        line_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/tube.png')
+        build_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/build.png')
+        project_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/project.png')
+        project2_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/project2.png')
+        exit_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/exit.png')
+        info_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/info.png')
+        question_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/question.png')
+
+        # !!! тестовое заполнение базы данных   #
+        # self.fillTable()                      #
+        self.createConnection() # создание подключения к БД
+        self.createModel()  # создание модели
+        # Вид модели
+        self.view = QtWidgets.QTableView()
+        self.view.setModel(self.model)
+        mode = QtWidgets.QAbstractItemView.SingleSelection
+        self.view.setSelectionMode(mode)
+        # выравнивание по содержимому
+        self.view.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+        self.view.horizontalHeader().setMinimumSectionSize(0)
+        # запрет на редактирование
+        self.view.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+
+        # Главное окно
+        self.setGeometry(500, 500, 950, 750)
+        self.setWindowTitle('Storage_app')
+        self.setWindowIcon(self.main_ico)
+
+        # МЕНЮ
+        # База данных (меню)
+        main_menu = QtWidgets.QMenu('База данных', self)
+        file_is_open = QtWidgets.QAction(ok_ico, 'Подключение', self)
+        file_is_open.setStatusTip('Подключиться к базе данных')
+        # file_is_open.triggered.connect(self.file_is_open)
+        main_menu.addAction(file_is_open)
+
+        # Формы добавления информации в БД (меню)
+        add_menu = QtWidgets.QMenu('Добавить в базу данных', self)
+        company_add = QtWidgets.QAction(company_ico, 'Компания', self)
+        company_add.setStatusTip('Добавить новую компанию')
+        # company_add.triggered.connect(self.company_add)
+        add_menu.addAction(company_add)
+        opo_add = QtWidgets.QAction(object_ico, 'Опасный производственный объект', self)
+        opo_add.setStatusTip('Добавить новый опасный производственный объект')
+        # opo_add.triggered.connect(self.company_add)
+        add_menu.addAction(opo_add)
+        doc_add = QtWidgets.QAction(doc_ico, 'Документация объекта', self)
+        doc_add.setStatusTip('Добавить документацию опасного производственного объекта')
+        # doc_add.triggered.connect(self.company_add)
+        add_menu.addAction(doc_add)
+        line_obj_add = QtWidgets.QAction(line_ico, 'Линейный объект', self)
+        line_obj_add.setStatusTip('Добавить линейный объект')
+        # doc_add.triggered.connect(self.company_add)
+        add_menu.addAction(line_obj_add)
+        state_obj_add = QtWidgets.QAction(state_ico, 'Стационарный объект', self)
+        state_obj_add.setStatusTip('Добавить новый стационарный объект')
+        # company_add.triggered.connect(self.company_add)
+        add_menu.addAction(state_obj_add)
+        build_obj_add = QtWidgets.QAction(build_ico, 'Здание/сооружение', self)
+        build_obj_add.setStatusTip('Добавить новое здание/сооружение')
+        # company_add.triggered.connect(self.company_add)
+        add_menu.addAction(build_obj_add)
+        project_add = QtWidgets.QAction(project_ico, 'Проект', self)
+        project_add.setStatusTip('Добавить новую проектную документацию')
+        # company_add.triggered.connect(self.company_add)
+        add_menu.addAction(project_add)
+        epb_add = QtWidgets.QAction(project2_ico, 'Документация с ЭПБ', self)
+        epb_add.setStatusTip('Добавить новую документацию c ЭПБ')
+        # company_add.triggered.connect(self.company_add)
+        add_menu.addAction(epb_add)
+
+        # Формы удаления информации из БД (меню)
+        del_menu = QtWidgets.QMenu('Удалить из базы данных', self)
+        company_del = QtWidgets.QAction(company_ico, 'Компания', self)
+        company_del.setStatusTip('Удалить компанию')
+        # company_del.triggered.connect(self.company_del)
+        del_menu.addAction(company_del)
+        opo_del = QtWidgets.QAction(object_ico, 'Опасный производственный объект', self)
+        opo_del.setStatusTip('Добавить новый опасный производственный объект')
+        # opo_del.triggered.connect(self.company_del)
+        del_menu.addAction(opo_del)
+        doc_del = QtWidgets.QAction(doc_ico, 'Документация объекта', self)
+        doc_del.setStatusTip('Добавить документацию опасного производственного объекта')
+        # doc_del.triggered.connect(self.company_del)
+        del_menu.addAction(doc_del)
+        line_obj_del = QtWidgets.QAction(line_ico, 'Линейный объект', self)
+        line_obj_del.setStatusTip('Добавить линейный объект')
+        # doc_del.triggered.connect(self.company_del)
+        del_menu.addAction(line_obj_del)
+        state_obj_del = QtWidgets.QAction(state_ico, 'Стационарный объект', self)
+        state_obj_del.setStatusTip('Добавить новый стационарный объект')
+        # company_del.triggered.connect(self.company_del)
+        del_menu.addAction(state_obj_del)
+        build_obj_del = QtWidgets.QAction(build_ico, 'Здание/сооружение', self)
+        build_obj_del.setStatusTip('Добавить новое здание/сооружение')
+        # company_del.triggered.connect(self.company_del)
+        del_menu.addAction(build_obj_del)
+        project_del = QtWidgets.QAction(project_ico, 'Проект', self)
+        project_del.setStatusTip('Добавить новую проектную документацию')
+        # company_del.triggered.connect(self.company_del)
+        del_menu.addAction(project_del)
+        epb_del = QtWidgets.QAction(project2_ico, 'Документация с ЭПБ', self)
+        epb_del.setStatusTip('Добавить новую документацию c ЭПБ')
+        # company_del.triggered.connect(self.company_del)
+        del_menu.addAction(epb_del)
+
+        # Выход из приложения
+        exit_prog = QtWidgets.QAction(exit_ico, 'Выход', self)
+        exit_prog.setShortcut('Ctrl+Q')
+        exit_prog.setStatusTip('Выход из Storage_app')
+        exit_prog.triggered.connect(self.closeEvent)
+
+        # Справка
+        help_show = QtWidgets.QAction(question_ico, 'Справка', self)
+        help_show.setShortcut('F1')
+        help_show.setStatusTip('Открыть справку Storage_app')
+        # help_show.triggered.connect(self.help_show)
+
+        # О приложении
+        about_prog = QtWidgets.QAction(info_ico, 'О приложении', self)
+        about_prog.setShortcut('F2')
+        about_prog.setStatusTip('О приложении Storage_app')
+        # about_prog.triggered.connect(self.about_programm)
+
+        # Меню приложения (верхняя плашка)
+        menubar = self.menuBar()
+        file_menu = menubar.addMenu('Файл')
+        file_menu.addMenu(main_menu)
+        file_menu.addAction(exit_prog)
+        db_menu = menubar.addMenu('База данных')
+        db_menu.addMenu(add_menu)
+        db_menu.addMenu(del_menu)
+        help_menu = menubar.addMenu('Справка')
+        help_menu.addAction(help_show)
+        help_menu.addAction(about_prog)
+
 
         self.centralWidget = QtWidgets.QWidget()
         self.setCentralWidget(self.centralWidget)  # установим центральный виждет как QWidget
+
+        grid = QtWidgets.QGridLayout(self)
+        grid.setColumnStretch(0, 6)
+        grid.setColumnStretch(1, 2)
         # Добавим кнопки
-        btnAdd = QtWidgets.QPushButton("&Добавить запись")
-        btnAdd.clicked.connect(self.addRecord)
-        btnDel = QtWidgets.QPushButton("&Удалить запись")
-        btnDel.clicked.connect(self.delRecord)
-        btn_any_table = QtWidgets.QPushButton("&Поменять таблицу")
-        btn_any_table.clicked.connect(self.any_table)
-        # Упакуем все в QVBoxLayout
-        layout = QtWidgets.QVBoxLayout(self.centralWidget)
-        layout.addWidget(self.view)
-        layout.addWidget(btnAdd)
-        layout.addWidget(btnDel)
-        layout.addWidget(btn_any_table)
+        # btnAdd = QtWidgets.QPushButton("&Добавить запись")
+        # btnAdd.clicked.connect(self.addRecord)
+        # btnDel = QtWidgets.QPushButton("&Удалить запись")
+        # btnDel.clicked.connect(self.delRecord)
+        # btn_any_table = QtWidgets.QPushButton("&Поменять таблицу")
+        # btn_any_table.clicked.connect(self.any_table)
+        # # Упакуем все в QVBoxLayout
+        # layout = QtWidgets.QVBoxLayout(self.centralWidget)
+        # layout.addWidget(self.view)
+        # layout.addWidget(btnAdd)
+        # layout.addWidget(btnDel)
+        # layout.addWidget(btn_any_table)
+        grid.addWidget(self.view, 0, 0, 1, 1)
+        # grid.addWidget(self.tabs, 0, 1, 1, 1)
+        self.centralWidget.setLayout(grid)
+        self.setCentralWidget(self.centralWidget)
 
 
 
@@ -500,7 +647,6 @@ class Storage_app(QtWidgets.QMainWindow):
         self.set_relation()
         self.model.select()
         # print(self.view)
-
 
     def any_table(self):
         print('1')
