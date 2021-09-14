@@ -12,19 +12,50 @@ from pathlib import Path
 from PySide2 import QtSql, QtGui
 from PySide2 import QtWidgets
 from PySide2 import QtCore
-from PySide2.QtCore import Qt, QModelIndex
-from PySide2.QtGui import QImage, QPixmap
+from PySide2.QtCore import Qt
 from PySide2.QtSql import QSqlRelationalTableModel
 
 
 class Relational_table_model_with_icon(QSqlRelationalTableModel):
-    def __init__(self, table_state="company", **kwargs):
-        self.table_state = table_state
+    def __init__(self, state="company", **kwargs):
+        self.state = state
         QSqlRelationalTableModel.__init__(self, **kwargs)
+
+    def setState(self, state):
+        # Обновление данных
+        self.state = state
+        i_start = self.index(0, 0)
+        i_end = self.index(self.rowCount() - 1, 20)
+        # print(self.state)
+        if self.state == "company":
+            i_start = self.index(0,11)
+            i_end   = self.index(self.rowCount() -1, 14)
+        elif self.state == "opo":
+            i_start = self.index(0,5)
+            i_end   = self.index(self.rowCount() -1, 5)
+        elif self.state == "documentation":
+            i_start = self.index(0,5)
+            i_end   = self.index(self.rowCount() -1, 5)
+        elif self.state == "line_obj":
+            i_start = self.index(0,12)
+            i_end   = self.index(self.rowCount() -1, 13)
+        elif self.state == "state_obj":
+            i_start = self.index(0,13)
+            i_end   = self.index(self.rowCount() -1, 13)
+        elif self.state == "build_obj":
+            i_start = self.index(0,7)
+            i_end   = self.index(self.rowCount() -1, 7)
+        elif self.state == "project":
+            i_start = self.index(0,4)
+            i_end   = self.index(self.rowCount() -1, 9)
+        elif self.state == "epb":
+            i_start = self.index(0,4)
+            i_end   = self.index(self.rowCount() -1, 4)
+        self.dataChanged.emit(i_start, i_end)
 
     def data(self, index, role=Qt.DisplayRole):
         icon = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/save.png')
-        if self.table_state == "company":
+        if self.state == "company":
             if index.column() == 11 and role == Qt.DisplayRole:
                 return ""
             if index.column() == 11 and role == Qt.DecorationRole:
@@ -41,30 +72,80 @@ class Relational_table_model_with_icon(QSqlRelationalTableModel):
                 return ""
             if index.column() == 14 and role == Qt.DecorationRole:
                 return QtGui.QIcon(icon)
-        else:
-            if index.column() == 2 and role == Qt.DisplayRole:  # для второго столбца, скроем выводимый текст
+        elif self.state == "opo":
+            pass
+        elif self.state == "documentation":
+            if index.column() == 5 and role == Qt.DisplayRole:
                 return ""
-            if index.column() == 2 and role == Qt.DecorationRole:  # и для него же выведем иконку в качестве декора
-                return QtGui.QIcon('info.png')
-        return QSqlRelationalTableModel.data(self, index,
-                                             role)  # все остальное должно штатно обработаться qsqltablemodel
+            if index.column() == 5 and role == Qt.DecorationRole:
+                return QtGui.QIcon(icon)
+            if index.column() == 4 and role == Qt.BackgroundRole:
+
+                color = QtGui.QColor(200, 200, 200, 200)
+                print(type(index.data()))
+                return color
+        elif self.state == "line_obj":
+            if index.column() == 12 and role == Qt.DisplayRole:
+                return ""
+            if index.column() == 12 and role == Qt.DecorationRole:
+                return QtGui.QIcon(icon)
+        elif self.state == "state_obj":
+            if index.column() == 13 and role == Qt.DisplayRole:
+                return ""
+            if index.column() == 13 and role == Qt.DecorationRole:
+                return QtGui.QIcon(icon)
+        elif self.state == "build_obj":
+            if index.column() == 7 and role == Qt.DisplayRole:
+                return ""
+            if index.column() == 7 and role == Qt.DecorationRole:
+                return QtGui.QIcon(icon)
+        elif self.state == "project":
+            if index.column() == 4 and role == Qt.DisplayRole:
+                return ""
+            if index.column() == 4 and role == Qt.DecorationRole:
+                return QtGui.QIcon(icon)
+            if index.column() == 5 and role == Qt.DisplayRole:
+                return ""
+            if index.column() == 5 and role == Qt.DecorationRole:
+                return QtGui.QIcon(icon)
+            if index.column() == 6 and role == Qt.DisplayRole:
+                return ""
+            if index.column() == 6 and role == Qt.DecorationRole:
+                return QtGui.QIcon(icon)
+            if index.column() == 7 and role == Qt.DisplayRole:
+                return ""
+            if index.column() == 7 and role == Qt.DecorationRole:
+                return QtGui.QIcon(icon)
+            if index.column() == 8 and role == Qt.DisplayRole:
+                return ""
+            if index.column() == 8 and role == Qt.DecorationRole:
+                return QtGui.QIcon(icon)
+            if index.column() == 9 and role == Qt.DisplayRole:
+                return ""
+            if index.column() == 9 and role == Qt.DecorationRole:
+                return QtGui.QIcon(icon)
+        elif self.state == "epb":
+            if index.column() == 4 and role == Qt.DisplayRole:
+                return ""
+            if index.column() == 4 and role == Qt.DecorationRole:
+                return QtGui.QIcon(icon)
+
+        return QSqlRelationalTableModel.data(self, index, role)  # все остальное должно штатно обработаться qsqltablemodel
+
 
 
 class Storage_app(QtWidgets.QMainWindow):
 
     def __init__(self, parent=None) -> None:
         super().__init__()
-        self.tst_var = "company"
+        self.table_box_state = "company"
         self.createConnection()
-        self.fillTable()  # !!! тестовое заполнение базы данных
+        # self.fillTable()
+
         self.createModel()
         self.centralWidget = QtWidgets.QWidget()
         self.setCentralWidget(self.centralWidget)
         self.initUI()
-
-
-        # layout = QtWidgets.QVBoxLayout(self.centralWidget)
-        # layout.addWidget(self.view)
 
         if not parent:
             self.show()
@@ -479,11 +560,8 @@ class Storage_app(QtWidgets.QMainWindow):
         """
         Создание модели для отображения
         """
-        self.model = Relational_table_model_with_icon(db=self.db, table_state = self.tst_var)
+        self.model = Relational_table_model_with_icon(db=self.db, state = self.table_box_state)
         self.model.setTable("company")
-        # self.model.setHeaderData(0, QtCore.Qt.Horizontal, "id")
-        # self.model.setHeaderData(1, QtCore.Qt.Horizontal, "Наиманование")
-        # self.model.setHeaderData(2, QtCore.Qt.Horizontal, "Документы")
         self.model.select()
 
     def initUI(self):
@@ -492,7 +570,8 @@ class Storage_app(QtWidgets.QMainWindow):
         self.main_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/data_base.png')
         company_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/company.png')
         state_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/state.png')
-        ok_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/ok.png')
+        plus_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/plus.png')
+        minus_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/minus.png')
         object_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/object.png')
         doc_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/document.png')
         line_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/tube.png')
@@ -518,7 +597,7 @@ class Storage_app(QtWidgets.QMainWindow):
         self.setWindowIcon(self.main_ico)
         # UI
         grid = QtWidgets.QGridLayout(self)
-        grid.setColumnStretch(0, 6)
+        grid.setColumnStretch(0, 9)
         grid.setColumnStretch(1, 2)
         # т.к. данных  много создадим
         # вкладки табов
@@ -543,7 +622,20 @@ class Storage_app(QtWidgets.QMainWindow):
         self.table_box.setItemIcon(6, project_ico)
         self.table_box.setItemIcon(7, project2_ico)
         self.table_box.setToolTip("""Таблицы базы данных""")
-        # self.table_box.activated[str].connect(self.table_select)
+        self.table_box.activated[str].connect(self.table_select)
+
+        self.add_in_db = QtWidgets.QPushButton("Добавить строку")
+        self.add_in_db.setIcon(plus_ico)
+        self.add_in_db.setToolTip("Добавить строку в таблицу")
+        self.add_in_db.clicked.connect(self.add_in_data_base)
+        self.del_from_db = QtWidgets.QPushButton("Удалить строку")
+        self.del_from_db.setIcon(minus_ico)
+        self.del_from_db.setToolTip("Удалить строку из таблицу")
+        self.del_from_db.clicked.connect(self.delete_from_data_base)
+        self.edit_from_db = QtWidgets.QPushButton("Редактировать")
+        self.edit_from_db.setIcon(minus_ico)
+        self.edit_from_db.setToolTip("Редактировать выделенный элемент")
+        self.edit_from_db.clicked.connect(self.edit_from_data_base)
 
         # Упаковываем все на вкладку таба "0" (делаем все в QGroupBox
         # т.к. элементы будут добавляться и их
@@ -551,12 +643,23 @@ class Storage_app(QtWidgets.QMainWindow):
 
         # Рамка №0
         layout_table_select = QtWidgets.QFormLayout(self)
-        GB_table_select = QtWidgets.QGroupBox('Таблицы базы данных')
+        GB_table_select = QtWidgets.QGroupBox('Таблица базы данных')
         GB_table_select.setStyleSheet("QGroupBox { font-weight : bold; }")
         layout_table_select.addRow("", self.table_box)
         GB_table_select.setLayout(layout_table_select)
+        # Рамка №1
+        layout_table_edit = QtWidgets.QFormLayout(self)
+        GB_table_edit = QtWidgets.QGroupBox('Добавить/удалить/редактировать позицию')
+        GB_table_edit.setStyleSheet("QGroupBox { font-weight : bold; }")
+        hbox_1 = QtWidgets.QHBoxLayout()
+        hbox_1.addWidget(self.add_in_db)
+        hbox_1.addWidget(self.del_from_db)
+        hbox_1.addWidget(self.edit_from_db)
+        layout_table_edit.addRow("", hbox_1)
+        GB_table_edit.setLayout(layout_table_edit)
         # Собираем рамки
         self.tab_main.layout.addWidget(GB_table_select)
+        self.tab_main.layout.addWidget(GB_table_edit)
         # Размещаем на табе
         self.tab_main.setLayout(self.tab_main.layout)
         # Размещаем на сетке
@@ -565,6 +668,57 @@ class Storage_app(QtWidgets.QMainWindow):
         self.centralWidget.setLayout(grid)
         self.setCentralWidget(self.centralWidget)
 
+    def table_select(self, text):
+        # self.model.data()
+        if text == 'Компании':
+            self.table_box_state = "company"
+            self.model.setState(self.table_box_state)
+            self.model.setTable("company")
+            self.model.select()
+        if text == 'ОПО':
+            self.table_box_state = "opo"
+            self.model.setState(self.table_box_state)
+            self.model.setTable("opo")
+            self.model.select()
+        elif text == 'Документация ОПО':
+            self.table_box_state = "documentation"
+            self.model.setState(self.table_box_state)
+            self.model.setTable("documentation")
+            self.model.select()
+        elif text == 'Линейные объекты':
+            self.table_box_state = "line_obj"
+            self.model.setState(self.table_box_state)
+            self.model.setTable("line_obj")
+            self.model.select()
+        elif text == 'Стационарные объекты':
+            self.table_box_state = "state_obj"
+            self.model.setState(self.table_box_state)
+            self.model.setTable("state_obj")
+            self.model.select()
+        elif text == 'Здания и сооружения':
+            self.table_box_state = "build_obj"
+            self.model.setState(self.table_box_state)
+            self.model.setTable("build_obj")
+            self.model.select()
+        elif text == 'Проекты':
+            self.table_box_state = "project"
+            self.model.setState(self.table_box_state)
+            self.model.setTable("project")
+            self.model.select()
+        elif text == 'Экспертизы пром.безопасности':
+            self.table_box_state = "epb"
+            self.model.setState(self.table_box_state)
+            self.model.setTable("epb")
+            self.model.select()
+
+    def add_in_data_base(self):
+        pass
+
+    def delete_from_data_base(self):
+        pass
+
+    def edit_from_data_base(self):
+        pass
 
     def closeEvent(self, event):
         if (self.db.open()):
