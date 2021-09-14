@@ -132,8 +132,6 @@ class Relational_table_model_with_icon(QSqlRelationalTableModel):
 
         return QSqlRelationalTableModel.data(self, index, role)  # все остальное должно штатно обработаться qsqltablemodel
 
-
-
 class Storage_app(QtWidgets.QMainWindow):
 
     def __init__(self, parent=None) -> None:
@@ -146,6 +144,8 @@ class Storage_app(QtWidgets.QMainWindow):
         self.centralWidget = QtWidgets.QWidget()
         self.setCentralWidget(self.centralWidget)
         self.initUI()
+        #     Структура данных (словари для корректности работы БД)
+        self.list_id_company = []
 
         if not parent:
             self.show()
@@ -712,7 +712,16 @@ class Storage_app(QtWidgets.QMainWindow):
             self.model.select()
 
     def add_in_data_base(self):
-        pass
+        # Предусмотреть вариант когда строк 0!!!!!!
+        for row in range(self.model.rowCount()):
+            for column in range(self.model.columnCount()):
+                if column == 0:
+                    index = self.model.index(row, column)
+                    print(type(index.data()))
+                    self.list_id_company.append(index.data())
+
+        max_id = max(self.list_id_company)+1
+        print(max_id)
 
     def delete_from_data_base(self):
         pass
