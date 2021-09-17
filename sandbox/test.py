@@ -101,15 +101,15 @@ class Example(QMainWindow):
 
     def addRecord(self):
 
-        def fill_combobox():#<---
-            list_name = []#<---
-            query = QSqlQuery('SELECT * FROM category')#<---
-            while query.next():#<---
-                list_name.append(str(query.value(0))+" "+query.value(1))#<---
-            query.exec_()#<---
-            return list_name#<---
+        def fill_combobox():
+            list_name = []
+            query = QSqlQuery('SELECT * FROM category')
+            while query.next():
+                list_name.append(str(query.value(0))+" "+query.value(1))
+            query.exec_()
+            return list_name
 
-        list_name = fill_combobox()#<---
+        list_name = fill_combobox()
 
         inputDialog = Dialog(list_for_combo= list_name)#<---
         rez = inputDialog.exec()

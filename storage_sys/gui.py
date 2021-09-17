@@ -326,6 +326,128 @@ class Add_Dialog(QtWidgets.QDialog):
             main_layout.addLayout(form_layout)
             main_layout.addWidget(button_box)
 
+        elif state == 'project':
+            self.setWindowTitle('Добавление проекта')
+            self.id_project = QtWidgets.QLineEdit()
+            self.id_project.setText(str(id))
+            self.id_project.setReadOnly(True)
+            self.id_opo = QtWidgets.QComboBox()
+            self.id_opo.addItems(list_for_combo)
+            self.name_project = QtWidgets.QLineEdit()
+            self.date_project = QtWidgets.QLineEdit()
+            # ПЗ
+            self.pz_project = QtWidgets.QLineEdit()
+            self.pz_project.setReadOnly(True)
+            self.pz_project_btn = QtWidgets.QPushButton("", objectName="pz_project_btn")
+            self.pz_project_btn.setIcon(folder_file)
+            self.pz_project_btn.clicked.connect(self.file_path)
+            pz_project_hbox = QtWidgets.QHBoxLayout()
+            pz_project_hbox.addWidget(self.pz_project)
+            pz_project_hbox.addWidget(self.pz_project_btn)
+            # ПЗУ
+            self.pzu_project = QtWidgets.QLineEdit()
+            self.pzu_project.setReadOnly(True)
+            self.pzu_project_btn = QtWidgets.QPushButton("", objectName="pzu_project_btn")
+            self.pzu_project_btn.setIcon(folder_file)
+            self.pzu_project_btn.clicked.connect(self.file_path)
+            pzu_project_hbox = QtWidgets.QHBoxLayout()
+            pzu_project_hbox.addWidget(self.pzu_project)
+            pzu_project_hbox.addWidget(self.pzu_project_btn)
+            # КР
+            self.kr_project = QtWidgets.QLineEdit()
+            self.kr_project.setReadOnly(True)
+            self.kr_project_btn = QtWidgets.QPushButton("", objectName="kr_project_btn")
+            self.kr_project_btn.setIcon(folder_file)
+            self.kr_project_btn.clicked.connect(self.file_path)
+            kr_project_hbox = QtWidgets.QHBoxLayout()
+            kr_project_hbox.addWidget(self.kr_project)
+            kr_project_hbox.addWidget(self.kr_project_btn)
+            # ИОС
+            self.ios_project = QtWidgets.QLineEdit()
+            self.ios_project.setReadOnly(True)
+            self.ios_project_btn = QtWidgets.QPushButton("", objectName="ios_project_btn")
+            self.ios_project_btn.setIcon(folder_file)
+            self.ios_project_btn.clicked.connect(self.file_path)
+            ios_project_hbox = QtWidgets.QHBoxLayout()
+            ios_project_hbox.addWidget(self.ios_project)
+            ios_project_hbox.addWidget(self.ios_project_btn)
+            # ПОС
+            self.pos_project = QtWidgets.QLineEdit()
+            self.pos_project.setReadOnly(True)
+            self.pos_project_btn = QtWidgets.QPushButton("", objectName="pos_project_btn")
+            self.pos_project_btn.setIcon(folder_file)
+            self.pos_project_btn.clicked.connect(self.file_path)
+            pos_project_hbox = QtWidgets.QHBoxLayout()
+            pos_project_hbox.addWidget(self.pos_project)
+            pos_project_hbox.addWidget(self.pos_project_btn)
+            # Прочее
+            self.another_project = QtWidgets.QLineEdit()
+            self.another_project.setReadOnly(True)
+            self.another_project_btn = QtWidgets.QPushButton("", objectName="another_project_btn")
+            self.another_project_btn.setIcon(folder_file)
+            self.another_project_btn.clicked.connect(self.file_path)
+            another_project_hbox = QtWidgets.QHBoxLayout()
+            another_project_hbox.addWidget(self.another_project)
+            another_project_hbox.addWidget(self.another_project_btn)
+
+            form_layout = QtWidgets.QFormLayout()
+            form_layout.addRow('id: ', self.id_project)
+            form_layout.addRow('Наименование ОПО: ', self.id_opo)
+            form_layout.addRow('Наименование проекта: ', self.name_project)
+            form_layout.addRow('Дата: ', self.date_project)
+            form_layout.addRow('Раздел ПЗ: ', pz_project_hbox)
+            form_layout.addRow('Раздел ПЗУ: ', pzu_project_hbox)
+            form_layout.addRow('Раздел КР: ', kr_project_hbox)
+            form_layout.addRow('Раздел ИОС: ', ios_project_hbox)
+            form_layout.addRow('Раздел ПОС: ', pos_project_hbox)
+            form_layout.addRow('Разделы прочие: ', another_project_hbox)
+
+            button_box = QtWidgets.QDialogButtonBox(
+                QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
+            button_box.accepted.connect(self.accept)
+            button_box.rejected.connect(self.reject)
+
+            main_layout = QtWidgets.QVBoxLayout(self)
+            main_layout.addLayout(form_layout)
+            main_layout.addWidget(button_box)
+
+        elif state == 'epb':
+            self.setWindowTitle('Добавление ЭПБ')
+            self.id_epb = QtWidgets.QLineEdit()
+            self.id_epb.setText(str(id))
+            self.id_epb.setReadOnly(True)
+            self.id_opo = QtWidgets.QComboBox()
+            self.id_opo.addItems(list_for_combo)
+            self.name_doc = QtWidgets.QLineEdit()
+            self.date_doc = QtWidgets.QLineEdit()
+            # ЭПБ
+            self.epb_doc = QtWidgets.QLineEdit()
+            self.epb_doc.setReadOnly(True)
+            self.epb_doc_btn = QtWidgets.QPushButton("", objectName="epb_doc_btn")
+            self.epb_doc_btn.setIcon(folder_file)
+            self.epb_doc_btn.clicked.connect(self.file_path)
+            epb_hbox = QtWidgets.QHBoxLayout()
+            epb_hbox.addWidget(self.epb_doc)
+            epb_hbox.addWidget(self.epb_doc_btn)
+
+
+            form_layout = QtWidgets.QFormLayout()
+            form_layout.addRow('id: ', self.id_epb)
+            form_layout.addRow('Наименование ОПО: ', self.id_opo)
+            form_layout.addRow('Наименование ЭПБ": ', self.name_doc)
+            form_layout.addRow('Дата: ', self.date_doc)
+            form_layout.addRow('Раздел ЭПБ: ', epb_hbox)
+
+
+            button_box = QtWidgets.QDialogButtonBox(
+                QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
+            button_box.accepted.connect(self.accept)
+            button_box.rejected.connect(self.reject)
+
+            main_layout = QtWidgets.QVBoxLayout(self)
+            main_layout.addLayout(form_layout)
+            main_layout.addWidget(button_box)
+
     def file_path(self):
         sender = self.sender()
         path = QtWidgets.QFileDialog.getOpenFileName(self,
@@ -355,7 +477,20 @@ class Add_Dialog(QtWidgets.QDialog):
             self.passport_st.setText(path)
         elif sender.objectName() == "passport_build_btn":
             self.passport_build.setText(path)
-
+        elif sender.objectName() == "pz_project_btn":
+            self.pz_project.setText(path)
+        elif sender.objectName() == "pzu_project_btn":
+            self.pzu_project.setText(path)
+        elif sender.objectName() == "kr_project_btn":
+            self.kr_project.setText(path)
+        elif sender.objectName() == "ios_project_btn":
+            self.ios_project.setText(path)
+        elif sender.objectName() == "pos_project_btn":
+            self.pos_project.setText(path)
+        elif sender.objectName() == "another_project_btn":
+            self.another_project.setText(path)
+        elif sender.objectName() == "epb_doc_btn":
+            self.epb_doc.setText(path)
         return
 
 
@@ -1333,10 +1468,74 @@ class Storage_app(QtWidgets.QMainWindow):
             query.bindValue(":date_manufacture", date_manufacture)
             query.bindValue(":date_entry", date_entry)
             query.bindValue(":date_upto", date_upto)
-            query.bindValue(":doc", passport)
+            query.bindValue(":doc", QtCore.QByteArray(self.convertToBinaryData(passport)))
             query.exec_()
 
+        if self.table_box_state == 'project':
+            id_project = inputDialog.id_project.text()
+            curr_text = inputDialog.id_opo.currentText()
+            id_opo = curr_text.split()[0]
+            name_project = inputDialog.name_project.text()
+            date_project = inputDialog.date_project.text()
+            pz_project = inputDialog.pz_project.text()
+            pzu_project = inputDialog.pzu_project.text()
+            kr_project = inputDialog.kr_project.text()
+            ios_project = inputDialog.ios_project.text()
+            pos_project = inputDialog.pos_project.text()
+            another_project = inputDialog.another_project.text()
 
+            list_data = [id_project, id_opo, name_project, date_project, pz_project, pzu_project,
+                         kr_project, ios_project, pos_project, another_project]
+
+            for i in list_data:
+                if i == '':
+                    msg = QtWidgets.QMessageBox.information(self, 'Внимание', 'Заполните пожалуйста все поля.')
+                    return
+
+            query = QtSql.QSqlQuery()
+            query.prepare("INSERT INTO project (id, id_opo, name_project, date_project, "
+                          "pz_project, pzu_project, kr_project, ios_project,"
+                          "pos_project, another_project)"
+                          "VALUES (:id, :id_opo, :name_project, :date_project, :pz_project, :pzu_project, "
+                          ":kr_project, :ios_project, :pos_project, :another_project)")
+
+            query.bindValue(":id", id_project)
+            query.bindValue(":id_opo", id_opo)
+            query.bindValue(":name_project", name_project)
+            query.bindValue(":date_project", date_project)
+            query.bindValue(":pz_project", QtCore.QByteArray(self.convertToBinaryData(pz_project)))
+            query.bindValue(":pzu_project", QtCore.QByteArray(self.convertToBinaryData(pzu_project)))
+            query.bindValue(":kr_project", QtCore.QByteArray(self.convertToBinaryData(kr_project)))
+            query.bindValue(":ios_project", QtCore.QByteArray(self.convertToBinaryData(ios_project)))
+            query.bindValue(":pos_project", QtCore.QByteArray(self.convertToBinaryData(pos_project)))
+            query.bindValue(":another_project", QtCore.QByteArray(self.convertToBinaryData(another_project)))
+            query.exec_()
+
+        if self.table_box_state == 'epb':
+            id_epb = inputDialog.id_epb.text()
+            curr_text = inputDialog.id_opo.currentText()
+            id_opo = curr_text.split()[0]
+            name_doc = inputDialog.name_doc.text()
+            date_doc = inputDialog.date_doc.text()
+            epb_doc = inputDialog.epb_doc.text()
+
+            list_data = [id_epb, id_opo, name_doc, date_doc, epb_doc]
+
+            for i in list_data:
+                if i == '':
+                    msg = QtWidgets.QMessageBox.information(self, 'Внимание', 'Заполните пожалуйста все поля.')
+                    return
+
+            query = QtSql.QSqlQuery()
+            query.prepare("INSERT INTO epb (id, id_opo, name_doc, date_doc, epb_doc)"
+                          "VALUES (:id, :id_opo, :name_doc, :date_doc, :epb_doc)")
+
+            query.bindValue(":id", id_epb)
+            query.bindValue(":id_opo", id_opo)
+            query.bindValue(":name_doc", name_doc)
+            query.bindValue(":date_doc", date_doc)
+            query.bindValue(":epb_doc", QtCore.QByteArray(self.convertToBinaryData(epb_doc)))
+            query.exec_()
 
         self.model.select()
 
