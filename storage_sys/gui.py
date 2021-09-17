@@ -17,7 +17,7 @@ from PySide2.QtSql import QSqlRelationalTableModel
 
 
 class Add_Dialog(QtWidgets.QDialog):
-    def __init__(self, state="company", id=100):
+    def __init__(self, state="company", id=100, list_for_combo = []):
         super().__init__()
         main_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/data_base.png')
         folder_file = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/folder_file.png')
@@ -45,16 +45,16 @@ class Add_Dialog(QtWidgets.QDialog):
             # лицензия
             self.license_opo = QtWidgets.QLineEdit()
             self.license_opo.setReadOnly(True)
-            self.license_opo_btn = QtWidgets.QPushButton("")
+            self.license_opo_btn = QtWidgets.QPushButton("",objectName="license_opo_btn")
             self.license_opo_btn.setIcon(folder_file)
-            # self.license_opo_btn.clicked.connect(self.file_path)
+            self.license_opo_btn.clicked.connect(self.file_path)
             license_hbox = QtWidgets.QHBoxLayout()
             license_hbox.addWidget(self.license_opo)
             license_hbox.addWidget(self.license_opo_btn)
             # регистрация ОПО
             self.reg_opo = QtWidgets.QLineEdit()
             self.reg_opo.setReadOnly(True)
-            self.reg_opo_btn = QtWidgets.QPushButton("", objectName ="reg_opo_btn")
+            self.reg_opo_btn = QtWidgets.QPushButton("", objectName="reg_opo_btn")
             self.reg_opo_btn.setIcon(folder_file)
             self.reg_opo_btn.clicked.connect(self.file_path)
             reg_hbox = QtWidgets.QHBoxLayout()
@@ -63,18 +63,18 @@ class Add_Dialog(QtWidgets.QDialog):
             # Положение о ПК
             self.position_pk = QtWidgets.QLineEdit()
             self.position_pk.setReadOnly(True)
-            self.position_pk_btn = QtWidgets.QPushButton("")
+            self.position_pk_btn = QtWidgets.QPushButton("", objectName="position_pk_btn")
             self.position_pk_btn.setIcon(folder_file)
-            # self.position_pk_btn.clicked.connect(self.file_path)
+            self.position_pk_btn.clicked.connect(self.file_path)
             pk_hbox = QtWidgets.QHBoxLayout()
             pk_hbox.addWidget(self.position_pk)
             pk_hbox.addWidget(self.position_pk_btn)
             # Положение об авариях
             self.position_crash = QtWidgets.QLineEdit()
             self.position_crash.setReadOnly(True)
-            self.position_crash_btn = QtWidgets.QPushButton("")
+            self.position_crash_btn = QtWidgets.QPushButton("", objectName="position_crash_btn")
             self.position_crash_btn.setIcon(folder_file)
-            # self.position_crash_btn.clicked.connect(self.file_path)
+            self.position_crash_btn.clicked.connect(self.file_path)
             crash_hbox = QtWidgets.QHBoxLayout()
             crash_hbox.addWidget(self.position_crash)
             crash_hbox.addWidget(self.position_crash_btn)
@@ -105,6 +105,75 @@ class Add_Dialog(QtWidgets.QDialog):
             main_layout.addLayout(form_layout)
             main_layout.addWidget(button_box)
 
+        if state == "opo":
+            self.setWindowTitle('Добавление опасного объекта')
+            self.id_opo = QtWidgets.QLineEdit()
+            self.id_opo.setText(str(id))
+            self.id_opo.setReadOnly(True)
+            self.id_company = QtWidgets.QComboBox()
+            self.id_company.addItems(list_for_combo)
+            self.name_opo = QtWidgets.QLineEdit()
+            self.address_opo = QtWidgets.QLineEdit()
+            self.reg_number_opo = QtWidgets.QLineEdit()
+            self.class_opo = QtWidgets.QLineEdit()
+
+            form_layout = QtWidgets.QFormLayout()
+            form_layout.addRow('id: ', self.id_opo)
+            form_layout.addRow('Наименование организации: ', self.id_company)
+            form_layout.addRow('Наименование ОПО: ', self.name_opo)
+            form_layout.addRow('Адрес ОПО: ', self.address_opo)
+            form_layout.addRow('Рег № ОПО: ', self.reg_number_opo)
+            form_layout.addRow('Класс опасности: ', self.class_opo)
+
+            button_box = QtWidgets.QDialogButtonBox(
+                QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
+            button_box.accepted.connect(self.accept)
+            button_box.rejected.connect(self.reject)
+
+            main_layout = QtWidgets.QVBoxLayout(self)
+            main_layout.addLayout(form_layout)
+            main_layout.addWidget(button_box)
+
+        if state == 'documentation':
+            self.setWindowTitle('Добавление опасного объекта')
+            self.id_doc = QtWidgets.QLineEdit()
+            self.id_doc.setText(str(id))
+            self.id_doc.setReadOnly(True)
+            self.id_opo = QtWidgets.QComboBox()
+            self.id_opo.addItems(list_for_combo)
+            self.type_doc = QtWidgets.QLineEdit()
+            self.reg_doc = QtWidgets.QLineEdit()
+            self.date_doc = QtWidgets.QLineEdit()
+            self.doc = QtWidgets.QLineEdit()
+            # Документация ОПО
+            self.doc_opo = QtWidgets.QLineEdit()
+            self.doc_opo.setReadOnly(True)
+            self.doc_opo_btn = QtWidgets.QPushButton("",objectName="doc_opo_btn")
+            self.doc_opo_btn.setIcon(folder_file)
+            self.doc_opo_btn.clicked.connect(self.file_path)
+            doc_hbox = QtWidgets.QHBoxLayout()
+            doc_hbox.addWidget(self.doc_opo)
+            doc_hbox.addWidget(self.doc_opo_btn)
+
+            form_layout = QtWidgets.QFormLayout()
+            form_layout.addRow('id: ', self.id_doc)
+            form_layout.addRow('Наименование ОПО: ', self.id_opo)
+            form_layout.addRow('Наименование документации: ', self.type_doc)
+            form_layout.addRow('Рег. № документации: ', self.reg_doc)
+            form_layout.addRow('Дата: ', self.date_doc)
+            form_layout.addRow('Документация: ', doc_hbox)
+
+            button_box = QtWidgets.QDialogButtonBox(
+                QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
+            button_box.accepted.connect(self.accept)
+            button_box.rejected.connect(self.reject)
+
+            main_layout = QtWidgets.QVBoxLayout(self)
+            main_layout.addLayout(form_layout)
+            main_layout.addWidget(button_box)
+
+
+
 
     def file_path(self):
         sender = self.sender()
@@ -119,9 +188,17 @@ class Add_Dialog(QtWidgets.QDialog):
             msg.exec()
             return
 
-        if sender.objectName() == "reg_opo_btn":
+        if sender.objectName() == "license_opo_btn":
+            self.license_opo.setText(path)
+        elif sender.objectName() == "reg_opo_btn":
             self.reg_opo.setText(path)
-            
+        elif sender.objectName() == "position_pk_btn":
+            self.position_pk.setText(path)
+        elif sender.objectName() == "position_crash_btn":
+            self.position_crash.setText(path)
+        elif sender.objectName() == "doc_opo_btn":
+            self.doc_opo.setText(path)
+
         return
 
 
@@ -822,47 +899,159 @@ class Storage_app(QtWidgets.QMainWindow):
             self.model.select()
 
     def add_in_data_base(self):
-        """
-        Диалог добавления информации в БД
-        """
-        inputDialog = Add_Dialog()
+
+        def fill_combobox(table_box_state):
+            list_name = []
+            if table_box_state == 'opo':
+                query = QtSql.QSqlQuery('SELECT * FROM company')
+                while query.next():
+                    list_name.append(str(query.value(0)) + " " + query.value(1))
+                query.exec_()
+            else:
+                query = QtSql.QSqlQuery('SELECT * FROM opo')
+                while query.next():
+                    list_name.append(str(query.value(0)) + " " + query.value(2))
+                query.exec_()
+            return list_name
+
+        list_name = fill_combobox(self.table_box_state)
+
+
+        # Определим максимальный id
+        list_id = []
+        max_id = 0
+        if self.model.rowCount() == 0:
+            max_id = max_id + 1
+        else:
+            for row in range(self.model.rowCount()):
+                for column in range(self.model.columnCount()):
+                    if column == 0:
+                        index = self.model.index(row, column)
+                        list_id.append(index.data())
+            max_id = max(list_id) + 1
+
+
+        inputDialog = Add_Dialog(state=self.table_box_state, id=max_id, list_for_combo = list_name)
         rez = inputDialog.exec()
         if not rez:
             msg = QtWidgets.QMessageBox.information(self, 'Внимание!', 'Добавление в базу данных отменено')
             return
 
-        name = inputDialog.line_edit_name.text()
-        quantity = inputDialog.line_edit_quantity.text()
-        category = inputDialog.line_edit_category.text()
-        if (not name) or (not quantity) or (not category):
-            msg = QtWidgets.QMessageBox.information(self,
-                                                    'Внимание', 'Заполните пожалуйста все поля.')
-            return
+        if self.table_box_state == 'company':
+            id_company = inputDialog.id_company.text()
+            name_company = inputDialog.name_company.text()
+            full_name_manager = inputDialog.full_name_manager.text()
+            ur_address = inputDialog.ur_address.text()
+            post_address = inputDialog.post_address.text()
+            email = inputDialog.email.text()
+            telephone = inputDialog.telephone.text()
+            fax = inputDialog.fax.text()
+            inn_number = inputDialog.inn_number.text()
+            kpp_number = inputDialog.kpp_number.text()
+            ogrn_number = inputDialog.ogrn_number.text()
+            license_opo = inputDialog.license_opo.text()
+            reg_opo = inputDialog.reg_opo.text()
+            position_pk = inputDialog.position_pk.text()
+            position_crash = inputDialog.position_crash.text()
 
-        r = self.model.record()
-        r.setValue(0, name)
-        r.setValue(1, int(quantity))
-        r.setValue(2, int(category))
+            list_data = [id_company, name_company, full_name_manager, ur_address,
+                         post_address, email, telephone, fax, inn_number, kpp_number,
+                         ogrn_number, license_opo, reg_opo, position_pk, position_crash]
 
-        self.model.insertRecord(-1, r)
+            for i in list_data:
+                if i == '':
+                    msg = QtWidgets.QMessageBox.information(self,'Внимание', 'Заполните пожалуйста все поля.')
+                    return
+
+            print("READY TO WRITE DB FOR COMPANY")
+
+            query = QtSql.QSqlQuery()
+            query.prepare("INSERT INTO company (id, name_company, full_name_manager, "
+                          "ur_address, post_address, telephone, email, fax, inn_number, kpp_number, ogrn_number, "
+                          "license_opo, reg_opo, position_pk, position_crash) "
+                          "VALUES (:id, :name_company, :full_name_manager, :ur_address,:post_address, :telephone, :email, "
+                          ":fax, :inn_number, :kpp_number, :ogrn_number, :license_opo, :reg_opo, :position_pk, :position_crash)")
+
+            query.bindValue(":id", id_company)
+            query.bindValue(":name_company", name_company)
+            query.bindValue(":full_name_manager", full_name_manager)
+            query.bindValue(":ur_address", ur_address)
+            query.bindValue(":post_address", post_address)
+            query.bindValue(":email", email)
+            query.bindValue(":telephone", telephone)
+            query.bindValue(":fax", fax)
+            query.bindValue(":inn_number", inn_number)
+            query.bindValue(":kpp_number", kpp_number)
+            query.bindValue(":ogrn_number", ogrn_number)
+            query.bindValue(":license_opo", QtCore.QByteArray(self.convertToBinaryData(license_opo)))
+            query.bindValue(":reg_opo", QtCore.QByteArray(self.convertToBinaryData(reg_opo)))
+            query.bindValue(":position_pk", QtCore.QByteArray(self.convertToBinaryData(position_pk)))
+            query.bindValue(":position_crash", QtCore.QByteArray(self.convertToBinaryData(position_crash)))
+            query.exec_()
+
+        if self.table_box_state == 'opo':
+            id_opo = inputDialog.id_opo.text()
+            curr_text = inputDialog.id_company.currentText()
+            id_company = curr_text.split()[0]
+            name_opo = inputDialog.name_opo.text()
+            address_opo = inputDialog.address_opo.text()
+            reg_number_opo = inputDialog.reg_number_opo.text()
+            class_opo = inputDialog.class_opo.text()
+
+            list_data = [id_opo, id_company, name_opo, reg_number_opo, class_opo]
+
+            for i in list_data:
+                if i == '':
+                    msg = QtWidgets.QMessageBox.information(self,'Внимание', 'Заполните пожалуйста все поля.')
+                    return
+
+            print("READY TO WRITE DB FOR COMPANY")
+
+            query = QtSql.QSqlQuery()
+            query.prepare("INSERT INTO opo (id, id_company, name_opo, "
+                          "address_opo, reg_number_opo, class_opo)"
+                          "VALUES (:id, :id_company, :name_opo, :address_opo,:reg_number_opo, :class_opo)")
+
+            query.bindValue(":id", id_opo)
+            query.bindValue(":id_company", id_company)
+            query.bindValue(":name_opo", name_opo)
+            query.bindValue(":address_opo", address_opo)
+            query.bindValue(":reg_number_opo", reg_number_opo)
+            query.bindValue(":class_opo", class_opo)
+            query.exec_()
+
+        if self.table_box_state == 'documentation':
+            id_doc = inputDialog.id_doc.text()
+            curr_text = inputDialog.id_opo.currentText()
+            id_opo = curr_text.split()[0]
+            reg_doc = inputDialog.reg_doc.text()
+            type_doc = inputDialog.type_doc.text()
+            date_doc = inputDialog.date_doc.text()
+            doc_opo = inputDialog.doc_opo.text()
+
+            list_data = [id_doc, id_opo, type_doc, date_doc, doc_opo]
+
+            for i in list_data:
+                if i == '':
+                    msg = QtWidgets.QMessageBox.information(self, 'Внимание', 'Заполните пожалуйста все поля.')
+                    return
+
+            print("READY TO WRITE DB FOR DOC")
+
+            query = QtSql.QSqlQuery()
+            query.prepare("INSERT INTO documentation (id, id_opo, type_doc, reg_doc, date_doc, doc)"
+                          "VALUES (:id, :id_opo, :type_doc, :reg_doc,:date_doc, :doc)")
+
+            query.bindValue(":id", id_doc)
+            query.bindValue(":id_opo", id_opo)
+            query.bindValue(":type_doc", type_doc)
+            query.bindValue(":reg_doc", reg_doc)
+            query.bindValue(":date_doc", date_doc)
+            query.bindValue(":doc", QtCore.QByteArray(self.convertToBinaryData(doc_opo)))
+            query.exec_()
+
         self.model.select()
-        # # Предусмотреть вариант когда строк 0!!!!!!
-        # for row in range(self.model.rowCount()):
-        #     for column in range(self.model.columnCount()):
-        #         if column == 0:
-        #             index = self.model.index(row, column)
-        #             print(type(index.data()))
-        #             self.list_id_company.append(index.data())
-        # max_id = max(self.list_id_company)+1
-        #
-        # for row in range(self.model.rowCount()):
-        #     for column in range(self.model.columnCount()):
-        #         if column == 1:
-        #             index = self.model.index(row, column)
-        #             print(type(index.data()))
-        #             self.list_id_company.append(index.data())
-        # # max_id = max(self.list_id_company)
-        # print(max_id)
+
 
     def delete_from_data_base(self):
         pass
