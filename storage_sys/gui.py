@@ -17,14 +17,14 @@ from PySide2.QtSql import QSqlRelationalTableModel
 
 
 class Add_Dialog(QtWidgets.QDialog):
-    def __init__(self, state="company", id=100, list_for_combo = []):
+    def __init__(self, state="company", id=100, list_for_combo=[]):
         super().__init__()
         main_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/data_base.png')
         folder_file = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/folder_file.png')
+        onlyInt = QtGui.QIntValidator()
         self.setWindowIcon(main_ico)
 
         if state == "company":
-            onlyInt = QtGui.QIntValidator()
             self.setWindowTitle('Добавление организации')
             self.id_company = QtWidgets.QLineEdit()
             self.id_company.setText(str(id))
@@ -45,7 +45,7 @@ class Add_Dialog(QtWidgets.QDialog):
             # лицензия
             self.license_opo = QtWidgets.QLineEdit()
             self.license_opo.setReadOnly(True)
-            self.license_opo_btn = QtWidgets.QPushButton("",objectName="license_opo_btn")
+            self.license_opo_btn = QtWidgets.QPushButton("", objectName="license_opo_btn")
             self.license_opo_btn.setIcon(folder_file)
             self.license_opo_btn.clicked.connect(self.file_path)
             license_hbox = QtWidgets.QHBoxLayout()
@@ -105,7 +105,7 @@ class Add_Dialog(QtWidgets.QDialog):
             main_layout.addLayout(form_layout)
             main_layout.addWidget(button_box)
 
-        if state == "opo":
+        elif state == "opo":
             self.setWindowTitle('Добавление опасного объекта')
             self.id_opo = QtWidgets.QLineEdit()
             self.id_opo.setText(str(id))
@@ -116,6 +116,7 @@ class Add_Dialog(QtWidgets.QDialog):
             self.address_opo = QtWidgets.QLineEdit()
             self.reg_number_opo = QtWidgets.QLineEdit()
             self.class_opo = QtWidgets.QLineEdit()
+            self.class_opo.setValidator(onlyInt)
 
             form_layout = QtWidgets.QFormLayout()
             form_layout.addRow('id: ', self.id_opo)
@@ -134,8 +135,8 @@ class Add_Dialog(QtWidgets.QDialog):
             main_layout.addLayout(form_layout)
             main_layout.addWidget(button_box)
 
-        if state == 'documentation':
-            self.setWindowTitle('Добавление опасного объекта')
+        elif state == 'documentation':
+            self.setWindowTitle('Добавление документации ОПО')
             self.id_doc = QtWidgets.QLineEdit()
             self.id_doc.setText(str(id))
             self.id_doc.setReadOnly(True)
@@ -144,11 +145,10 @@ class Add_Dialog(QtWidgets.QDialog):
             self.type_doc = QtWidgets.QLineEdit()
             self.reg_doc = QtWidgets.QLineEdit()
             self.date_doc = QtWidgets.QLineEdit()
-            self.doc = QtWidgets.QLineEdit()
             # Документация ОПО
             self.doc_opo = QtWidgets.QLineEdit()
             self.doc_opo.setReadOnly(True)
-            self.doc_opo_btn = QtWidgets.QPushButton("",objectName="doc_opo_btn")
+            self.doc_opo_btn = QtWidgets.QPushButton("", objectName="doc_opo_btn")
             self.doc_opo_btn.setIcon(folder_file)
             self.doc_opo_btn.clicked.connect(self.file_path)
             doc_hbox = QtWidgets.QHBoxLayout()
@@ -172,8 +172,159 @@ class Add_Dialog(QtWidgets.QDialog):
             main_layout.addLayout(form_layout)
             main_layout.addWidget(button_box)
 
+        elif state == 'line_obj':
+            self.setWindowTitle('Добавление линейного объекта')
+            self.id_line = QtWidgets.QLineEdit()
+            self.id_line.setText(str(id))
+            self.id_line.setReadOnly(True)
+            self.id_opo = QtWidgets.QComboBox()
+            self.id_opo.addItems(list_for_combo)
+            self.reg_number = QtWidgets.QLineEdit()
+            self.reg_number.setValidator(onlyInt)
+            self.name_obj = QtWidgets.QLineEdit()
+            self.substance = QtWidgets.QLineEdit()
+            self.lenght = QtWidgets.QLineEdit()
+            self.lenght.setValidator(onlyInt)
+            self.diameter = QtWidgets.QLineEdit()
+            self.diameter.setValidator(onlyInt)
+            self.pressure = QtWidgets.QLineEdit()
+            self.pressure.setValidator(onlyInt)
+            self.status = QtWidgets.QLineEdit()
+            self.date_manufacture = QtWidgets.QLineEdit()
+            self.date_entry = QtWidgets.QLineEdit()
+            self.date_upto = QtWidgets.QLineEdit()
+            # Паспорт
+            self.passport = QtWidgets.QLineEdit()
+            self.passport.setReadOnly(True)
+            self.passport_btn = QtWidgets.QPushButton("", objectName="passport_btn")
+            self.passport_btn.setIcon(folder_file)
+            self.passport_btn.clicked.connect(self.file_path)
+            passport_hbox = QtWidgets.QHBoxLayout()
+            passport_hbox.addWidget(self.passport)
+            passport_hbox.addWidget(self.passport_btn)
 
+            form_layout = QtWidgets.QFormLayout()
+            form_layout.addRow('id: ', self.id_line)
+            form_layout.addRow('Наименование ОПО: ', self.id_opo)
+            form_layout.addRow('Рег. №: ', self.reg_number)
+            form_layout.addRow('Наименование оборудования: ', self.name_obj)
+            form_layout.addRow('Вещество: ', self.substance)
+            form_layout.addRow('Длина, м: ', self.lenght)
+            form_layout.addRow('Диаметр, мм: ', self.diameter)
+            form_layout.addRow('Давление, МПа: ', self.pressure)
+            form_layout.addRow('Статус: ', self.status)
+            form_layout.addRow('Дата изготовления: ', self.date_manufacture)
+            form_layout.addRow('Дата ввода: ', self.date_entry)
+            form_layout.addRow('Эксплуатировать до: ', self.date_upto)
+            form_layout.addRow('Паспорт: ', passport_hbox)
 
+            button_box = QtWidgets.QDialogButtonBox(
+                QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
+            button_box.accepted.connect(self.accept)
+            button_box.rejected.connect(self.reject)
+
+            main_layout = QtWidgets.QVBoxLayout(self)
+            main_layout.addLayout(form_layout)
+            main_layout.addWidget(button_box)
+
+        elif state == 'state_obj':
+            self.setWindowTitle('Добавление стационарного объекта')
+            self.id_state = QtWidgets.QLineEdit()
+            self.id_state.setText(str(id))
+            self.id_state.setReadOnly(True)
+            self.id_opo = QtWidgets.QComboBox()
+            self.id_opo.addItems(list_for_combo)
+            self.reg_number = QtWidgets.QLineEdit()
+            self.reg_number.setValidator(onlyInt)
+            self.name_obj = QtWidgets.QLineEdit()
+            self.substance = QtWidgets.QLineEdit()
+            self.volume = QtWidgets.QLineEdit()
+            self.volume.setValidator(onlyInt)
+            self.temperature = QtWidgets.QLineEdit()
+            self.temperature.setValidator(onlyInt)
+            self.pressure = QtWidgets.QLineEdit()
+            self.pressure.setValidator(onlyInt)
+            self.alpha = QtWidgets.QLineEdit()
+            self.alpha.setValidator(onlyInt)
+            self.status = QtWidgets.QLineEdit()
+            self.date_manufacture = QtWidgets.QLineEdit()
+            self.date_entry = QtWidgets.QLineEdit()
+            self.date_upto = QtWidgets.QLineEdit()
+            # Паспорт
+            self.passport_st = QtWidgets.QLineEdit()
+            self.passport_st.setReadOnly(True)
+            self.passport_st_btn = QtWidgets.QPushButton("", objectName="passport_st_btn")
+            self.passport_st_btn.setIcon(folder_file)
+            self.passport_st_btn.clicked.connect(self.file_path)
+            passport_hbox = QtWidgets.QHBoxLayout()
+            passport_hbox.addWidget(self.passport_st)
+            passport_hbox.addWidget(self.passport_st_btn)
+
+            form_layout = QtWidgets.QFormLayout()
+            form_layout.addRow('id: ', self.id_state)
+            form_layout.addRow('Наименование ОПО: ', self.id_opo)
+            form_layout.addRow('Рег. №: ', self.reg_number)
+            form_layout.addRow('Наименование оборудования: ', self.name_obj)
+            form_layout.addRow('Вещество: ', self.substance)
+            form_layout.addRow('Объем, м3: ', self.volume)
+            form_layout.addRow('Температура, С: ', self.temperature)
+            form_layout.addRow('Давление, МПа: ', self.pressure)
+            form_layout.addRow('Ст.заполнения, -: ', self.alpha)
+            form_layout.addRow('Статус: ', self.status)
+            form_layout.addRow('Дата изготовления: ', self.date_manufacture)
+            form_layout.addRow('Дата ввода: ', self.date_entry)
+            form_layout.addRow('Эксплуатировать до: ', self.date_upto)
+            form_layout.addRow('Паспорт: ', passport_hbox)
+
+            button_box = QtWidgets.QDialogButtonBox(
+                QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
+            button_box.accepted.connect(self.accept)
+            button_box.rejected.connect(self.reject)
+
+            main_layout = QtWidgets.QVBoxLayout(self)
+            main_layout.addLayout(form_layout)
+            main_layout.addWidget(button_box)
+
+        elif state == 'build_obj':
+            self.setWindowTitle('Добавление здания/сооружения')
+            self.id_build = QtWidgets.QLineEdit()
+            self.id_build.setText(str(id))
+            self.id_build.setReadOnly(True)
+            self.id_opo = QtWidgets.QComboBox()
+            self.id_opo.addItems(list_for_combo)
+            self.name_obj = QtWidgets.QLineEdit()
+            self.status = QtWidgets.QLineEdit()
+            self.date_manufacture = QtWidgets.QLineEdit()
+            self.date_entry = QtWidgets.QLineEdit()
+            self.date_upto = QtWidgets.QLineEdit()
+            # Паспорт
+            self.passport_build = QtWidgets.QLineEdit()
+            self.passport_build.setReadOnly(True)
+            self.passport_build_btn = QtWidgets.QPushButton("", objectName="passport_build_btn")
+            self.passport_build_btn.setIcon(folder_file)
+            self.passport_build_btn.clicked.connect(self.file_path)
+            passport_hbox = QtWidgets.QHBoxLayout()
+            passport_hbox.addWidget(self.passport_build)
+            passport_hbox.addWidget(self.passport_build_btn)
+
+            form_layout = QtWidgets.QFormLayout()
+            form_layout.addRow('id: ', self.id_build)
+            form_layout.addRow('Наименование ОПО: ', self.id_opo)
+            form_layout.addRow('Наименование здания/сооружения: ', self.name_obj)
+            form_layout.addRow('Статус: ', self.status)
+            form_layout.addRow('Дата изготовления: ', self.date_manufacture)
+            form_layout.addRow('Дата ввода: ', self.date_entry)
+            form_layout.addRow('Эксплуатировать до: ', self.date_upto)
+            form_layout.addRow('Паспорт: ', passport_hbox)
+
+            button_box = QtWidgets.QDialogButtonBox(
+                QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
+            button_box.accepted.connect(self.accept)
+            button_box.rejected.connect(self.reject)
+
+            main_layout = QtWidgets.QVBoxLayout(self)
+            main_layout.addLayout(form_layout)
+            main_layout.addWidget(button_box)
 
     def file_path(self):
         sender = self.sender()
@@ -198,6 +349,12 @@ class Add_Dialog(QtWidgets.QDialog):
             self.position_crash.setText(path)
         elif sender.objectName() == "doc_opo_btn":
             self.doc_opo.setText(path)
+        elif sender.objectName() == "passport_btn":
+            self.passport.setText(path)
+        elif sender.objectName() == "passport_st_btn":
+            self.passport_st.setText(path)
+        elif sender.objectName() == "passport_build_btn":
+            self.passport_build.setText(path)
 
         return
 
@@ -916,7 +1073,6 @@ class Storage_app(QtWidgets.QMainWindow):
 
         list_name = fill_combobox(self.table_box_state)
 
-
         # Определим максимальный id
         list_id = []
         max_id = 0
@@ -930,8 +1086,7 @@ class Storage_app(QtWidgets.QMainWindow):
                         list_id.append(index.data())
             max_id = max(list_id) + 1
 
-
-        inputDialog = Add_Dialog(state=self.table_box_state, id=max_id, list_for_combo = list_name)
+        inputDialog = Add_Dialog(state=self.table_box_state, id=max_id, list_for_combo=list_name)
         rez = inputDialog.exec()
         if not rez:
             msg = QtWidgets.QMessageBox.information(self, 'Внимание!', 'Добавление в базу данных отменено')
@@ -960,7 +1115,7 @@ class Storage_app(QtWidgets.QMainWindow):
 
             for i in list_data:
                 if i == '':
-                    msg = QtWidgets.QMessageBox.information(self,'Внимание', 'Заполните пожалуйста все поля.')
+                    msg = QtWidgets.QMessageBox.information(self, 'Внимание', 'Заполните пожалуйста все поля.')
                     return
 
             print("READY TO WRITE DB FOR COMPANY")
@@ -1002,7 +1157,7 @@ class Storage_app(QtWidgets.QMainWindow):
 
             for i in list_data:
                 if i == '':
-                    msg = QtWidgets.QMessageBox.information(self,'Внимание', 'Заполните пожалуйста все поля.')
+                    msg = QtWidgets.QMessageBox.information(self, 'Внимание', 'Заполните пожалуйста все поля.')
                     return
 
             print("READY TO WRITE DB FOR COMPANY")
@@ -1050,8 +1205,140 @@ class Storage_app(QtWidgets.QMainWindow):
             query.bindValue(":doc", QtCore.QByteArray(self.convertToBinaryData(doc_opo)))
             query.exec_()
 
-        self.model.select()
+        if self.table_box_state == 'line_obj':
+            id_line = inputDialog.id_line.text()
+            curr_text = inputDialog.id_opo.currentText()
+            id_opo = curr_text.split()[0]
+            reg_number = inputDialog.reg_number.text()
+            name_obj = inputDialog.name_obj.text()
+            substance = inputDialog.substance.text()
+            lenght = inputDialog.lenght.text()
+            diameter = inputDialog.diameter.text()
+            pressure = inputDialog.pressure.text()
+            status = inputDialog.status.text()
+            date_manufacture = inputDialog.date_manufacture.text()
+            date_entry = inputDialog.date_entry.text()
+            date_upto = inputDialog.date_upto.text()
+            passport = inputDialog.passport.text()
 
+            list_data = [id_line, id_opo, reg_number, name_obj, substance, lenght, diameter,
+                         pressure, status, date_manufacture, date_entry,
+                         date_upto, passport]
+
+            for i in list_data:
+                if i == '':
+                    msg = QtWidgets.QMessageBox.information(self, 'Внимание', 'Заполните пожалуйста все поля.')
+                    return
+
+            print("READY TO WRITE DB FOR LINE")
+
+            query = QtSql.QSqlQuery()
+            query.prepare("INSERT INTO line_obj (id, id_opo, reg_number, name_obj, substance, lenght,"
+                          "diameter, pressure, status, date_manufacture, date_entry, date_upto, passport)"
+                          "VALUES (:id, :id_opo, :reg_number, :name_obj,:substance, :lenght,"
+                          ":diameter, :pressure, :status, :date_manufacture, :date_entry, :date_upto, :passport)")
+
+            query.bindValue(":id", id_line)
+            query.bindValue(":id_opo", id_opo)
+            query.bindValue(":reg_number", reg_number)
+            query.bindValue(":name_obj", name_obj)
+            query.bindValue(":substance", substance)
+            query.bindValue(":lenght", lenght)
+            query.bindValue(":diameter", diameter)
+            query.bindValue(":pressure", pressure)
+            query.bindValue(":status", status)
+            query.bindValue(":date_manufacture", date_manufacture)
+            query.bindValue(":date_entry", date_entry)
+            query.bindValue(":date_upto", date_upto)
+            query.bindValue(":passport", QtCore.QByteArray(self.convertToBinaryData(passport)))
+            query.exec_()
+
+        if self.table_box_state == 'state_obj':
+            id_state = inputDialog.id_state.text()
+            curr_text = inputDialog.id_opo.currentText()
+            id_opo = curr_text.split()[0]
+            reg_number = inputDialog.reg_number.text()
+            name_obj = inputDialog.name_obj.text()
+            substance = inputDialog.substance.text()
+            volume = inputDialog.volume.text()
+            temperature = inputDialog.temperature.text()
+            pressure = inputDialog.pressure.text()
+            alpha = inputDialog.alpha.text()
+            status = inputDialog.status.text()
+            date_manufacture = inputDialog.date_manufacture.text()
+            date_entry = inputDialog.date_entry.text()
+            date_upto = inputDialog.date_upto.text()
+            passport = inputDialog.passport_st.text()
+
+            list_data = [id_state, id_opo, reg_number, name_obj, substance, volume, temperature,
+                         pressure, alpha, status, date_manufacture, date_entry,
+                         date_upto, passport]
+
+            for i in list_data:
+                if i == '':
+                    msg = QtWidgets.QMessageBox.information(self, 'Внимание', 'Заполните пожалуйста все поля.')
+                    return
+
+            query = QtSql.QSqlQuery()
+            query.prepare("INSERT INTO state_obj (id, id_opo, reg_number, name_obj, substance, volume,"
+                          "temperature, pressure, alpha, status, date_manufacture, date_entry, date_upto, passport)"
+                          "VALUES (:id, :id_opo, :reg_number, :name_obj,:substance, :volume,"
+                          ":temperature, :pressure, :alpha, :status, :date_manufacture, :date_entry, :date_upto, :passport)")
+
+            query.bindValue(":id", id_state)
+            query.bindValue(":id_opo", id_opo)
+            query.bindValue(":reg_number", reg_number)
+            query.bindValue(":name_obj", name_obj)
+            query.bindValue(":substance", substance)
+            query.bindValue(":volume", volume)
+            query.bindValue(":temperature", temperature)
+            query.bindValue(":pressure", pressure)
+            query.bindValue(":alpha", alpha)
+            query.bindValue(":status", status)
+            query.bindValue(":date_manufacture", date_manufacture)
+            query.bindValue(":date_entry", date_entry)
+            query.bindValue(":date_upto", date_upto)
+            query.bindValue(":passport", QtCore.QByteArray(self.convertToBinaryData(passport)))
+            query.exec_()
+
+        if self.table_box_state == 'build_obj':
+            id_build = inputDialog.id_build.text()
+            curr_text = inputDialog.id_opo.currentText()
+            id_opo = curr_text.split()[0]
+            name_obj = inputDialog.name_obj.text()
+            status = inputDialog.status.text()
+            date_manufacture = inputDialog.date_manufacture.text()
+            date_entry = inputDialog.date_entry.text()
+            date_upto = inputDialog.date_upto.text()
+            passport = inputDialog.passport_build.text()
+
+            list_data = [id_build, id_opo, name_obj, status, date_manufacture, date_entry,
+                         date_upto, passport]
+
+            for i in list_data:
+                if i == '':
+                    msg = QtWidgets.QMessageBox.information(self, 'Внимание', 'Заполните пожалуйста все поля.')
+                    return
+
+            query = QtSql.QSqlQuery()
+            query.prepare("INSERT INTO build_obj (id, id_opo, name_obj, status, "
+                          "date_manufacture, date_entry, date_upto, doc)"
+                          "VALUES (:id, :id_opo, :name_obj, :status, :date_manufacture, :date_entry, "
+                          ":date_upto, :doc)")
+
+            query.bindValue(":id", id_build)
+            query.bindValue(":id_opo", id_opo)
+            query.bindValue(":name_obj", name_obj)
+            query.bindValue(":status", status)
+            query.bindValue(":date_manufacture", date_manufacture)
+            query.bindValue(":date_entry", date_entry)
+            query.bindValue(":date_upto", date_upto)
+            query.bindValue(":doc", passport)
+            query.exec_()
+
+
+
+        self.model.select()
 
     def delete_from_data_base(self):
         pass
