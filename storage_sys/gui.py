@@ -1540,7 +1540,45 @@ class Storage_app(QtWidgets.QMainWindow):
         self.model.select()
 
     def delete_from_data_base(self):
-        pass
+        row = self.view.currentIndex().row()
+        print(row)
+        messageBox = QtWidgets.QMessageBox(
+            QtWidgets.QMessageBox.Question,
+            "Удаление",
+            "Вы хотите <b>удалить</b> запись из базы данных? (проверьте выбор, если ничего не выбано удаляется первая запись)",
+            (QtWidgets.QMessageBox.Yes
+             | QtWidgets.QMessageBox.No)
+        )
+        messageBox.setButtonText(QtWidgets.QMessageBox.Yes, "Да")
+        messageBox.setButtonText(QtWidgets.QMessageBox.No, "Нет")
+        messageBox.setWindowIcon(self.main_ico)
+        resultCode = messageBox.exec_()
+        if resultCode == QtWidgets.QMessageBox.No:
+            return
+        elif resultCode == QtWidgets.QMessageBox.Yes:
+            """
+            В таблицах на которых завязаны другие позиции
+            нужно проверять по удаляемому id позиции
+            в других таблицах для обеспечения целостности БД
+            """
+            if self.table_box_state == 'company':
+                # Определим удаляемый id
+                index = self.model.index(row, 0)
+                del_index = index.data()
+                # Удалим из ОПО все ОПО с индексом удаляемой компании
+                query = QtSql.QSqlQuery()
+                query.prepare("DELETE FROM opo WHERE id_company = ?")
+                query.addBindValue(del_index)
+                query.exec_()
+                # Удалим компанию
+                self.model.removeRow(row)
+                self.model.select()
+            elif self.table_box_state == 'opo':
+                pass
+            else:
+                self.model.removeRow(row)
+                self.model.select()
+            return
 
     def edit_from_data_base(self):
         pass
