@@ -1566,6 +1566,54 @@ class Storage_app(QtWidgets.QMainWindow):
                 index = self.model.index(row, 0)
                 del_index = index.data()
                 # Удалим из ОПО все ОПО с индексом удаляемой компании
+                #
+                query = QtSql.QSqlQuery()
+                query.prepare("DELETE FROM epb WHERE "
+                              "id_opo IN "
+                              "(SELECT id FROM opo WHERE id_company=?); ")
+                query.addBindValue(del_index)
+                query.exec_()
+                #
+                #
+                query = QtSql.QSqlQuery()
+                query.prepare("DELETE FROM project WHERE "
+                              "id_opo IN "
+                              "(SELECT id FROM opo WHERE id_company=?); ")
+                query.addBindValue(del_index)
+                query.exec_()
+                #
+                #
+                query = QtSql.QSqlQuery()
+                query.prepare("DELETE FROM build_obj WHERE "
+                              "id_opo IN "
+                              "(SELECT id FROM opo WHERE id_company=?); ")
+                query.addBindValue(del_index)
+                query.exec_()
+                #
+                #
+                query = QtSql.QSqlQuery()
+                query.prepare("DELETE FROM state_obj WHERE "
+                              "id_opo IN "
+                              "(SELECT id FROM opo WHERE id_company=?); ")
+                query.addBindValue(del_index)
+                query.exec_()
+                #
+                #
+                query = QtSql.QSqlQuery()
+                query.prepare("DELETE FROM line_obj WHERE "
+                              "id_opo IN "
+                              "(SELECT id FROM opo WHERE id_company=?); ")
+                query.addBindValue(del_index)
+                query.exec_()
+                #
+                #
+                query = QtSql.QSqlQuery()
+                query.prepare("DELETE FROM documentation WHERE "
+                              "id_opo IN "
+                              "(SELECT id FROM opo WHERE id_company=?); ")
+                query.addBindValue(del_index)
+                query.exec_()
+                #
                 query = QtSql.QSqlQuery()
                 query.prepare("DELETE FROM opo WHERE id_company = ?")
                 query.addBindValue(del_index)
@@ -1574,7 +1622,43 @@ class Storage_app(QtWidgets.QMainWindow):
                 self.model.removeRow(row)
                 self.model.select()
             elif self.table_box_state == 'opo':
-                pass
+                # Определим удаляемый id
+                index = self.model.index(row, 0)
+                del_index = index.data()
+                # Удалим из всех таблиц всё что связонно с ОПО
+                query = QtSql.QSqlQuery()
+                query.prepare("DELETE FROM documentation WHERE id_opo = ?")
+                query.addBindValue(del_index)
+                query.exec_()
+                #
+                query = QtSql.QSqlQuery()
+                query.prepare("DELETE FROM line_obj WHERE id_opo = ?")
+                query.addBindValue(del_index)
+                query.exec_()
+                #
+                query = QtSql.QSqlQuery()
+                query.prepare("DELETE FROM state_obj WHERE id_opo = ?")
+                query.addBindValue(del_index)
+                query.exec_()
+                #
+                query = QtSql.QSqlQuery()
+                query.prepare("DELETE FROM build_obj WHERE id_opo = ?")
+                query.addBindValue(del_index)
+                query.exec_()
+                #
+                query = QtSql.QSqlQuery()
+                query.prepare("DELETE FROM project WHERE id_opo = ?")
+                query.addBindValue(del_index)
+                query.exec_()
+                #
+                query = QtSql.QSqlQuery()
+                query.prepare("DELETE FROM epb WHERE id_opo = ?")
+                query.addBindValue(del_index)
+                query.exec_()
+                # Удалим ОПО
+                self.model.removeRow(row)
+                self.model.select()
+
             else:
                 self.model.removeRow(row)
                 self.model.select()
