@@ -8,6 +8,7 @@
 import sys
 import os
 from pathlib import Path
+import datetime
 
 from PySide2 import QtSql, QtGui
 from PySide2 import QtWidgets
@@ -15,6 +16,57 @@ from PySide2 import QtCore
 from PySide2.QtCore import Qt
 from PySide2.QtSql import QSqlRelationalTableModel
 
+
+class Change_Dialog(QtWidgets.QDialog):
+    def __init__(self, state="company", column=0):
+        super().__init__()
+        main_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/data_base.png')
+        folder_file = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/folder_file.png')
+        self.setWindowIcon(main_ico)
+        self.setWindowTitle('Изменение информации')
+
+        if state == "company":
+            self.change_str = QtWidgets.QLineEdit()
+            if column<11:
+                change_str_hbox = QtWidgets.QHBoxLayout()
+                change_str_hbox.addWidget(self.change_str)
+            else:
+                self.change_str.setReadOnly(True)
+                self.change_str_btn = QtWidgets.QPushButton("", objectName="change_str")
+                self.change_str_btn.setIcon(folder_file)
+                self.change_str_btn.clicked.connect(self.file_path)
+                change_str_hbox = QtWidgets.QHBoxLayout()
+                change_str_hbox.addWidget(self.change_str)
+                change_str_hbox.addWidget(self.change_str_btn)
+
+
+            form_layout = QtWidgets.QFormLayout()
+            form_layout.addRow('Изменить иформацию: ', change_str_hbox)
+
+            button_box = QtWidgets.QDialogButtonBox(
+                QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
+            button_box.accepted.connect(self.accept)
+            button_box.rejected.connect(self.reject)
+
+            main_layout = QtWidgets.QVBoxLayout(self)
+            main_layout.addLayout(form_layout)
+            main_layout.addWidget(button_box)
+
+    def file_path(self):
+        sender = self.sender()
+        path = QtWidgets.QFileDialog.getOpenFileName(self,
+                                                     'Документ для внесения в базу данных',
+                                                     ".", ("PDF (*.pdf)"))[0]
+        if path == "":
+            msg = QtWidgets.QMessageBox(self)
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+            msg.setWindowTitle("Информация")
+            msg.setText("Файл не выбран")
+            msg.exec()
+            return
+        if sender.objectName() == "change_str":
+            self.change_str.setText(path)
+        return
 
 class Add_Dialog(QtWidgets.QDialog):
     def __init__(self, state="company", id=100, list_for_combo=[]):
@@ -160,7 +212,7 @@ class Add_Dialog(QtWidgets.QDialog):
             form_layout.addRow('Наименование ОПО: ', self.id_opo)
             form_layout.addRow('Наименование документации: ', self.type_doc)
             form_layout.addRow('Рег. № документации: ', self.reg_doc)
-            form_layout.addRow('Дата: ', self.date_doc)
+            form_layout.addRow('Год: ', self.date_doc)
             form_layout.addRow('Документация: ', doc_hbox)
 
             button_box = QtWidgets.QDialogButtonBox(
@@ -213,8 +265,8 @@ class Add_Dialog(QtWidgets.QDialog):
             form_layout.addRow('Диаметр, мм: ', self.diameter)
             form_layout.addRow('Давление, МПа: ', self.pressure)
             form_layout.addRow('Статус: ', self.status)
-            form_layout.addRow('Дата изготовления: ', self.date_manufacture)
-            form_layout.addRow('Дата ввода: ', self.date_entry)
+            form_layout.addRow('Год изготовления: ', self.date_manufacture)
+            form_layout.addRow('Год ввода: ', self.date_entry)
             form_layout.addRow('Эксплуатировать до: ', self.date_upto)
             form_layout.addRow('Паспорт: ', passport_hbox)
 
@@ -271,8 +323,8 @@ class Add_Dialog(QtWidgets.QDialog):
             form_layout.addRow('Давление, МПа: ', self.pressure)
             form_layout.addRow('Ст.заполнения, -: ', self.alpha)
             form_layout.addRow('Статус: ', self.status)
-            form_layout.addRow('Дата изготовления: ', self.date_manufacture)
-            form_layout.addRow('Дата ввода: ', self.date_entry)
+            form_layout.addRow('Год изготовления: ', self.date_manufacture)
+            form_layout.addRow('Год ввода: ', self.date_entry)
             form_layout.addRow('Эксплуатировать до: ', self.date_upto)
             form_layout.addRow('Паспорт: ', passport_hbox)
 
@@ -312,8 +364,8 @@ class Add_Dialog(QtWidgets.QDialog):
             form_layout.addRow('Наименование ОПО: ', self.id_opo)
             form_layout.addRow('Наименование здания/сооружения: ', self.name_obj)
             form_layout.addRow('Статус: ', self.status)
-            form_layout.addRow('Дата изготовления: ', self.date_manufacture)
-            form_layout.addRow('Дата ввода: ', self.date_entry)
+            form_layout.addRow('Год изготовления: ', self.date_manufacture)
+            form_layout.addRow('Год ввода: ', self.date_entry)
             form_layout.addRow('Эксплуатировать до: ', self.date_upto)
             form_layout.addRow('Паспорт: ', passport_hbox)
 
@@ -394,7 +446,7 @@ class Add_Dialog(QtWidgets.QDialog):
             form_layout.addRow('id: ', self.id_project)
             form_layout.addRow('Наименование ОПО: ', self.id_opo)
             form_layout.addRow('Наименование проекта: ', self.name_project)
-            form_layout.addRow('Дата: ', self.date_project)
+            form_layout.addRow('Год: ', self.date_project)
             form_layout.addRow('Раздел ПЗ: ', pz_project_hbox)
             form_layout.addRow('Раздел ПЗУ: ', pzu_project_hbox)
             form_layout.addRow('Раздел КР: ', kr_project_hbox)
@@ -430,14 +482,12 @@ class Add_Dialog(QtWidgets.QDialog):
             epb_hbox.addWidget(self.epb_doc)
             epb_hbox.addWidget(self.epb_doc_btn)
 
-
             form_layout = QtWidgets.QFormLayout()
             form_layout.addRow('id: ', self.id_epb)
             form_layout.addRow('Наименование ОПО: ', self.id_opo)
             form_layout.addRow('Наименование ЭПБ": ', self.name_doc)
-            form_layout.addRow('Дата: ', self.date_doc)
+            form_layout.addRow('Год: ', self.date_doc)
             form_layout.addRow('Раздел ЭПБ: ', epb_hbox)
-
 
             button_box = QtWidgets.QDialogButtonBox(
                 QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
@@ -512,6 +562,7 @@ class Relational_table_model_with_icon(QSqlRelationalTableModel):
             i_start = self.index(0, 5)
             i_end = self.index(self.rowCount() - 1, 5)
         elif self.state == "documentation":
+            print("setState")
             i_start = self.index(0, 5)
             i_end = self.index(self.rowCount() - 1, 5)
         elif self.state == "line_obj":
@@ -553,13 +604,24 @@ class Relational_table_model_with_icon(QSqlRelationalTableModel):
         elif self.state == "opo":
             pass
         elif self.state == "documentation":
+            # print(f'index.data()= {index.data()}')
             if index.column() == 5 and role == Qt.DisplayRole:
                 return ""
             if index.column() == 5 and role == Qt.DecorationRole:
                 return QtGui.QIcon(icon)
             if index.column() == 4 and role == Qt.BackgroundRole:
-                color = QtGui.QColor(200, 200, 200, 200)
-                print(type(index.data()))
+                color = QtGui.QColor(0, 0, 0, 0)
+                try:
+                    if 0 <= datetime.datetime.now().year - int(index.data()) <= 3:
+                        color = QtGui.QColor(0, 255, 0, 150)
+                    elif 3 < datetime.datetime.now().year - int(index.data()) <= 5:
+                        color = QtGui.QColor(255, 255, 0, 150)
+                    elif 5 < datetime.datetime.now().year - int(index.data()) <= 15:
+                        color = QtGui.QColor(255, 0, 0, 150)
+                    else:
+                        color = QtGui.QColor(0, 0, 0, 0)
+                except:
+                    pass
                 return color
         elif self.state == "line_obj":
             if index.column() == 12 and role == Qt.DisplayRole:
@@ -617,7 +679,7 @@ class Storage_app(QtWidgets.QMainWindow):
         super().__init__()
         self.table_box_state = "company"
         self.createConnection()
-        # self.fillTable()
+        self.fillTable()
 
         self.createModel()
         self.centralWidget = QtWidgets.QWidget()
@@ -769,7 +831,7 @@ class Storage_app(QtWidgets.QMainWindow):
         query.bindValue(":id_opo", 1)
         query.bindValue(":type_doc", 'Декларция промышленной безопасности')
         query.bindValue(":reg_doc", '43-ДПБ-00001-01')
-        query.bindValue(":date_doc", '14-12-2018')
+        query.bindValue(":date_doc", '2020')
         query.bindValue(":doc", test_BLOB)
         query.exec_()
 
@@ -781,7 +843,7 @@ class Storage_app(QtWidgets.QMainWindow):
         query.bindValue(":id_opo", 2)
         query.bindValue(":type_doc", 'Консервация насоса Н-1')
         query.bindValue(":reg_doc", '43-ЭПБ-00003-05')
-        query.bindValue(":date_doc", '25-07-2021')
+        query.bindValue(":date_doc", '2017')
         query.bindValue(":doc", test_BLOB)
         query.exec_()
 
@@ -817,9 +879,9 @@ class Storage_app(QtWidgets.QMainWindow):
         query.bindValue(":diameter", 229)
         query.bindValue(":pressure", 0.23)
         query.bindValue(":status", 'Действующий')
-        query.bindValue(":date_manufacture", '01-01-1988')
-        query.bindValue(":date_entry", '01-05-1988')
-        query.bindValue(":date_upto", '01-01-2020')
+        query.bindValue(":date_manufacture", '1988')
+        query.bindValue(":date_entry", '1988')
+        query.bindValue(":date_upto", '2020')
         query.bindValue(":passport", test_BLOB)
         query.exec_()
 
@@ -838,9 +900,9 @@ class Storage_app(QtWidgets.QMainWindow):
         query.bindValue(":diameter", 114)
         query.bindValue(":pressure", 0.56)
         query.bindValue(":status", 'Законсервирован')
-        query.bindValue(":date_manufacture", '01-01-1995')
-        query.bindValue(":date_entry", '01-05-1996')
-        query.bindValue(":date_upto", '01-01-2025')
+        query.bindValue(":date_manufacture", '1995')
+        query.bindValue(":date_entry", '1996')
+        query.bindValue(":date_upto", '2025')
         query.bindValue(":passport", test_BLOB)
         query.exec_()
 
@@ -878,9 +940,9 @@ class Storage_app(QtWidgets.QMainWindow):
         query.bindValue(":pressure", 0.23)
         query.bindValue(":alpha", 0.25)
         query.bindValue(":status", 'Действующий')
-        query.bindValue(":date_manufacture", '01-01-1988')
-        query.bindValue(":date_entry", '01-05-1988')
-        query.bindValue(":date_upto", '01-01-2020')
+        query.bindValue(":date_manufacture", '1988')
+        query.bindValue(":date_entry", '1988')
+        query.bindValue(":date_upto", '2020')
         query.bindValue(":passport", test_BLOB)
         query.exec_()
 
@@ -900,9 +962,9 @@ class Storage_app(QtWidgets.QMainWindow):
         query.bindValue(":pressure", 0.23)
         query.bindValue(":alpha", 0.25)
         query.bindValue(":status", 'Действующий')
-        query.bindValue(":date_manufacture", '01-01-2005')
-        query.bindValue(":date_entry", '01-05-2006')
-        query.bindValue(":date_upto", '01-01-2027')
+        query.bindValue(":date_manufacture", '2005')
+        query.bindValue(":date_entry", '2006')
+        query.bindValue(":date_upto", '2027')
         query.bindValue(":passport", test_BLOB)
         query.exec_()
 
@@ -928,9 +990,9 @@ class Storage_app(QtWidgets.QMainWindow):
         query.bindValue(":id_opo", 1)
         query.bindValue(":name_obj", 'Операторная')
         query.bindValue(":status", 'Консервация')
-        query.bindValue(":date_manufacture", '14-12-2018')
-        query.bindValue(":date_entry", '14-12-2018')
-        query.bindValue(":date_upto", '14-12-2028')
+        query.bindValue(":date_manufacture", '2018')
+        query.bindValue(":date_entry", '2018')
+        query.bindValue(":date_upto", '2028')
         query.bindValue(":doc", test_BLOB)
         query.exec_()
 
@@ -944,9 +1006,9 @@ class Storage_app(QtWidgets.QMainWindow):
         query.bindValue(":id_opo", 2)
         query.bindValue(":name_obj", 'Лаборатория')
         query.bindValue(":status", 'Дествующая')
-        query.bindValue(":date_manufacture", '14-12-2010')
-        query.bindValue(":date_entry", '14-12-2013')
-        query.bindValue(":date_upto", '14-12-2038')
+        query.bindValue(":date_manufacture", '2010')
+        query.bindValue(":date_entry", '2013')
+        query.bindValue(":date_upto", '2038')
         query.bindValue(":doc", test_BLOB)
         query.exec_()
 
@@ -974,7 +1036,7 @@ class Storage_app(QtWidgets.QMainWindow):
         query.bindValue(":id", 1)
         query.bindValue(":id_opo", 1)
         query.bindValue(":name_project", 'Обустройство кустов скважин')
-        query.bindValue(":date_project", '14-12-2018')
+        query.bindValue(":date_project", '2018')
         query.bindValue(":pz_project", test_BLOB)
         query.bindValue(":pzu_project", test_BLOB)
         query.bindValue(":kr_project", test_BLOB)
@@ -993,7 +1055,7 @@ class Storage_app(QtWidgets.QMainWindow):
         query.bindValue(":id", 2)
         query.bindValue(":id_opo", 2)
         query.bindValue(":name_project", 'Обустройство куста скважин')
-        query.bindValue(":date_project", '14-12-2015')
+        query.bindValue(":date_project", '2015')
         query.bindValue(":pz_project", test_BLOB)
         query.bindValue(":pzu_project", test_BLOB)
         query.bindValue(":kr_project", test_BLOB)
@@ -1018,7 +1080,7 @@ class Storage_app(QtWidgets.QMainWindow):
         query.bindValue(":id", 1)
         query.bindValue(":id_opo", 1)
         query.bindValue(":name_doc", 'ЭПБ на задвижку')
-        query.bindValue(":date_doc", '14-12-2018')
+        query.bindValue(":date_doc", '2018')
         query.bindValue(":epb_doc", test_BLOB)
         query.exec_()
 
@@ -1029,7 +1091,7 @@ class Storage_app(QtWidgets.QMainWindow):
         query.bindValue(":id", 2)
         query.bindValue(":id_opo", 2)
         query.bindValue(":name_doc", 'ЭПБ на трубу')
-        query.bindValue(":date_doc", '14-12-2018')
+        query.bindValue(":date_doc", '2018')
         query.bindValue(":epb_doc", test_BLOB)
         query.exec_()
 
@@ -1056,10 +1118,9 @@ class Storage_app(QtWidgets.QMainWindow):
         line_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/tube.png')
         build_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/build.png')
         project_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/project.png')
+        save_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/save.png')
         project2_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/project2.png')
-        exit_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/exit.png')
-        info_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/info.png')
-        question_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/question.png')
+        excel_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/excel.png')
         # ВИД
         self.view = QtWidgets.QTableView()
         self.view.setModel(self.model)
@@ -1089,6 +1150,7 @@ class Storage_app(QtWidgets.QMainWindow):
         self.tabs.setTabToolTip(0, "Главня вкладка")
         self.tab_main.layout = QtWidgets.QFormLayout(self)
         # то что будет во вкладке 0
+        # Рамка №1
         self.table_box = QtWidgets.QComboBox()  # возможные таблицы из БД
         self.table_box.addItems(["Компании", "ОПО", "Документация ОПО", "Линейные объекты", "Стационарные объекты",
                                  "Здания и сооружения", "Проекты", "Экспертизы пром.безопасности"])
@@ -1102,7 +1164,7 @@ class Storage_app(QtWidgets.QMainWindow):
         self.table_box.setItemIcon(7, project2_ico)
         self.table_box.setToolTip("""Таблицы базы данных""")
         self.table_box.activated[str].connect(self.table_select)
-
+        # Рамка №2
         self.add_in_db = QtWidgets.QPushButton("Добавить строку")
         self.add_in_db.setIcon(plus_ico)
         self.add_in_db.setToolTip("Добавить строку в таблицу")
@@ -1115,18 +1177,31 @@ class Storage_app(QtWidgets.QMainWindow):
         self.edit_from_db.setIcon(minus_ico)
         self.edit_from_db.setToolTip("Редактировать выделенный элемент")
         self.edit_from_db.clicked.connect(self.edit_from_data_base)
+        # Рамка №3
+        self.save_file = QtWidgets.QPushButton("Скачать файл")
+        self.save_file.setIcon(save_ico)
+        self.save_file.setToolTip("Скачать файл")
+        # self.save_file.clicked.connect(self.add_in_data_base)
+        self.save_excel_file = QtWidgets.QPushButton("Выгрузить в Excel")
+        self.save_excel_file.setIcon(excel_ico)
+        self.save_excel_file.setToolTip("Скачать выгрузить таблицу в Excel")
+        # self.save_file.clicked.connect(self.add_in_data_base)
+        # Рамка №4
+        self.search_str = QtWidgets.QLineEdit()
+        self.search_str.setPlaceholderText("Введите строку сортировки")
+
 
         # Упаковываем все на вкладку таба "0" (делаем все в QGroupBox
         # т.к. элементы будут добавляться и их
         # потом нужно будет объединять в группы
 
-        # Рамка №0
+        # Рамка №1
         layout_table_select = QtWidgets.QFormLayout(self)
         GB_table_select = QtWidgets.QGroupBox('Таблица базы данных')
         GB_table_select.setStyleSheet("QGroupBox { font-weight : bold; }")
         layout_table_select.addRow("", self.table_box)
         GB_table_select.setLayout(layout_table_select)
-        # Рамка №1
+        # Рамка №2
         layout_table_edit = QtWidgets.QFormLayout(self)
         GB_table_edit = QtWidgets.QGroupBox('Добавить/удалить/редактировать позицию')
         GB_table_edit.setStyleSheet("QGroupBox { font-weight : bold; }")
@@ -1136,9 +1211,26 @@ class Storage_app(QtWidgets.QMainWindow):
         hbox_1.addWidget(self.edit_from_db)
         layout_table_edit.addRow("", hbox_1)
         GB_table_edit.setLayout(layout_table_edit)
+        # Рамка №3
+        layout_save = QtWidgets.QFormLayout(self)
+        GB_save = QtWidgets.QGroupBox('Сохранение данных')
+        GB_save.setStyleSheet("QGroupBox { font-weight : bold; }")
+        hbox_2 = QtWidgets.QHBoxLayout()
+        hbox_2.addWidget(self.save_file)
+        hbox_2.addWidget(self.save_excel_file)
+        layout_save.addRow("", hbox_2)
+        GB_save.setLayout(layout_save)
+        # Рамка №3
+        layout_search = QtWidgets.QFormLayout(self)
+        GB_search = QtWidgets.QGroupBox('Сохранение данных')
+        GB_search.setStyleSheet("QGroupBox { font-weight : bold; }")
+        layout_search.addRow("", self.search_str)
+        GB_search.setLayout(layout_search)
         # Собираем рамки
         self.tab_main.layout.addWidget(GB_table_select)
         self.tab_main.layout.addWidget(GB_table_edit)
+        self.tab_main.layout.addWidget(GB_save)
+        self.tab_main.layout.addWidget(GB_search)
         # Размещаем на табе
         self.tab_main.setLayout(self.tab_main.layout)
         # Размещаем на сетке
@@ -1665,7 +1757,114 @@ class Storage_app(QtWidgets.QMainWindow):
             return
 
     def edit_from_data_base(self):
-        pass
+
+        row = self.view.currentIndex().row()
+        column = self.view.currentIndex().column()
+        id = self.model.index(row, 0).data()
+        table = self.table_state
+        print(f'row={row},column = {column},table={table}, id = {id}')
+        changeDialog = Change_Dialog(state=self.table_box_state, column=column)
+        rez = changeDialog.exec()
+        if not rez:
+            msg = QtWidgets.QMessageBox.information(self, 'Внимание!', 'Изменение в базу данных отменено')
+            return
+
+        change = changeDialog.change_str.text()
+        print(change)
+        if change == "":
+            msg = QtWidgets.QMessageBox.information(self, 'Внимание', 'Заполните пожалуйста все поля.')
+            return
+
+        if table == 'company':
+            if column == 0:
+                msg = QtWidgets.QMessageBox.information(self, 'Внимание!', 'Ключ изменять нельзя!')
+                return
+            elif column == 1:
+                query = QtSql.QSqlQuery()
+                query.prepare("UPDATE company SET name_company=:name_company WHERE id=:id;")
+                query.bindValue(":name_company", change)
+                query.bindValue(":id", id)
+                query.exec_()
+            elif column == 2:
+                query = QtSql.QSqlQuery()
+                query.prepare("UPDATE company SET full_name_manager=:full_name_manager WHERE id=:id;")
+                query.bindValue(":full_name_manager", change)
+                query.bindValue(":id", id)
+                query.exec_()
+            elif column == 3:
+                query = QtSql.QSqlQuery()
+                query.prepare("UPDATE company SET ur_adress=:ur_adress WHERE id=:id;")
+                query.bindValue(":ur_adress", change)
+                query.bindValue(":id", id)
+                query.exec_()
+            elif column == 4:
+                query = QtSql.QSqlQuery()
+                query.prepare("UPDATE company SET post_adress=:post_adress WHERE id=:id;")
+                query.bindValue(":post_adress", change)
+                query.bindValue(":id", id)
+                query.exec_()
+            elif column == 5:
+                query = QtSql.QSqlQuery()
+                query.prepare("UPDATE company SET telephone=:telephone WHERE id=:id;")
+                query.bindValue(":telephone", change)
+                query.bindValue(":id", id)
+                query.exec_()
+            elif column == 6:
+                query = QtSql.QSqlQuery()
+                query.prepare("UPDATE company SET email=:email WHERE id=:id;")
+                query.bindValue(":email", change)
+                query.bindValue(":id", id)
+                query.exec_()
+            elif column == 7:
+                query = QtSql.QSqlQuery()
+                query.prepare("UPDATE company SET fax=:fax WHERE id=:id;")
+                query.bindValue(":fax", change)
+                query.bindValue(":id", id)
+                query.exec_()
+            elif column == 8:
+                query = QtSql.QSqlQuery()
+                query.prepare("UPDATE company SET inn_number=:inn_number WHERE id=:id;")
+                query.bindValue(":inn_number", change)
+                query.bindValue(":id", id)
+                query.exec_()
+            elif column == 9:
+                query = QtSql.QSqlQuery()
+                query.prepare("UPDATE company SET kpp_number=:kpp_number WHERE id=:id;")
+                query.bindValue(":kpp_number", change)
+                query.bindValue(":id", id)
+                query.exec_()
+            elif column == 10:
+                query = QtSql.QSqlQuery()
+                query.prepare("UPDATE company SET ogrn_number=:ogrn_number WHERE id=:id;")
+                query.bindValue(":ogrn_number", change)
+                query.bindValue(":id", id)
+                query.exec_()
+            elif column == 11:
+                query = QtSql.QSqlQuery()
+                query.prepare("UPDATE company SET license_opo=:license_opo WHERE id=:id;")
+                query.bindValue(":license_opo", QtCore.QByteArray(self.convertToBinaryData(change)))
+                query.bindValue(":id", id)
+                query.exec_()
+            elif column == 12:
+                query = QtSql.QSqlQuery()
+                query.prepare("UPDATE company SET reg_opo=:reg_opo WHERE id=:id;")
+                query.bindValue(":reg_opo", QtCore.QByteArray(self.convertToBinaryData(change)))
+                query.bindValue(":id", id)
+                query.exec_()
+            elif column == 13:
+                query = QtSql.QSqlQuery()
+                query.prepare("UPDATE company SET position_pk=:position_pk WHERE id=:id;")
+                query.bindValue(":position_pk", QtCore.QByteArray(self.convertToBinaryData(change)))
+                query.bindValue(":id", id)
+                query.exec_()
+            elif column == 14:
+                query = QtSql.QSqlQuery()
+                query.prepare("UPDATE company SET position_crash=:position_crash WHERE id=:id;")
+                query.bindValue(":position_crash", QtCore.QByteArray(self.convertToBinaryData(change)))
+                query.bindValue(":id", id)
+                query.exec_()
+
+        self.model.select()
 
     def closeEvent(self, event):
         if (self.db.open()):
