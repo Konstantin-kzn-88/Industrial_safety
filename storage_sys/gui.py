@@ -4,7 +4,7 @@
 # (C) 2021 Kuznetsov Konstantin, Kazan , Russian Federation
 # email kuznetsovkm@yandex.ru
 # -----------------------------------------------------------
-
+import re
 import sys
 import os
 from pathlib import Path
@@ -1189,6 +1189,7 @@ class Storage_app(QtWidgets.QMainWindow):
         # Рамка №4
         self.search_str = QtWidgets.QLineEdit()
         self.search_str.setPlaceholderText("Введите строку сортировки")
+        self.search_str.textChanged.connect(self.update_filter)
 
 
         # Упаковываем все на вкладку таба "0" (делаем все в QGroupBox
@@ -1246,7 +1247,7 @@ class Storage_app(QtWidgets.QMainWindow):
             self.model.setState(self.table_box_state)
             self.model.setTable("company")
             self.model.select()
-        if text == 'ОПО':
+        elif text == 'ОПО':
             self.table_box_state = "opo"
             self.model.setState(self.table_box_state)
             self.model.setTable("opo")
@@ -1865,6 +1866,18 @@ class Storage_app(QtWidgets.QMainWindow):
                 query.exec_()
 
         self.model.select()
+
+
+    def update_filter(self, s):
+        if self.table_box_state == 'company':
+            s = re.sub("[\W_]+", "", s)
+            filter_str = 'name_company LIKE "%{}%"'.format(s)
+            self.model.setFilter(filter_str)
+        elif self.table_box_state == 'opo':
+            s = re.sub("[\W_]+", "", s)
+            filter_str = 'name_opo LIKE "%{}%"'.format(s)
+            self.model.setFilter(filter_str)
+
 
     def closeEvent(self, event):
         if (self.db.open()):
