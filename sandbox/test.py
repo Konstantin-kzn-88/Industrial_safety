@@ -1,7 +1,13 @@
-import re
 import sys
 from PyQt5 import QtSql
 from PyQt5.Qt import *
+
+
+# +++ vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+class ReadOnlyDelegate(QStyledItemDelegate):
+    def createEditor(self, parent, option, insex):
+        print(f'parent=`{parent}`, \noption=`{option}`, \ninsex=`{insex}`\n')
+        return
 
 class Example(QMainWindow):
     def __init__(self):
@@ -17,14 +23,10 @@ class Example(QMainWindow):
         self.table_box = QComboBox()
         self.table_box.addItems(["Оборудование", "Категории"])
         self.table_box.activated[str].connect(self.table_select)
-        search_str = QLineEdit()
-        search_str.setPlaceholderText("Введите строку поиска")
-        search_str.textChanged.connect(self.update_filter)
 
         layout = QVBoxLayout(self.centralWidget)
         layout.addWidget(self.view)
         layout.addWidget(self.table_box)
-        layout.addWidget(search_str)
 
     def createConnection(self):
         self.db = QtSql.QSqlDatabase.addDatabase("QSQLITE")
@@ -59,26 +61,21 @@ class Example(QMainWindow):
         self.view = QTableView()
         self.view.setModel(self.model)
         self.view.setColumnWidth(0, 150)
+
+        self.delegate = ReadOnlyDelegate(self.view)  # +++
+        self.view.setItemDelegateForColumn(2, self.delegate)  # +++
+
         mode = QAbstractItemView.SingleSelection
         self.view.setSelectionMode(mode)
-
-
-    def update_filter(self, text):
-        if self.table_box.currentText() == 'Категории':
-            s = re.sub("[\W_]+", "", text)
-            filter_str = 'catname LIKE "%{}%"'.format(s)
-            self.model.setFilter(filter_str)
-        elif self.table_box.currentText() == 'Оборудование':
-            s = re.sub("[\W_]+", "", text)
-            filter_str = 'Name LIKE "%{}%"'.format(s)
-            self.model.setFilter(filter_str)
 
     def table_select(self, text):
         if text == 'Категории':
             self.model.setTable("category")
+            self.view.setItemDelegateForColumn(0, self.delegate)  # +++
             self.model.select()
         elif text == 'Оборудование':
             self.model.setTable("equipment")
+            self.view.setItemDelegateForColumn(2, self.delegate)  # +++
             self.model.select()
 
     def closeEvent(self, event):
@@ -86,11 +83,10 @@ class Example(QMainWindow):
             self.db.close()
 
 
-
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     w = Example()
-    w.setWindowTitle("Search")
+    w.setWindowTitle("No edit")
     w.resize(430, 250)
     w.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
