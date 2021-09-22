@@ -11,7 +11,7 @@ from pathlib import Path
 import datetime
 
 
-from PySide2 import QtSql
+
 from PyQt5.Qt import *
 
 
@@ -1652,17 +1652,15 @@ class Storage_app(QMainWindow):
         messageBox = QMessageBox(
             QMessageBox.Question,
             "Удаление",
-            "Вы хотите <b>удалить</b> запись из базы данных? (проверьте выбор, если ничего не выбано удаляется первая запись)",
-            (QMessageBox.Yes
-             | QMessageBox.No)
-        )
-        messageBox.setButtonText(QMessageBox.Yes, "Да")
-        messageBox.setButtonText(QMessageBox.No, "Нет")
+            "Вы хотите <b>удалить</b> запись из базы данных? (проверьте выбор, если ничего не выбано удаляется первая запись)")
+        messageBox.addButton("Нет", QMessageBox.NoRole)
+        messageBox.addButton("Да", QMessageBox.YesRole)
         messageBox.setWindowIcon(self.main_ico)
         resultCode = messageBox.exec_()
-        if resultCode == QMessageBox.No:
+        print(resultCode)
+        if resultCode == 0:
             return
-        elif resultCode == QMessageBox.Yes:
+        elif resultCode == 1:
             """
             В таблицах на которых завязаны другие позиции
             нужно проверять по удаляемому id позиции
@@ -1844,6 +1842,17 @@ class Storage_app(QMainWindow):
             blobData = file.read()
         return blobData
 
+def my_excepthook(type, value, tback):
+   #  функция отлова ошибок на PyQt5
+   QMessageBox.critical(
+       window, "CRITICAL ERROR", str(value),
+       QMessageBox.Cancel
+   )
+
+   sys.__excepthook__(type, value, tback)
+
+
+sys.excepthook = my_excepthook
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
