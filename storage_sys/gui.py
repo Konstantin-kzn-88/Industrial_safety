@@ -27,9 +27,10 @@ class Change_Dialog(QDialog):
         folder_file = QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/folder_file.png')
         self.setWindowIcon(main_ico)
         self.setWindowTitle('Изменение информации')
+        print(f"state={state}")
+        self.change_str = QLineEdit()
 
         if state == "company":
-            self.change_str = QLineEdit()
             if column < 11:
                 # До 10 в этой таблице идут текстовые поля. Они редактируется средствами класса
                 pass
@@ -53,6 +54,132 @@ class Change_Dialog(QDialog):
                 main_layout = QVBoxLayout(self)
                 main_layout.addLayout(form_layout)
                 main_layout.addWidget(button_box)
+
+        elif state == "documentation":
+            self.change_str.setReadOnly(True)
+            self.change_str_btn = QPushButton("", objectName="change_str")
+            self.change_str_btn.setIcon(folder_file)
+            self.change_str_btn.clicked.connect(self.file_path)
+            change_str_hbox = QHBoxLayout()
+            change_str_hbox.addWidget(self.change_str)
+            change_str_hbox.addWidget(self.change_str_btn)
+
+            form_layout = QFormLayout()
+            form_layout.addRow('Изменить иформацию: ', change_str_hbox)
+
+            button_box = QDialogButtonBox(
+                QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+            button_box.accepted.connect(self.accept)
+            button_box.rejected.connect(self.reject)
+
+            main_layout = QVBoxLayout(self)
+            main_layout.addLayout(form_layout)
+            main_layout.addWidget(button_box)
+
+        elif state == "line_obj":
+            self.change_str.setReadOnly(True)
+            self.change_str_btn = QPushButton("", objectName="change_str")
+            self.change_str_btn.setIcon(folder_file)
+            self.change_str_btn.clicked.connect(self.file_path)
+            change_str_hbox = QHBoxLayout()
+            change_str_hbox.addWidget(self.change_str)
+            change_str_hbox.addWidget(self.change_str_btn)
+
+            form_layout = QFormLayout()
+            form_layout.addRow('Заменить файл: ', change_str_hbox)
+
+            button_box = QDialogButtonBox(
+                QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+            button_box.accepted.connect(self.accept)
+            button_box.rejected.connect(self.reject)
+
+            main_layout = QVBoxLayout(self)
+            main_layout.addLayout(form_layout)
+            main_layout.addWidget(button_box)
+
+        elif state == "state_obj":
+            self.change_str.setReadOnly(True)
+            self.change_str_btn = QPushButton("", objectName="change_str")
+            self.change_str_btn.setIcon(folder_file)
+            self.change_str_btn.clicked.connect(self.file_path)
+            change_str_hbox = QHBoxLayout()
+            change_str_hbox.addWidget(self.change_str)
+            change_str_hbox.addWidget(self.change_str_btn)
+
+            form_layout = QFormLayout()
+            form_layout.addRow('Заменить файл: ', change_str_hbox)
+
+            button_box = QDialogButtonBox(
+                QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+            button_box.accepted.connect(self.accept)
+            button_box.rejected.connect(self.reject)
+
+            main_layout = QVBoxLayout(self)
+            main_layout.addLayout(form_layout)
+            main_layout.addWidget(button_box)
+
+        elif state == "build_obj":
+            self.change_str.setReadOnly(True)
+            self.change_str_btn = QPushButton("", objectName="change_str")
+            self.change_str_btn.setIcon(folder_file)
+            self.change_str_btn.clicked.connect(self.file_path)
+            change_str_hbox = QHBoxLayout()
+            change_str_hbox.addWidget(self.change_str)
+            change_str_hbox.addWidget(self.change_str_btn)
+
+            form_layout = QFormLayout()
+            form_layout.addRow('Заменить файл: ', change_str_hbox)
+
+            button_box = QDialogButtonBox(
+                QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+            button_box.accepted.connect(self.accept)
+            button_box.rejected.connect(self.reject)
+
+            main_layout = QVBoxLayout(self)
+            main_layout.addLayout(form_layout)
+            main_layout.addWidget(button_box)
+
+        elif state == "project":
+            self.change_str.setReadOnly(True)
+            self.change_str_btn = QPushButton("", objectName="change_str")
+            self.change_str_btn.setIcon(folder_file)
+            self.change_str_btn.clicked.connect(self.file_path)
+            change_str_hbox = QHBoxLayout()
+            change_str_hbox.addWidget(self.change_str)
+            change_str_hbox.addWidget(self.change_str_btn)
+
+            form_layout = QFormLayout()
+            form_layout.addRow('Заменить файл: ', change_str_hbox)
+
+            button_box = QDialogButtonBox(
+                QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+            button_box.accepted.connect(self.accept)
+            button_box.rejected.connect(self.reject)
+
+            main_layout = QVBoxLayout(self)
+            main_layout.addLayout(form_layout)
+            main_layout.addWidget(button_box)
+
+        elif state == "epb":
+            self.change_str.setReadOnly(True)
+            self.change_str_btn = QPushButton("", objectName="change_str")
+            self.change_str_btn.setIcon(folder_file)
+            self.change_str_btn.clicked.connect(self.file_path)
+            change_str_hbox = QHBoxLayout()
+            change_str_hbox.addWidget(self.change_str)
+            change_str_hbox.addWidget(self.change_str_btn)
+
+            form_layout = QFormLayout()
+            form_layout.addRow('Заменить файл: ', change_str_hbox)
+
+            button_box = QDialogButtonBox(
+                QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+            button_box.accepted.connect(self.accept)
+            button_box.rejected.connect(self.reject)
+
+            main_layout = QVBoxLayout(self)
+            main_layout.addLayout(form_layout)
+            main_layout.addWidget(button_box)
 
     def file_path(self):
         sender = self.sender()
@@ -743,8 +870,7 @@ class Storage_app(QMainWindow):
         self.centralWidget = QWidget()
         self.setCentralWidget(self.centralWidget)
         self.initUI()
-        #     Структура данных (словари для корректности работы БД)
-        self.list_id_company = []
+
 
         if not parent:
             self.show()
@@ -1853,14 +1979,31 @@ class Storage_app(QMainWindow):
             return
 
     def edit_from_data_base(self):
-
         row = self.view.currentIndex().row()
         column = self.view.currentIndex().column()
         id = self.model.index(row, 0).data()
-        table = self.table_state
+        table = self.table_box_state
         # Проверка что бы не попасть на текстовые поля
         if table == 'company':
             if column in [i for i in range(0,11)]:
+                return
+        elif table == 'documentation':
+            if column in [i for i in range(0,5)]:
+                return
+        elif table == 'line_obj':
+            if column in [i for i in range(0,12)]:
+                return
+        elif table == 'state_obj':
+            if column in [i for i in range(0,13)]:
+                return
+        elif table == 'build_obj':
+            if column in [i for i in range(0,7)]:
+                return
+        elif table == 'project':
+            if column in [i for i in range(0,4)]:
+                return
+        elif table == 'epb':
+            if column in [i for i in range(0,4)]:
                 return
         # Проверка что бы не попасть на текстовые поля
         changeDialog = Change_Dialog(state=self.table_box_state, column=column)
@@ -1901,8 +2044,79 @@ class Storage_app(QMainWindow):
                 query.bindValue(":position_crash", QByteArray(self.convertToBinaryData(change)))
                 query.bindValue(":id", id)
                 query.exec_()
-
-
+        elif table == 'documentation':
+            if column == 5:
+                query = QSqlQuery()
+                query.prepare("UPDATE documentation SET doc=:doc WHERE id=:id;")
+                query.bindValue(":doc", QByteArray(self.convertToBinaryData(change)))
+                query.bindValue(":id", id)
+                query.exec_()
+        elif table == 'line_obj':
+            if column == 12:
+                query = QSqlQuery()
+                query.prepare("UPDATE line_obj SET passport=:passport WHERE id=:id;")
+                query.bindValue(":passport", QByteArray(self.convertToBinaryData(change)))
+                query.bindValue(":id", id)
+                query.exec_()
+        elif table == 'state_obj':
+            if column == 13:
+                query = QSqlQuery()
+                query.prepare("UPDATE state_obj SET passport=:passport WHERE id=:id;")
+                query.bindValue(":passport", QByteArray(self.convertToBinaryData(change)))
+                query.bindValue(":id", id)
+                query.exec_()
+            elif table == 'build_obj':
+                if column == 7:
+                    query = QSqlQuery()
+                    query.prepare("UPDATE build_obj SET doc=:doc WHERE id=:id;")
+                    query.bindValue(":doc", QByteArray(self.convertToBinaryData(change)))
+                    query.bindValue(":id", id)
+                    query.exec_()
+            elif table == 'project':
+                # До 10 в этой таблице идут текстовые поля. Они редактируется средствами класса
+                if column == 4:
+                    query = QSqlQuery()
+                    query.prepare("UPDATE project SET pz_project=:pz_project WHERE id=:id;")
+                    query.bindValue(":pz_project", QByteArray(self.convertToBinaryData(change)))
+                    query.bindValue(":id", id)
+                    query.exec_()
+                elif column == 5:
+                    query = QSqlQuery()
+                    query.prepare("UPDATE project SET pzu_project=:pzu_project WHERE id=:id;")
+                    query.bindValue(":pzu_project", QByteArray(self.convertToBinaryData(change)))
+                    query.bindValue(":id", id)
+                    query.exec_()
+                elif column == 6:
+                    query = QSqlQuery()
+                    query.prepare("UPDATE project SET kr_project=:kr_project WHERE id=:id;")
+                    query.bindValue(":kr_project", QByteArray(self.convertToBinaryData(change)))
+                    query.bindValue(":id", id)
+                    query.exec_()
+                elif column == 7:
+                    query = QSqlQuery()
+                    query.prepare("UPDATE project SET ios_project=:ios_project WHERE id=:id;")
+                    query.bindValue(":ios_project", QByteArray(self.convertToBinaryData(change)))
+                    query.bindValue(":id", id)
+                    query.exec_()
+                elif column == 8:
+                    query = QSqlQuery()
+                    query.prepare("UPDATE project SET pos_project=:pos_project WHERE id=:id;")
+                    query.bindValue(":pos_project", QByteArray(self.convertToBinaryData(change)))
+                    query.bindValue(":id", id)
+                    query.exec_()
+                elif column == 9:
+                    query = QSqlQuery()
+                    query.prepare("UPDATE project SET another_project=:another_project WHERE id=:id;")
+                    query.bindValue(":another_project", QByteArray(self.convertToBinaryData(change)))
+                    query.bindValue(":id", id)
+                    query.exec_()
+            elif table == 'epb':
+                if column == 4:
+                    query = QSqlQuery()
+                    query.prepare("UPDATE epb SET epb_doc=:epb_doc WHERE id=:id;")
+                    query.bindValue(":epb_doc", QByteArray(self.convertToBinaryData(change)))
+                    query.bindValue(":id", id)
+                    query.exec_()
         self.model.select()
 
     def update_filter(self, s):
