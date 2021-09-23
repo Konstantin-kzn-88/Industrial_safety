@@ -1260,7 +1260,7 @@ class Storage_app(QMainWindow):
             self.table_box_state = "opo"
             self.model.setState(self.table_box_state)
             self.model.setTable("opo")
-            self.model.setRelation(1, QSqlRelation("company", "id", "name_company"))
+            self.model.setRelation(1, QSqlRelation("company", "id", "name_opo"))
             self.view.setItemDelegateForColumn(0, self.delegate)
             self.view.setItemDelegateForColumn(1, self.delegate)
             self.model.select()
@@ -1268,31 +1268,57 @@ class Storage_app(QMainWindow):
             self.table_box_state = "documentation"
             self.model.setState(self.table_box_state)
             self.model.setTable("documentation")
+            self.model.setRelation(1, QSqlRelation("opo", "id", "name_opo"))
+            self.view.setItemDelegateForColumn(0, self.delegate)
+            self.view.setItemDelegateForColumn(1, self.delegate)
+            self.view.setItemDelegateForColumn(5, self.delegate)
             self.model.select()
         elif text == 'Линейные объекты':
             self.table_box_state = "line_obj"
             self.model.setState(self.table_box_state)
             self.model.setTable("line_obj")
+            self.model.setRelation(1, QSqlRelation("opo", "id", "name_opo"))
+            self.view.setItemDelegateForColumn(0, self.delegate)
+            self.view.setItemDelegateForColumn(1, self.delegate)
+            self.view.setItemDelegateForColumn(12, self.delegate)
             self.model.select()
         elif text == 'Стационарные объекты':
             self.table_box_state = "state_obj"
             self.model.setState(self.table_box_state)
             self.model.setTable("state_obj")
+            self.model.setRelation(1, QSqlRelation("opo", "id", "name_opo"))
+            self.view.setItemDelegateForColumn(0, self.delegate)
+            self.view.setItemDelegateForColumn(1, self.delegate)
+            self.view.setItemDelegateForColumn(13, self.delegate)
             self.model.select()
         elif text == 'Здания и сооружения':
             self.table_box_state = "build_obj"
             self.model.setState(self.table_box_state)
             self.model.setTable("build_obj")
+            self.model.setRelation(1, QSqlRelation("opo", "id", "name_opo"))
+            self.view.setItemDelegateForColumn(0, self.delegate)
+            self.view.setItemDelegateForColumn(1, self.delegate)
+            self.view.setItemDelegateForColumn(7, self.delegate)
             self.model.select()
         elif text == 'Проекты':
             self.table_box_state = "project"
             self.model.setState(self.table_box_state)
             self.model.setTable("project")
+            self.model.setRelation(1, QSqlRelation("opo", "id", "name_opo"))
+            self.view.setItemDelegateForColumn(0, self.delegate)
+            self.view.setItemDelegateForColumn(1, self.delegate)
+            self.view.setItemDelegateForColumn(4, self.delegate)
+            self.view.setItemDelegateForColumn(5, self.delegate)
+            self.view.setItemDelegateForColumn(6, self.delegate)
+            self.view.setItemDelegateForColumn(7, self.delegate)
+            self.view.setItemDelegateForColumn(8, self.delegate)
+            self.view.setItemDelegateForColumn(9, self.delegate)
             self.model.select()
         elif text == 'Экспертизы пром.безопасности':
             self.table_box_state = "epb"
             self.model.setState(self.table_box_state)
             self.model.setTable("epb")
+            self.model.setRelation(1, QSqlRelation("opo", "id", "name_opo"))
             self.view.setItemDelegateForColumn(0, self.delegate)
             self.view.setItemDelegateForColumn(4, self.delegate)
             self.model.select()
@@ -1830,6 +1856,30 @@ class Storage_app(QMainWindow):
         elif self.table_box_state == 'opo':
             s = re.sub("[\W_]+", "", s)
             filter_str = 'name_opo LIKE "%{}%"'.format(s)
+            self.model.setFilter(filter_str)
+        elif self.table_box_state == 'documentation':
+            s = re.sub("[\W_]+", "", s)
+            filter_str = 'type_doc LIKE "%{}%"'.format(s)
+            self.model.setFilter(filter_str)
+        elif self.table_box_state == 'line_obj':
+            s = re.sub("[\W_]+", "", s)
+            filter_str = 'name_opo LIKE "%{}%"'.format(s)
+            self.model.setFilter(filter_str)
+        elif self.table_box_state == 'state_obj':
+            s = re.sub("[\W_]+", "", s)
+            filter_str = 'name_opo LIKE "%{}%"'.format(s)
+            self.model.setFilter(filter_str)
+        elif self.table_box_state == 'build_obj':
+            s = re.sub("[\W_]+", "", s)
+            filter_str = 'name_opo LIKE "%{}%"'.format(s)
+            self.model.setFilter(filter_str)
+        elif self.table_box_state == 'project':
+            s = re.sub("[\W_]+", "", s)
+            filter_str = 'name_project LIKE "%{}%"'.format(s)
+            self.model.setFilter(filter_str)
+        elif self.table_box_state == 'epb':
+            s = re.sub("[\W_]+", "", s)
+            filter_str = 'name_doc LIKE "%{}%"'.format(s)
             self.model.setFilter(filter_str)
 
     def closeEvent(self, event):
