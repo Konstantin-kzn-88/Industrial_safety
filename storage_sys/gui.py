@@ -631,16 +631,58 @@ class Relational_table_model_with_icon(QSqlRelationalTableModel):
                 return ""
             if index.column() == 12 and role == Qt.DecorationRole:
                 return QIcon(icon)
+            if index.column() == 11 and role == Qt.BackgroundRole:
+                color = QColor(0, 0, 0, 0)
+                try:
+                    if 5 < int(index.data()) - datetime.datetime.now().year <= 15:
+                        color = QColor(0, 255, 0, 150)
+                    elif 1 < int(index.data()) - datetime.datetime.now().year <= 5:
+                        color = QColor(255, 255, 0, 150)
+                    elif 0 >= int(index.data()) - datetime.datetime.now().year <= 1:
+                        color = QColor(255, 0, 0, 150)
+                    else:
+                        color = QColor(0, 0, 0, 0)
+                except:
+                    pass
+                return color
         elif self.state == "state_obj":
             if index.column() == 13 and role == Qt.DisplayRole:
                 return ""
             if index.column() == 13 and role == Qt.DecorationRole:
                 return QIcon(icon)
+            if index.column() == 12 and role == Qt.BackgroundRole:
+                color = QColor(0, 0, 0, 0)
+                try:
+                    if 5 < int(index.data()) - datetime.datetime.now().year <= 15:
+                        color = QColor(0, 255, 0, 150)
+                    elif 1 < int(index.data()) - datetime.datetime.now().year <= 5:
+                        color = QColor(255, 255, 0, 150)
+                    elif 0 >= int(index.data()) - datetime.datetime.now().year <= 1:
+                        color = QColor(255, 0, 0, 150)
+                    else:
+                        color = QColor(0, 0, 0, 0)
+                except:
+                    pass
+                return color
         elif self.state == "build_obj":
             if index.column() == 7 and role == Qt.DisplayRole:
                 return ""
             if index.column() == 7 and role == Qt.DecorationRole:
                 return QIcon(icon)
+            if index.column() == 6 and role == Qt.BackgroundRole:
+                color = QColor(0, 0, 0, 0)
+                try:
+                    if 5 < int(index.data()) - datetime.datetime.now().year <= 15:
+                        color = QColor(0, 255, 0, 150)
+                    elif 1 < int(index.data()) - datetime.datetime.now().year <= 5:
+                        color = QColor(255, 255, 0, 150)
+                    elif 0 >= int(index.data()) - datetime.datetime.now().year <= 1:
+                        color = QColor(255, 0, 0, 150)
+                    else:
+                        color = QColor(0, 0, 0, 0)
+                except:
+                    pass
+                return color
         elif self.state == "project":
             if index.column() == 4 and role == Qt.DisplayRole:
                 return ""
@@ -671,6 +713,20 @@ class Relational_table_model_with_icon(QSqlRelationalTableModel):
                 return ""
             if index.column() == 4 and role == Qt.DecorationRole:
                 return QIcon(icon)
+            if index.column() == 3 and role == Qt.BackgroundRole:
+                color = QColor(0, 0, 0, 0)
+                try:
+                    if 0 <= datetime.datetime.now().year - int(index.data()) <= 3:
+                        color = QColor(0, 255, 0, 150)
+                    elif 3 < datetime.datetime.now().year - int(index.data()) <= 5:
+                        color = QColor(255, 255, 0, 150)
+                    elif 5 < datetime.datetime.now().year - int(index.data()) <= 15:
+                        color = QColor(255, 0, 0, 150)
+                    else:
+                        color = QColor(0, 0, 0, 0)
+                except:
+                    pass
+                return color
 
         return QSqlRelationalTableModel.data(self, index, role)  # все остальное должно штатно обработаться qsqltablemodel
 
@@ -1124,6 +1180,7 @@ class Storage_app(QMainWindow):
         save_ico = QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/save.png')
         project2_ico = QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/project2.png')
         excel_ico = QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/excel.png')
+        load_ico = QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/load.png')
         # ВИД
         self.view = QTableView()
         self.view.setModel(self.model)
@@ -1178,9 +1235,9 @@ class Storage_app(QMainWindow):
         self.del_from_db.setIcon(minus_ico)
         self.del_from_db.setToolTip("Удалить строку из таблицу")
         self.del_from_db.clicked.connect(self.delete_from_data_base)
-        self.edit_from_db = QPushButton("Редактировать")
-        self.edit_from_db.setIcon(minus_ico)
-        self.edit_from_db.setToolTip("Редактировать выделенный элемент")
+        self.edit_from_db = QPushButton("Заменить")
+        self.edit_from_db.setIcon(load_ico)
+        self.edit_from_db.setToolTip("Заменить файл в базе данных")
         self.edit_from_db.clicked.connect(self.edit_from_data_base)
         # Рамка №3
         self.save_file = QPushButton("Скачать файл")
@@ -1227,7 +1284,7 @@ class Storage_app(QMainWindow):
         GB_save.setLayout(layout_save)
         # Рамка №3
         layout_search = QFormLayout(self)
-        GB_search = QGroupBox('Сохранение данных')
+        GB_search = QGroupBox('Поиск')
         GB_search.setStyleSheet("QGroupBox { font-weight : bold; }")
         layout_search.addRow("", self.search_str)
         GB_search.setLayout(layout_search)
@@ -1260,7 +1317,7 @@ class Storage_app(QMainWindow):
             self.table_box_state = "opo"
             self.model.setState(self.table_box_state)
             self.model.setTable("opo")
-            self.model.setRelation(1, QSqlRelation("company", "id", "name_opo"))
+            self.model.setRelation(1, QSqlRelation("company", "id", "name_company"))
             self.view.setItemDelegateForColumn(0, self.delegate)
             self.view.setItemDelegateForColumn(1, self.delegate)
             self.model.select()
