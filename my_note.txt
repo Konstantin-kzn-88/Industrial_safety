@@ -1,5 +1,7 @@
 https://github.com/Konstantin-kzn-88/Industrial_safety.git
 ctrl+alt+l - отступы по коду
 
-
-1.Файл Экселя должен быть открыт до программы (исправить)
+Пример ярлыка на exe
+https://skesov.ru/kak-sdelat-yarlyik-s-otnositelnyim-putem-do-programmyi-na-windows-8-1-8-7-vista/
+https://www.download3k.ru/Install-Bat-To-Exe-Converter.html
+https://andreyv.ru/python-embedded-ili-kak-dobavit-python-v-svoe-prilozhenie.html
