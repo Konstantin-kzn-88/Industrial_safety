@@ -7,10 +7,9 @@
 import re
 import sys
 import os
+import random
 from pathlib import Path
 import datetime
-
-
 
 from PyQt5.Qt import *
 
@@ -19,6 +18,7 @@ class ReadOnlyDelegate(QStyledItemDelegate):
     def createEditor(self, parent, option, insex):
         print(f'parent=`{parent}`, \noption=`{option}`, \ninsex=`{insex}`\n')
         return
+
 
 class Change_Dialog(QDialog):
     def __init__(self, state="company", column=0):
@@ -184,8 +184,8 @@ class Change_Dialog(QDialog):
     def file_path(self):
         sender = self.sender()
         path = QFileDialog.getOpenFileName(self,
-                                                     'Документ для внесения в базу данных',
-                                                     ".", ("PDF (*.pdf)"))[0]
+                                           'Документ для внесения в базу данных',
+                                           ".", ("PDF (*.pdf)"))[0]
         if path == "":
             msg = QMessageBox(self)
             msg.setIcon(QMessageBox.Warning)
@@ -631,8 +631,8 @@ class Add_Dialog(QDialog):
     def file_path(self):
         sender = self.sender()
         path = QFileDialog.getOpenFileName(self,
-                                                     'Документ для внесения в базу данных',
-                                                     ".", ("PDF (*.pdf)"))[0]
+                                           'Документ для внесения в базу данных',
+                                           ".", ("PDF (*.pdf)"))[0]
         if path == "":
             msg = QMessageBox(self)
             msg.setIcon(QMessageBox.Warning)
@@ -855,7 +855,8 @@ class Relational_table_model_with_icon(QSqlRelationalTableModel):
                     pass
                 return color
 
-        return QSqlRelationalTableModel.data(self, index, role)  # все остальное должно штатно обработаться qsqltablemodel
+        return QSqlRelationalTableModel.data(self, index,
+                                             role)  # все остальное должно штатно обработаться qsqltablemodel
 
 
 class Storage_app(QMainWindow):
@@ -870,7 +871,6 @@ class Storage_app(QMainWindow):
         self.centralWidget = QWidget()
         self.setCentralWidget(self.centralWidget)
         self.initUI()
-
 
         if not parent:
             self.show()
@@ -887,7 +887,7 @@ class Storage_app(QMainWindow):
         Вспомогательная функция заполнениия базы данных
         Отключить после тестового запуска
         """
-        file_path = (f"{os.getcwd()}\\test_BLOB.jpg")
+        file_path = (f"{os.getcwd()}\\test_BLOB.pdf")
         test_BLOB = self.convertToBinaryData(file_path)
         test_BLOB = QByteArray(test_BLOB)
 
@@ -1310,8 +1310,8 @@ class Storage_app(QMainWindow):
         # ВИД
         self.view = QTableView()
         self.view.setModel(self.model)
-        self.delegate = ReadOnlyDelegate(self.view)               # +++
-        self.view.setItemDelegateForColumn(0, self.delegate)      # +++
+        self.delegate = ReadOnlyDelegate(self.view)  # +++
+        self.view.setItemDelegateForColumn(0, self.delegate)  # +++
         mode = QAbstractItemView.SingleSelection
         self.view.setSelectionMode(mode)
         # выравнивание по содержимому
@@ -1369,7 +1369,7 @@ class Storage_app(QMainWindow):
         self.save_file = QPushButton("Скачать файл")
         self.save_file.setIcon(save_ico)
         self.save_file.setToolTip("Скачать файл")
-        # self.save_file.clicked.connect(self.add_in_data_base)
+        self.save_file.clicked.connect(self.save_out_data_base)
         self.save_excel_file = QPushButton("Выгрузить в Excel")
         self.save_excel_file.setIcon(excel_ico)
         self.save_excel_file.setToolTip("Скачать выгрузить таблицу в Excel")
@@ -1426,6 +1426,147 @@ class Storage_app(QMainWindow):
         grid.addWidget(self.tabs, 0, 1, 1, 1)
         self.centralWidget.setLayout(grid)
         self.setCentralWidget(self.centralWidget)
+
+    def save_out_data_base(self):
+        print('save')
+
+        if self.table_box_state == "company":
+            selected_indexes = self.view.selectedIndexes()
+            if not selected_indexes:
+                return
+            index = selected_indexes[0]
+            row = selected_indexes[0].row()
+            column = selected_indexes[0].column()
+            print(f'selected_indexes = {row} - {column}')
+            if column not in [11, 12, 13, 14]:
+                return
+            r = self.model.record(row)
+            blob_data = r.value(column)
+            print(f'blob_data = {type(blob_data)}')  # QtCore.QByteArray
+            path = QFileDialog.getExistingDirectory(self, "Выбрать путь сохраннения файла", ".")
+            path = f'{path}/{random.randint(1111, 9999)}.pdf'
+            path = path.replace("/", "//")
+            with open(path, 'wb') as output:
+                output.write(blob_data)
+
+        elif self.table_box_state == "documentation":
+            selected_indexes = self.view.selectedIndexes()
+            if not selected_indexes:
+                return
+            index = selected_indexes[0]
+            row = selected_indexes[0].row()
+            column = selected_indexes[0].column()
+            print(f'selected_indexes = {row} - {column}')
+            if column != 5:
+                return
+            r = self.model.record(row)
+            blob_data = r.value(column)
+            print(f'blob_data = {type(blob_data)}')  # QtCore.QByteArray
+            path = QFileDialog.getExistingDirectory(self, "Выбрать путь сохраннения файла", ".")
+            path = f'{path}/{random.randint(1111, 9999)}.pdf'
+            path = path.replace("/", "//")
+            with open(path, 'wb') as output:
+                output.write(blob_data)
+
+        elif self.table_box_state == "line_obj":
+            selected_indexes = self.view.selectedIndexes()
+            if not selected_indexes:
+                return
+            index = selected_indexes[0]
+            row = selected_indexes[0].row()
+            column = selected_indexes[0].column()
+            print(f'selected_indexes = {row} - {column}')
+            if column != 12:
+                return
+            r = self.model.record(row)
+            blob_data = r.value(column)
+            print(f'blob_data = {type(blob_data)}')  # QtCore.QByteArray
+            path = QFileDialog.getExistingDirectory(self, "Выбрать путь сохраннения файла", ".")
+            path = f'{path}/{random.randint(1111, 9999)}.pdf'
+            path = path.replace("/", "//")
+            with open(path, 'wb') as output:
+                output.write(blob_data)
+
+
+        elif self.table_box_state == "state_obj":
+            selected_indexes = self.view.selectedIndexes()
+            if not selected_indexes:
+                return
+            index = selected_indexes[0]
+            row = selected_indexes[0].row()
+            column = selected_indexes[0].column()
+            print(f'selected_indexes = {row} - {column}')
+            if column != 13:
+                return
+            r = self.model.record(row)
+            blob_data = r.value(column)
+            print(f'blob_data = {type(blob_data)}')  # QtCore.QByteArray
+            path = QFileDialog.getExistingDirectory(self, "Выбрать путь сохраннения файла", ".")
+            path = f'{path}/{random.randint(1111, 9999)}.pdf'
+            path = path.replace("/", "//")
+            with open(path, 'wb') as output:
+                output.write(blob_data)
+
+        elif self.table_box_state == "build_obj":
+            selected_indexes = self.view.selectedIndexes()
+            if not selected_indexes:
+                return
+            index = selected_indexes[0]
+            row = selected_indexes[0].row()
+            column = selected_indexes[0].column()
+            print(f'selected_indexes = {row} - {column}')
+            if column != 7:
+                return
+            r = self.model.record(row)
+            blob_data = r.value(column)
+            print(f'blob_data = {type(blob_data)}')  # QtCore.QByteArray
+            path = QFileDialog.getExistingDirectory(self, "Выбрать путь сохраннения файла", ".")
+            path = f'{path}/{random.randint(1111, 9999)}.pdf'
+            path = path.replace("/", "//")
+            with open(path, 'wb') as output:
+                output.write(blob_data)
+
+        elif self.table_box_state == "project":
+            selected_indexes = self.view.selectedIndexes()
+            if not selected_indexes:
+                return
+            index = selected_indexes[0]
+            row = selected_indexes[0].row()
+            column = selected_indexes[0].column()
+            print(f'selected_indexes = {row} - {column}')
+            if column not in [4, 5, 6, 7, 8, 9]:
+                return
+            r = self.model.record(row)
+            blob_data = r.value(column)
+            print(f'blob_data = {type(blob_data)}')  # QtCore.QByteArray
+            path = QFileDialog.getExistingDirectory(self, "Выбрать путь сохраннения файла", ".")
+            path = f'{path}/{random.randint(1111, 9999)}.pdf'
+            path = path.replace("/", "//")
+            with open(path, 'wb') as output:
+                output.write(blob_data)
+
+        elif self.table_box_state == "epb":
+            selected_indexes = self.view.selectedIndexes()
+            if not selected_indexes:
+                return
+            index = selected_indexes[0]
+            row = selected_indexes[0].row()
+            column = selected_indexes[0].column()
+            print(f'selected_indexes = {row} - {column}')
+            if column != 4:
+                return
+            r = self.model.record(row)
+            blob_data = r.value(column)
+            print(f'blob_data = {type(blob_data)}')  # QtCore.QByteArray
+            path = QFileDialog.getExistingDirectory(self, "Выбрать путь сохраннения файла", ".")
+            path = f'{path}/{random.randint(1111, 9999)}.pdf'
+            path = path.replace("/", "//")
+            with open(path, 'wb') as output:
+                output.write(blob_data)
+
+
+
+
 
     def table_select(self, text):
         # self.model.data()
@@ -1985,25 +2126,25 @@ class Storage_app(QMainWindow):
         table = self.table_box_state
         # Проверка что бы не попасть на текстовые поля
         if table == 'company':
-            if column in [i for i in range(0,11)]:
+            if column in [i for i in range(0, 11)]:
                 return
         elif table == 'documentation':
-            if column in [i for i in range(0,5)]:
+            if column in [i for i in range(0, 5)]:
                 return
         elif table == 'line_obj':
-            if column in [i for i in range(0,12)]:
+            if column in [i for i in range(0, 12)]:
                 return
         elif table == 'state_obj':
-            if column in [i for i in range(0,13)]:
+            if column in [i for i in range(0, 13)]:
                 return
         elif table == 'build_obj':
-            if column in [i for i in range(0,7)]:
+            if column in [i for i in range(0, 7)]:
                 return
         elif table == 'project':
-            if column in [i for i in range(0,4)]:
+            if column in [i for i in range(0, 4)]:
                 return
         elif table == 'epb':
-            if column in [i for i in range(0,4)]:
+            if column in [i for i in range(0, 4)]:
                 return
         # Проверка что бы не попасть на текстовые поля
         changeDialog = Change_Dialog(state=self.table_box_state, column=column)
@@ -2163,14 +2304,15 @@ class Storage_app(QMainWindow):
             blobData = file.read()
         return blobData
 
-def my_excepthook(type, value, tback):
-   #  функция отлова ошибок на PyQt5
-   QMessageBox.critical(
-       window, "CRITICAL ERROR", str(value),
-       QMessageBox.Cancel
-   )
 
-   sys.__excepthook__(type, value, tback)
+def my_excepthook(type, value, tback):
+    #  функция отлова ошибок на PyQt5
+    QMessageBox.critical(
+        window, "CRITICAL ERROR", str(value),
+        QMessageBox.Cancel
+    )
+
+    sys.__excepthook__(type, value, tback)
 
 
 sys.excepthook = my_excepthook

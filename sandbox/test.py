@@ -1,92 +1,149 @@
 import sys
+import os
 from PyQt5 import QtSql
-from PyQt5.Qt import *
+from PyQt5 import QtWidgets
+from PyQt5 import QtCore
 
 
-# +++ vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-class ReadOnlyDelegate(QStyledItemDelegate):
-    def createEditor(self, parent, option, insex):
-        print(f'parent=`{parent}`, \noption=`{option}`, \ninsex=`{insex}`\n')
-        return
+class Storage_app(QtWidgets.QMainWindow):
 
-class Example(QMainWindow):
-    def __init__(self):
+    def __init__(self, parent=None) -> None:
         super().__init__()
-
         self.createConnection()
-        self.fillTable()  # !!!
+        self.fillTable()  # !!! тестовое заполнение базы данных
         self.createModel()
         self.initUI()
 
-        self.centralWidget = QWidget()
+        self.centralWidget = QtWidgets.QWidget()
         self.setCentralWidget(self.centralWidget)
-        self.table_box = QComboBox()
-        self.table_box.addItems(["Оборудование", "Категории"])
-        self.table_box.activated[str].connect(self.table_select)
-
-        layout = QVBoxLayout(self.centralWidget)
+        btn_save = QtWidgets.QPushButton("Скачать файл из БД")
+        btn_save.clicked.connect(self.save_file)
+        layout = QtWidgets.QVBoxLayout(self.centralWidget)
         layout.addWidget(self.view)
-        layout.addWidget(self.table_box)
+        layout.addWidget(btn_save)
+
+        if not parent:
+            self.show()
+
+    def save_file(self):
+        print("Как сохранить этот файл из базы данных? =(")
+        #
+        # list_id = []
+        # max_id = 0
+        # if self.model.rowCount() == 0:
+        #     max_id = max_id + 1
+        # else:
+        #     for row in range(self.model.rowCount()):
+        #         for column in range(self.model.columnCount()):
+        #             if column != 2:
+        #                 index = self.model.index(row, column)
+        #                 list_id.append(index.data())
+        #     print(list_id)
+        selected_indexes = self.view.selectedIndexes()
+        if not selected_indexes:
+            return
+        index = selected_indexes[0]
+        row = selected_indexes[0].row()
+        column = selected_indexes[0].column()
+        print(f'selected_indexes = {row} - {column}')
+        if column != 2:
+            return
+
+        r = self.model.record(row)
+        blob_data = r.value(column)
+        print(f'blob_data = {type(blob_data)}')  # QtCore.QByteArray
+        outputfilename = f'test_{row}_{column}.pdf'
+        with open(outputfilename, 'wb') as output:
+            output.write(blob_data)
 
     def createConnection(self):
         self.db = QtSql.QSqlDatabase.addDatabase("QSQLITE")
-        self.db.setDatabaseName("test_1318914.db")  # !!! .db
+        self.db.setDatabaseName("local_base.db")  # !!! .db
         if not self.db.open():
             print("Cannot establish a database connection")
             return False
 
     def fillTable(self):
+        """
+        Вспомогательная функция заполнениия базы данных
+        Отключить после тестового запуска
+        """
+        file_path = (f"{os.getcwd()}\\test_BLOB.pdf")
+        test_BLOB = self.convertToBinaryData(file_path)
+        test_BLOB = QtCore.QByteArray(test_BLOB)
+
         self.db.transaction()
         q = QtSql.QSqlQuery()
-        #                             vvvvvvvv
-        q.exec_("DROP TABLE IF EXISTS category;")
-        q.exec_("CREATE TABLE category (id INT PRIMARY KEY, catname TEXT);")
-        q.exec_("INSERT INTO category VALUES (1, 'Расходники');")
-        q.exec_("INSERT INTO category VALUES (2, 'Носители');")
+        #
+        q.exec_("DROP TABLE IF EXISTS company;")
+        q.exec_("CREATE TABLE company ("
+                "id INT PRIMARY KEY, "
+                "name_company TEXT NOT NULL, "
+                "blob_data BLOB NOT NULL );")
 
-        #                             vvvv
-        q.exec_("DROP TABLE IF EXISTS equipment;")
-        q.exec_("CREATE TABLE equipment (Name TEXT, Quantity INT, Category INT);")
-        q.exec_("INSERT INTO equipment VALUES ('Барабан для принтера', 8, 1);")
-        q.exec_("INSERT INTO equipment VALUES ('Бумага для принтера', 3, 1);")
-        q.exec_("INSERT INTO equipment VALUES ('Дискета', 10, 2);")
+        # Вставка тестовых значений
+        query = QtSql.QSqlQuery()
+        query.prepare("INSERT INTO company (id, name_company, blob_data) "
+                      "VALUES (:id, :name_company, :blob_data)")
+
+        query.bindValue(":id", 1)
+        query.bindValue(":name_company", 'АО КОПЫТА')
+        query.bindValue(":blob_data", test_BLOB)
+        query.exec_()
+
+        query = QtSql.QSqlQuery()
+        query.prepare("INSERT INTO company (id, name_company, blob_data) "
+                      "VALUES (:id, :name_company, :blob_data)")
+
+        query.bindValue(":id", 2)
+        query.bindValue(":name_company", 'АО РОГА')
+        query.bindValue(":blob_data", test_BLOB)
+        query.exec_()
+
         self.db.commit()
 
     def createModel(self):
+        """
+        Создание модели для отображения
+        """
         self.model = QtSql.QSqlRelationalTableModel()
-        self.model.setTable("equipment")
+        self.model.setTable("company")
+        self.model.setHeaderData(0, QtCore.Qt.Horizontal, "id")
+        self.model.setHeaderData(1, QtCore.Qt.Horizontal, "Наиманование")
+        self.model.setHeaderData(2, QtCore.Qt.Horizontal, "Документы")
         self.model.select()
 
     def initUI(self):
-        self.view = QTableView()
+        self.view = QtWidgets.QTableView()
         self.view.setModel(self.model)
-        self.view.setColumnWidth(0, 150)
-
-        self.delegate = ReadOnlyDelegate(self.view)  # +++
-        self.view.setItemDelegateForColumn(2, self.delegate)  # +++
-
-        mode = QAbstractItemView.SingleSelection
+        mode = QtWidgets.QAbstractItemView.SingleSelection
         self.view.setSelectionMode(mode)
 
-    def table_select(self, text):
-        if text == 'Категории':
-            self.model.setTable("category")
-            self.view.setItemDelegateForColumn(0, self.delegate)  # +++
-            self.model.select()
-        elif text == 'Оборудование':
-            self.model.setTable("equipment")
-            self.view.setItemDelegateForColumn(2, self.delegate)  # +++
-            self.model.select()
 
     def closeEvent(self, event):
         if (self.db.open()):
             self.db.close()
 
+    def convertToBinaryData(self, file_path):
+        # Конвертирование в BLOB
+        with open(file_path, 'rb') as file:
+            blobData = file.read()
+        return blobData
+
+def my_excepthook(type, value, tback):
+   #  функция отлова ошибок на PyQt5
+   QtWidgets.QMessageBox.critical(
+       window, "CRITICAL ERROR", str(value),
+       QtWidgets.QMessageBox.Cancel
+   )
+
+   sys.__excepthook__(type, value, tback)
+
+
+sys.excepthook = my_excepthook
 
 if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    w = Example()
-    w.setWindowTitle("No edit")
-    w.resize(430, 250)
-    w.show()
-    sys.exit(app.exec())
+    app = QtWidgets.QApplication(sys.argv)
+    app.setStyle('Fusion')
+    w = Storage_app()
+    app.exec_()

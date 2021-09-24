@@ -35,6 +35,7 @@ try:
         result = cur.fetchall()
         # print(result[0][1])
         fout = open(file_path_out, 'wb')
+        print(result[0][1])
         fout.write(result[0][1])
         fout.close()
 
