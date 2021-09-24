@@ -1288,6 +1288,21 @@ class Storage_app(QMainWindow):
         self.model = Relational_table_model_with_icon(db=self.db, state=self.table_box_state)
         self.model.setTable("company")
         self.model.setEditStrategy(QSqlTableModel.OnFieldChange)
+        self.model.setHeaderData(0, Qt.Horizontal, "id")
+        self.model.setHeaderData(1, Qt.Horizontal, "Наименование компании")
+        self.model.setHeaderData(2, Qt.Horizontal, "Ф.И.О. руководителя")
+        self.model.setHeaderData(3, Qt.Horizontal, "Юр. адрес")
+        self.model.setHeaderData(4, Qt.Horizontal, "Почтовый адрес")
+        self.model.setHeaderData(5, Qt.Horizontal, "Телефон")
+        self.model.setHeaderData(6, Qt.Horizontal, "Эл.почта")
+        self.model.setHeaderData(7, Qt.Horizontal, "Факс")
+        self.model.setHeaderData(8, Qt.Horizontal, "ИНН")
+        self.model.setHeaderData(9, Qt.Horizontal, "КПП")
+        self.model.setHeaderData(10, Qt.Horizontal, "ОГРН")
+        self.model.setHeaderData(11, Qt.Horizontal, "Лицензия")
+        self.model.setHeaderData(12, Qt.Horizontal, "Свидетельство о рег.ОПО")
+        self.model.setHeaderData(13, Qt.Horizontal, "Производственный контроль")
+        self.model.setHeaderData(14, Qt.Horizontal, "Положение об аввариях")
         self.model.select()
 
     def initUI(self):
@@ -1564,10 +1579,6 @@ class Storage_app(QMainWindow):
             with open(path, 'wb') as output:
                 output.write(blob_data)
 
-
-
-
-
     def table_select(self, text):
         # self.model.data()
         if text == 'Компании':
@@ -1579,6 +1590,21 @@ class Storage_app(QMainWindow):
             self.view.setItemDelegateForColumn(12, self.delegate)
             self.view.setItemDelegateForColumn(13, self.delegate)
             self.view.setItemDelegateForColumn(14, self.delegate)
+            self.model.setHeaderData(0, Qt.Horizontal, "id")
+            self.model.setHeaderData(1, Qt.Horizontal, "Наименование компании")
+            self.model.setHeaderData(2, Qt.Horizontal, "Ф.И.О. руководителя")
+            self.model.setHeaderData(3, Qt.Horizontal, "Юр. адрес")
+            self.model.setHeaderData(4, Qt.Horizontal, "Почтовый адрес")
+            self.model.setHeaderData(5, Qt.Horizontal, "Телефон")
+            self.model.setHeaderData(6, Qt.Horizontal, "Эл.почта")
+            self.model.setHeaderData(7, Qt.Horizontal, "Факс")
+            self.model.setHeaderData(8, Qt.Horizontal, "ИНН")
+            self.model.setHeaderData(9, Qt.Horizontal, "КПП")
+            self.model.setHeaderData(10, Qt.Horizontal, "ОГРН")
+            self.model.setHeaderData(11, Qt.Horizontal, "Лицензия")
+            self.model.setHeaderData(12, Qt.Horizontal, "Свидетельство о рег.ОПО")
+            self.model.setHeaderData(13, Qt.Horizontal, "Производственный контроль")
+            self.model.setHeaderData(14, Qt.Horizontal, "Положение об аввариях")
             self.model.select()
         elif text == 'ОПО':
             self.table_box_state = "opo"
@@ -1587,6 +1613,12 @@ class Storage_app(QMainWindow):
             self.model.setRelation(1, QSqlRelation("company", "id", "name_company"))
             self.view.setItemDelegateForColumn(0, self.delegate)
             self.view.setItemDelegateForColumn(1, self.delegate)
+            self.model.setHeaderData(0, Qt.Horizontal, "id")
+            self.model.setHeaderData(1, Qt.Horizontal, "Наименование компании")
+            self.model.setHeaderData(2, Qt.Horizontal, "Наименование ОПО")
+            self.model.setHeaderData(3, Qt.Horizontal, "Адрес ОПО")
+            self.model.setHeaderData(4, Qt.Horizontal, "Рег. №")
+            self.model.setHeaderData(5, Qt.Horizontal, "Класс ОПО")
             self.model.select()
         elif text == 'Документация ОПО':
             self.table_box_state = "documentation"
@@ -1596,6 +1628,12 @@ class Storage_app(QMainWindow):
             self.view.setItemDelegateForColumn(0, self.delegate)
             self.view.setItemDelegateForColumn(1, self.delegate)
             self.view.setItemDelegateForColumn(5, self.delegate)
+            self.model.setHeaderData(0, Qt.Horizontal, "id")
+            self.model.setHeaderData(1, Qt.Horizontal, "Наименование ОПО")
+            self.model.setHeaderData(2, Qt.Horizontal, "Тип документации")
+            self.model.setHeaderData(3, Qt.Horizontal, "Рег. №")
+            self.model.setHeaderData(4, Qt.Horizontal, "Год")
+            self.model.setHeaderData(5, Qt.Horizontal, "Документация")
             self.model.select()
         elif text == 'Линейные объекты':
             self.table_box_state = "line_obj"
@@ -1605,6 +1643,19 @@ class Storage_app(QMainWindow):
             self.view.setItemDelegateForColumn(0, self.delegate)
             self.view.setItemDelegateForColumn(1, self.delegate)
             self.view.setItemDelegateForColumn(12, self.delegate)
+            self.model.setHeaderData(0, Qt.Horizontal, "id")
+            self.model.setHeaderData(1, Qt.Horizontal, "Наименование ОПО")
+            self.model.setHeaderData(2, Qt.Horizontal, "Рег. №")
+            self.model.setHeaderData(3, Qt.Horizontal, "Наименование оборудования")
+            self.model.setHeaderData(4, Qt.Horizontal, "Вещество")
+            self.model.setHeaderData(5, Qt.Horizontal, "Длина, км")
+            self.model.setHeaderData(6, Qt.Horizontal, "Диаметр, мм")
+            self.model.setHeaderData(7, Qt.Horizontal, "Давление, МПа")
+            self.model.setHeaderData(8, Qt.Horizontal, "Статус")
+            self.model.setHeaderData(9, Qt.Horizontal, "Год выпуска")
+            self.model.setHeaderData(10, Qt.Horizontal, "Год ввода")
+            self.model.setHeaderData(11, Qt.Horizontal, "Год экспл.до")
+            self.model.setHeaderData(12, Qt.Horizontal, "Паспорт оборудования")
             self.model.select()
         elif text == 'Стационарные объекты':
             self.table_box_state = "state_obj"
@@ -1614,6 +1665,20 @@ class Storage_app(QMainWindow):
             self.view.setItemDelegateForColumn(0, self.delegate)
             self.view.setItemDelegateForColumn(1, self.delegate)
             self.view.setItemDelegateForColumn(13, self.delegate)
+            self.model.setHeaderData(0, Qt.Horizontal, "id")
+            self.model.setHeaderData(1, Qt.Horizontal, "Наименование ОПО")
+            self.model.setHeaderData(2, Qt.Horizontal, "Рег. №")
+            self.model.setHeaderData(3, Qt.Horizontal, "Наименование оборудования")
+            self.model.setHeaderData(4, Qt.Horizontal, "Вещество")
+            self.model.setHeaderData(5, Qt.Horizontal, "Объем, м3")
+            self.model.setHeaderData(6, Qt.Horizontal, "Температура, С")
+            self.model.setHeaderData(7, Qt.Horizontal, "Давление, МПа")
+            self.model.setHeaderData(8, Qt.Horizontal, "Степень заполнения")
+            self.model.setHeaderData(9, Qt.Horizontal, "Статус")
+            self.model.setHeaderData(10, Qt.Horizontal, "Год выпуска")
+            self.model.setHeaderData(11, Qt.Horizontal, "Год ввода")
+            self.model.setHeaderData(12, Qt.Horizontal, "Год экспл.до")
+            self.model.setHeaderData(13, Qt.Horizontal, "Паспорт оборудования")
             self.model.select()
         elif text == 'Здания и сооружения':
             self.table_box_state = "build_obj"
@@ -1623,6 +1688,14 @@ class Storage_app(QMainWindow):
             self.view.setItemDelegateForColumn(0, self.delegate)
             self.view.setItemDelegateForColumn(1, self.delegate)
             self.view.setItemDelegateForColumn(7, self.delegate)
+            self.model.setHeaderData(0, Qt.Horizontal, "id")
+            self.model.setHeaderData(1, Qt.Horizontal, "Наименование ОПО")
+            self.model.setHeaderData(2, Qt.Horizontal, "Наименования объекта")
+            self.model.setHeaderData(3, Qt.Horizontal, "Статус")
+            self.model.setHeaderData(4, Qt.Horizontal, "Год выпуска")
+            self.model.setHeaderData(5, Qt.Horizontal, "Год ввода")
+            self.model.setHeaderData(6, Qt.Horizontal, "Год экспл.до")
+            self.model.setHeaderData(7, Qt.Horizontal, "Паспорт оборудования")
             self.model.select()
         elif text == 'Проекты':
             self.table_box_state = "project"
@@ -1637,6 +1710,16 @@ class Storage_app(QMainWindow):
             self.view.setItemDelegateForColumn(7, self.delegate)
             self.view.setItemDelegateForColumn(8, self.delegate)
             self.view.setItemDelegateForColumn(9, self.delegate)
+            self.model.setHeaderData(0, Qt.Horizontal, "id")
+            self.model.setHeaderData(1, Qt.Horizontal, "Наименование ОПО")
+            self.model.setHeaderData(2, Qt.Horizontal, "Наименование проекта")
+            self.model.setHeaderData(3, Qt.Horizontal, "Год")
+            self.model.setHeaderData(4, Qt.Horizontal, "ПЗ")
+            self.model.setHeaderData(5, Qt.Horizontal, "ПЗУ")
+            self.model.setHeaderData(6, Qt.Horizontal, "КР")
+            self.model.setHeaderData(7, Qt.Horizontal, "ИОС")
+            self.model.setHeaderData(8, Qt.Horizontal, "ПОС")
+            self.model.setHeaderData(9, Qt.Horizontal, "Прочие разделы ПД")
             self.model.select()
         elif text == 'Экспертизы пром.безопасности':
             self.table_box_state = "epb"
@@ -1645,6 +1728,11 @@ class Storage_app(QMainWindow):
             self.model.setRelation(1, QSqlRelation("opo", "id", "name_opo"))
             self.view.setItemDelegateForColumn(0, self.delegate)
             self.view.setItemDelegateForColumn(4, self.delegate)
+            self.model.setHeaderData(0, Qt.Horizontal, "id")
+            self.model.setHeaderData(1, Qt.Horizontal, "Наименование ОПО")
+            self.model.setHeaderData(2, Qt.Horizontal, "Наименование ЭПБ")
+            self.model.setHeaderData(3, Qt.Horizontal, "Год")
+            self.model.setHeaderData(4, Qt.Horizontal, "Документация")
             self.model.select()
 
     def add_in_data_base(self):
