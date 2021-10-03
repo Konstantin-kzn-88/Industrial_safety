@@ -1361,7 +1361,7 @@ class Painter(QtWidgets.QMainWindow):
         self.scene.setSceneRect(QtCore.QRectF(pixmap.rect()))
 
     def draw_risk_object(self):
-        print("Draw risk")
+        print("Init risk")
         # проверка базы данных
         if self.is_there_a_database() == False:
             return
@@ -1417,6 +1417,7 @@ class Painter(QtWidgets.QMainWindow):
             scale_name = float(obj.get("scale_name"))
             # возьмем координаты оборудования
             obj_coord = eval(obj.get("obj_coord"))
+            print(f'calc_{obj_coord}')
             # возьмем тип объекта
             obj_type = obj.get("obj_type")
             max_radius = excel[index][-1] * scale_name
@@ -1444,7 +1445,7 @@ class Painter(QtWidgets.QMainWindow):
                 # print(obj_coord)
                 self.calc_el_zeors_array(width_min, height_min, width_max, height_max,
                                          obj_coord, power, zeors_array, scale_name)
-
+        print('draw')
         max_el = zeors_array.max()
         for x in range(width):
             for y in range(height):
@@ -1603,6 +1604,7 @@ class Painter(QtWidgets.QMainWindow):
                 # else:
                 #     print(f'zer_arr{zeors_array[x,y]}')
 
+        print('end draw')
         pixmap_zone = QtGui.QPixmap.fromImage(qimg_zone)
         # Положим одну картинку на другую
         painter = QtGui.QPainter(pixmap)
