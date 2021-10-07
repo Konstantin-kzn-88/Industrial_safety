@@ -15,12 +15,10 @@ import os
 from pathlib import Path
 
 import numpy as np
-from PIL import Image
 from PySide2 import QtWidgets, QtGui, QtCore
 from PySide2.QtCore import QTranslator
 from shapely.geometry import Point, LineString, Polygon
 import win32com.client
-import matplotlib.pyplot as plt
 
 Excel = win32com.client.Dispatch("Excel.Application")
 
