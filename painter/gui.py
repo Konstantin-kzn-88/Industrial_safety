@@ -1816,6 +1816,270 @@ class Painter(QtWidgets.QMainWindow):
                             zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
                             speed_calc(zeors_array, x, y)
                             break
+                        elif abs(dist - i) < 10.5:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 11:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 11.5:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 12:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 12.5:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 13:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 13.5:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 14:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 14.5:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 15:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 15.5:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 16:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 16.5:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 17:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 17.5:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+
+                        elif abs(dist - i) < 18:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 18.5:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 19:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 19.5:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 20:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 20.5:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 21:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 21.5:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 22:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 22.5:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 23:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 23.5:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 24:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 24.5:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 25:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 25.5:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+
+                        elif abs(dist - i) < 26:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 26.5:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 27:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 27.5:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 28:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 28.5:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+
+                        elif abs(dist - i) < 29:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 29.5:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 30:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 30.5:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 31:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 31.5:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 32:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 33.5:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 34:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 34.5:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 35:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 35.5:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 36:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 36.5:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+                        elif abs(dist - i) < 37:
+                            find_index = power[1].index(i)
+                            zeors_array[x, y] = zeors_array[x, y] + power[0][find_index]
+                            speed_calc(zeors_array, x, y)
+                            break
+
         return
 
     def power_data(self, max_r, probit):
