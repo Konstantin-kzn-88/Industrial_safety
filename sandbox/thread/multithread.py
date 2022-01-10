@@ -2,25 +2,26 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 
 def square_number(x):
-    time.sleep(1)
+    time.sleep(2)
     y1 = x ** 2
     return y1
 
 def quadruple_num(x):
-    time.sleep(1)
+    time.sleep(2)
     y2 = 4 * x
     return y2
 
 start_time = time.time()
-# for x in range(5):
-#     with ThreadPoolExecutor() as executor:
-#         futures = [executor.submit(func, x) for func in [square_number, quadruple_num]]
-#         result = sum(f.result() for f in futures)
-#         print(x, result)
 
 for x in range(5):
-    result = square_number(x) + quadruple_num(x)
-    print(x, result)
+    with ThreadPoolExecutor() as executor:
+        futures = [executor.submit(func, x) for func in [square_number, quadruple_num]]
+        result = sum(f.result() for f in futures)
+        print(x, result)
+
+# for x in range(5):
+#     result = square_number(x) + quadruple_num(x)
+#     print(x, result)
 
 print("--- %s секунд ---" % (time.time() - start_time))
 
