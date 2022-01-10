@@ -130,6 +130,171 @@ mass_crash_table = [{'scenario': scenario, 'frequency': frequency, 'damaging_fac
                     for scenario, frequency, damaging_factor, effect, sub_mass_all, sub_mass_part in
                     zip(scenarios, frequencis, damaging_factors, effects, sub_mass_alls, sub_mass_parts)]
 
+# таблица взрывов
+scenarios_C2 = ['C2П1',
+                'C2П2',
+                'C2П3',
+                'C2П4']
+
+sub_masses_C2 = [10,
+                 20,
+                 30,
+                 40]
+
+heats_C2 = [46000,
+            47000,
+            47500,
+            48800]
+
+velocitis_C2 = [150,
+                160,
+                170,
+                180]
+
+pressures_100 = [120,
+                 10,
+                 50,
+                 325]
+
+pressures_53 = [150,
+                20,
+                100,
+                453]
+
+pressures_28 = [180,
+                30,
+                200,
+                589]
+
+pressures_12 = [200,
+                40,
+                250,
+                698]
+
+pressures_5 = [250,
+               50,
+               300,
+               4123]
+
+pressures_3 = [300,
+               60,
+               698,
+               10258]
+
+men_C2 = ["1/3",
+          "1/6",
+          "1/2",
+          "1/1"]
+
+C2_table_factor = [{'scenario_C2': scenario_C2, 'sub_mass_C2': sub_mass_C2, 'heat_C2': heat_C2,
+                    'velocity_C2': velocity_C2, 'dp_100': dp_100, 'dp_53': dp_53, 'dp_28': dp_28,
+                    'dp_12': dp_12, 'dp_5': dp_5, 'dp_3': dp_3, 'people_C2': people_C2}
+                   for
+                   scenario_C2, sub_mass_C2, heat_C2, velocity_C2, dp_100, dp_53, dp_28, dp_12, dp_5, dp_3, people_C2 in
+                   zip(scenarios_C2, sub_masses_C2, heats_C2, velocitis_C2, pressures_100, pressures_53, pressures_28,
+                       pressures_12, pressures_5, pressures_3, men_C2)]
+
+# таблица пожаров
+scenarios_C1 = ['C1П1',
+                'C1П2',
+                'C1П3',
+                'C1П4']
+
+squares_C1 = [10,
+              20,
+              30,
+              40]
+
+heats_C1 = [25,
+            26,
+            27,
+            28]
+
+burnouts_C1 = [0.06,
+               0.06,
+               0.06,
+               0.06]
+
+intensitis_17 = [120,
+                 10,
+                 50,
+                 325]
+
+intensitis_12 = [150,
+                 20,
+                 100,
+                 453]
+
+intensitis_10 = [180,
+                 30,
+                 200,
+                 589]
+
+intensitis_7 = [200,
+                40,
+                250,
+                698]
+
+intensitis_4 = [250,
+                50,
+                300,
+                4123]
+
+intensitis_1 = [300,
+                60,
+                698,
+                10258]
+
+men_C1 = ["1/3",
+          "1/6",
+          "1/2",
+          "1/1"]
+
+C1_table_factor = [{'scenario_C1': scenario_C1, 'square_C1': square_C1, 'heat_C1': heat_C1,
+                    'burnout_C1': burnout_C1, 'q_17': q_17, 'q_12': q_12, 'q_10': q_10,
+                    'q_7': q_7, 'q_4': q_4, 'q_1': q_1, 'people_C1': people_C1}
+                   for
+                   scenario_C1, square_C1, heat_C1, burnout_C1, q_17, q_12, q_10, q_7, q_4, q_1, people_C1 in
+                   zip(scenarios_C2, squares_C1, heats_C2, burnouts_C1, intensitis_17, intensitis_12, intensitis_10,
+                       intensitis_7, intensitis_4, intensitis_1, men_C1)]
+
+# таблица вспышек
+scenarios_C3 = ['C3П1',
+                'C3П2',
+                'C3П3',
+                'C3П4']
+
+sub_masses_C3 = [10,
+                 20,
+                 30,
+                 40]
+
+heats_C3 = [46000,
+            47000,
+            47500,
+            48800]
+
+radiuses_nkpr_C3 = [150,
+                    160,
+                    170,
+                    180]
+
+radiuses_vsp_C3 = [120,
+                   10,
+                   50,
+                   325]
+
+men_C3 = ["1/3",
+          "1/6",
+          "1/2",
+          "1/1"]
+
+C3_table_factor = [{'scenario_C3': scenario_C3, 'sub_mass_C3': sub_mass_C3, 'heat_C3': heat_C3,
+                    'radius_nkpr_C3': radius_nkpr_C3, 'radius_vsp_C3': radius_vsp_C3, 'people_C3': people_C3}
+                   for
+                   scenario_C3, sub_mass_C3, heat_C3, radius_nkpr_C3, radius_vsp_C3, people_C3 in
+                   zip(scenarios_C3, sub_masses_C3, heats_C3, radiuses_nkpr_C3, radiuses_vsp_C3, men_C3)]
+
 # заполнение шаблона
 context = {'company_name': "ЗАО «Предприятие Кара Алтын»",
            'project_name': "Обустройствo куста скважин №1063 Тавельского нефтяного месторождения",
@@ -155,10 +320,9 @@ context = {'company_name': "ЗАО «Предприятие Кара Алтын�
            'mass_crash_table': mass_crash_table,
            'most_possible': "сценарий А12(27), А12(30) Трубопровод от скв.4722 до БГЗЖ загрязнение окружающей среды,",
            'most_dangerous': "сценарий А12(25), А12(26), А12(28), А12(29) Трубопровод от БГЗЖ К-1063 до т.9 - участок №1 пожар.",
-           'gas_jet': "Тепловое излучение от вертикальных факелов может быть определено, принимая H равным Lf, а d равным Df. "
-                      "Lf – длину факела при струйном горении (м), определяют по формуле: Lf= К·G**0,4 , где G – расход продукта, кг/с; "
-                      "К – эмпирический коэффициент, который при истечении природного газа принято принимать равным 12,5. "
-                      "Ширину факела Df  (м) при струйном горении определяют по формуле: Df= 0,15·Lf.",
+           'C2_table_factor': C2_table_factor,
+           'C1_table_factor': C1_table_factor,
+           'C3_table_factor': C3_table_factor,
 
            }
 
