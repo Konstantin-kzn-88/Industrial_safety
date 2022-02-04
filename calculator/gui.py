@@ -1,42 +1,75 @@
 import os
+from datetime import date
 
-from docxtpl import DocxTemplate
+from docxtpl import DocxTemplate, InlineImage
 from pathlib import Path
+from docx.shared import Mm
 
 path_template = Path(os.getcwd())
 
 doc = DocxTemplate(f'{path_template}\\templates\\temp_rpz.docx')
 
-# Оборудование
-pozitions = ['Трубопровод от скв.4763 до БГЗЖ',
-             'Трубопровод от скв.4762 до БГЗЖ',
-             'Трубопровод от скв.4722 до БГЗЖ',
-             'Трубопровод от БГЗЖ К-1063 до т.9']
+# Оборудование для расчета
+data_for_text = ["ЗАО «Предприятие Кара Алтын»",
+                 "Обустройствo куста скважин №1063 Тавельского нефтяного месторождения",
+                 "55-20",
+                 "12.1.2",
+                 [20, 30, 40, 50, 60, 20, 20, 20, 10],
+                 "Данной проектной документацией предусмотренно многое...",
+                 "В разделе «Автоматизация» предусматривается решение вопросов автоматизации технологических "
+                 "процессов и объектов в объеме основных положений по обустройству нефтяных промыслов",
+                 ]
 
-name_equps = ['Трубопровод, сталь В20',
-              'Трубопровод, сталь В20',
-              'Трубопровод, сталь В20',
-              'Трубопровод, сталь В20']
+data_for_table = [['Трубопровод от скв.4763 до БГЗЖ',
+                   'Трубопровод от скв.4762 до БГЗЖ',
+                   'Трубопровод от скв.4722 до БГЗЖ',
+                   'Емкость Е-1'],  # 0
 
-locations = ['Подземное',
-             'Подземное',
-             'Подземное',
-             'Подземное']
+                  ['Трубопровод, сталь В20',
+                   'Трубопровод, сталь В20',
+                   'Трубопровод, сталь В20',
+                   'Трубопровод, сталь В20'],  # 1
 
-numbers = ['1',
-           '1',
-           '1',
-           '1']
+                  ['Подземное',
+                   'Подземное',
+                   'Подземное',
+                   'Надземное'],  # 2
 
-appointments = ['Транспорт нефти',
-                'Транспорт нефти',
-                'Транспорт нефти',
-                'Транспорт нефти']
+                  ['Транспорт нефти',
+                   'Транспорт нефти',
+                   'Транспорт нефти',
+                   'Хранение нефти'],  # 3
 
-characteristics = ['L = 0,029 км;\nDвн = 89 мм;\nPн = 0,24 МПа;\nPк = 0,24 МПа',
+                  ['L = 0,029 км;\nDвн = 89 мм;\nPн = 0,24 МПа;\nPк = 0,24 МПа',
                    'L = 0,028 км;\nDвн = 89 мм;\nPн = 0,24 МПа;\nPк = 0,24 МПа',
                    'L = 0,027 км;\nDвн = 89 мм;\nPн = 0,24 МПа;\nPк = 0,24 МПа',
-                   'L = 0,026 км;\nDвн = 89 мм;\nPн = 0,24 МПа;\nPк = 0,24 МПа']
+                   'V = 89 м3;\na = 0,8 -;\nP = 0,24 МПа'],  # 4
+
+                  ['Тавельское м.н.',
+                   'Тавельское м.н.',
+                   'Тавельское м.н.',
+                   'УПСВ'],  # 5
+
+                  [0.27, 0.26, 0.25, 1],  # 6
+                  [0.159, 0.158, 0.14, 65],  # 7
+                  [0.25, 0.158, 0.14, 0.36],  # 8
+                  [10, 10, 10, 25],  # 9
+                  ["труба", "труба", "труба", "емкость"]  # 10
+
+                  ]
+
+# Оборудование
+pozitions = data_for_table[0]
+
+name_equps = data_for_table[1]
+
+locations = data_for_table[2]
+
+numbers = ["1" for _ in range(0, len(pozitions))]
+
+appointments = data_for_table[3]
+
+characteristics = data_for_table[4]
 
 equp_table = [{'pozition': pozition, 'name_equp': name_equp, 'location': location, 'number': number,
                'appointment': appointment, 'characteristic': characteristic}
@@ -44,39 +77,19 @@ equp_table = [{'pozition': pozition, 'name_equp': name_equp, 'location': locatio
               zip(pozitions, name_equps, locations, numbers, appointments, characteristics)]
 
 # Распредление опасного вещества
-components = ['Тавельское м.н.',
-              'Тавельское м.н.',
-              'Тавельское м.н.',
-              'Тавельское м.н.']
-pozitions_with_sub = ['Трубопровод от скв.4763 до БГЗЖ, нефть',
-                      'Трубопровод от скв.4762 до БГЗЖ, нефть',
-                      'Трубопровод от скв.4722 до БГЗЖ, нефть',
-                      'Трубопровод от БГЗЖ К-1063 до т.9, нефть']
+components = data_for_table[5]
 
-lenghts_or_num = ['0.27 км',
-                  '0.26 км',
-                  '0.25 км',
-                  '0.24 км']
+pozitions_with_sub = [i + ', нефть' for i in data_for_table[0]]
 
-quantitis = [0.159,
-             0.158,
-             0.14,
-             0.13]
+lenghts_or_num = [(str(i) + " км") if i != 1 else 1 for i in data_for_table[6]]
 
-states = ['Ж.ф.+п.г.ф.',
-          'Ж.ф.+п.г.ф.',
-          'Ж.ф.+п.г.ф.',
-          'Ж.ф.+п.г.ф.']
+quantitis = data_for_table[7]
 
-pressures = ['0,25',
-             '0,26',
-             '0,29',
-             '1,31']
+states = ['Ж.ф.' if i != 1 else 'Ж.ф.+п.г.ф.' for i in data_for_table[6]]
 
-temperatures = ['10',
-                '11',
-                '12',
-                '15']
+pressures = data_for_table[8]
+
+temperatures = data_for_table[9]
 
 mass_sub_table = [{'component': component, 'pozition_with_sub': pozition_with_sub, 'lenght_or_num': lenght_or_num,
                    'quantity': quantity,
@@ -85,50 +98,49 @@ mass_sub_table = [{'component': component, 'pozition_with_sub': pozition_with_su
                   zip(components, pozitions_with_sub, lenghts_or_num, quantitis, states, pressures, temperatures)]
 
 # индексы оборудования при обозначении сценария
-indexs = ['1',
-          '2',
-          '3',
-          '4']
+indexs = [i + 1 for i in range(0, len(pozitions))]
 
 index_table = [{'pozition': pozition, 'index': index}
                for pozition, index in
                zip(pozitions, indexs)]
 
 # массы вещества участвующего в аварии
-scenarios = ['C1П1',
-             'C2П1',
-             'C3П1',
-             'C4П1']
+scenarios = []
+for i in indexs:
+    scenarios += scenarios + [f"С1П{i}", f"С2П{i}", f"С3П{i}", f"С4П{i}"] + \
+                 [f"С1ТР{i}", f"С2ТР{i}", f"С3ТР{i}", f"С4ТР{i}"] + \
+                 [f"С1СВ{i}", f"С2СВ{i}", f"С3СВ{i}", f"С4СВ{i}"]
 
-frequencis = ['5e-3',
-              '3e-3',
-              '6e-3',
-              '1e-3']
+frequencis = []
+for i in indexs:
+    frequencis += frequencis + [i if i == 'труба' else 3E-7 in data_for_table[10], f"С2П{i}", f"С3П{i}", f"С4П{i}"] + \
+                 [f"С1ТР{i}", f"С2ТР{i}", f"С3ТР{i}", f"С4ТР{i}"] + \
+                 [f"С1СВ{i}", f"С2СВ{i}", f"С3СВ{i}", f"С4СВ{i}"]
 
 damaging_factors = ['Тепловое излучение',
                     'Ударная волна',
                     'Тепловое излучение',
-                    'Воздействие поллютанта']
+                    'Воздействие поллютанта'] * len(scenarios)
 
 effects = ['Термический ожог',
            'Поражение избыточным давлением',
            'Термический ожог',
-           'Загрязнение окружающей среды']
+           'Загрязнение окружающей среды'] * len(scenarios)
 
 sub_mass_alls = [20,
                  30,
                  40,
-                 50]
+                 50]* len(scenarios)
 
 sub_mass_parts = [2,
                   3,
                   4,
-                  5]
+                  5]* len(scenarios)
 
 mass_crash_table = [{'scenario': scenario, 'frequency': frequency, 'damaging_factor': damaging_factor,
                      'effect': effect, 'sub_mass_all': sub_mass_all, 'sub_mass_part': sub_mass_part}
                     for scenario, frequency, damaging_factor, effect, sub_mass_all, sub_mass_part in
-                    zip(scenarios, frequencis, damaging_factors, effects, sub_mass_alls, sub_mass_parts)]
+                    zip(scenarios, frequencis, damaging_factors, effects, sub_mass_alls, sub_mass_parts)]* len(scenarios)
 
 # таблица взрывов
 scenarios_C2 = ['C2П1',
@@ -295,27 +307,130 @@ C3_table_factor = [{'scenario_C3': scenario_C3, 'sub_mass_C3': sub_mass_C3, 'hea
                    scenario_C3, sub_mass_C3, heat_C3, radius_nkpr_C3, radius_vsp_C3, people_C3 in
                    zip(scenarios_C3, sub_masses_C3, heats_C3, radiuses_nkpr_C3, radiuses_vsp_C3, men_C3)]
 
+# таблица ущерба
+scenarios_damage = ['C3П1',
+                    'C3П2',
+                    'C3П3',
+                    'C3П4']
+
+straights = [10,
+             20,
+             30,
+             40]
+
+localizations = [46000,
+                 47000,
+                 47500,
+                 48800]
+
+economics = [150,
+             160,
+             170,
+             180]
+
+works = [120,
+         10,
+         50,
+         325]
+
+indirects = [120,
+             10,
+             50,
+             325]
+
+ecologys = [120,
+            10,
+            50,
+            325]
+
+sums_damage = [120,
+               10,
+               50,
+               325]
+
+damage_table = [{'scenario_damage': scenario_damage, 'straight': straight, 'localization': localization,
+                 'economic': economic, 'work': work, 'indirect': indirect, 'ecology': ecology, 'sum_damage': sum_damage}
+                for
+                scenario_damage, straight, localization, economic, work, indirect, ecology, sum_damage in
+                zip(scenarios_damage, straights, localizations, economics, works, indirects, ecologys, sums_damage)]
+
+# таблица результатов расчета риска
+scenarios_risk = ['C3П1',
+                  'C3П2',
+                  'C3П3',
+                  'C3П4']
+
+frequencies_risk = ['5e-3',
+                    '3e-3',
+                    '6e-3',
+                    '1e-3']
+
+sums_damage_risk = [120,
+                    10,
+                    50,
+                    325]
+
+maths_expectation = [120,
+                     10,
+                     50,
+                     325]
+
+men_dead = ["1/3",
+            "1/6",
+            "1/2",
+            "1/1"]
+
+men_injured = ["1/3",
+               "1/6",
+               "1/2",
+               "1/1"]
+
+risk_table = [{'scenario_risk': scenario_risk, 'frequency_risk': frequency_risk, 'sum_damage_risk': sum_damage_risk,
+               'math_expectation': math_expectation, 'people_dead': people_dead, 'people_injured': people_injured}
+              for
+              scenario_risk, frequency_risk, sum_damage_risk, math_expectation, people_dead, people_injured in
+              zip(scenarios_risk, frequencies_risk, sums_damage_risk, maths_expectation, men_dead, men_injured)]
+
+# таблица инд. и коллективного риска
+pozitions_res = ['Трубопровод от скв.4763 до БГЗЖ',
+                 'Трубопровод от скв.4762 до БГЗЖ',
+                 'Трубопровод от скв.4722 до БГЗЖ',
+                 'Трубопровод от БГЗЖ К-1063 до т.9']
+
+maths_ind = ['5e-3',
+             '3e-3',
+             '6e-3',
+             '1e-3']
+
+maths_koll = ['5e-3',
+              '3e-3',
+              '6e-3',
+              '1e-3']
+
+result_table = [{'pozition_res': pozition_res, 'math_ind': math_ind, 'math_koll': math_koll, }
+                for pozition_res, math_ind, math_koll in
+                zip(pozitions_res, maths_ind, maths_koll)]
+
 # заполнение шаблона
-context = {'company_name': "ЗАО «Предприятие Кара Алтын»",
-           'project_name': "Обустройствo куста скважин №1063 Тавельского нефтяного месторождения",
-           'project_shifr': "55-20",
-           'tom_shifr': "12.1.2",
-           'year': "2021",
-           'water_cut': 20,
-           'sulfur': 32,
-           'resins': 22,
-           'asphalt': 12,
-           'paraffin': 52,
-           'density': 850,
-           'viscosity': 33,
-           'hydrogen_sulfide ': "0,05",
-           'density_gas': "1,25",
-           'project_description': "Данной проектной документацией предусмотренно многое...",
+context = {'company_name': data_for_text[0],
+           'project_name': data_for_text[1],
+           'project_shifr': data_for_text[2],
+           'tom_shifr': data_for_text[3],
+           'year': date.today().year,
+           'water_cut': data_for_text[4][0],
+           'sulfur': data_for_text[4][1],
+           'resins': data_for_text[4][2],
+           'asphalt': data_for_text[4][3],
+           'paraffin': data_for_text[4][4],
+           'density': data_for_text[4][5],
+           'viscosity': data_for_text[4][6],
+           'hydrogen_sulfide ': data_for_text[4][7],
+           'density_gas': data_for_text[4][8],
+           'project_description': data_for_text[5],
            'equp_table': equp_table,
            'mass_sub_table': mass_sub_table,
            'sum_sub': sum(quantitis),
-           'automation': "В разделе «Автоматизация» предусматривается решение вопросов автоматизации технологических "
-                         "процессов и объектов в объеме основных положений по обустройству нефтяных промыслов",
+           'automation': data_for_text[6],
            'index_table': index_table,
            'mass_crash_table': mass_crash_table,
            'most_possible': "сценарий А12(27), А12(30) Трубопровод от скв.4722 до БГЗЖ загрязнение окружающей среды,",
@@ -323,6 +438,11 @@ context = {'company_name': "ЗАО «Предприятие Кара Алтын�
            'C2_table_factor': C2_table_factor,
            'C1_table_factor': C1_table_factor,
            'C3_table_factor': C3_table_factor,
+           'damage_table': damage_table,
+           'risk_table': risk_table,
+           'result_table': result_table,
+           'fn': InlineImage(doc, f'{path_template}\\templates\\fn.jpg', width=Mm(160)),
+           'fq': InlineImage(doc, f'{path_template}\\templates\\fq.jpg', width=Mm(160))
 
            }
 
