@@ -6,8 +6,23 @@ from docxtpl import DocxTemplate, InlineImage
 from pathlib import Path
 from docx.shared import Mm
 import numbers
+# Мои импортированные классы
+from evaporation import class_evaporation_liguid
+from event_tree import class_event_tree
+from probability import class_probability
+from tvs_explosion import class_tvs_explosion
+from strait_fire import class_strait_fire
+from lower_concentration import class_lower_concentration
+from damage import class_damage
 
 TIME_EVAPORATED = 3600  # 3600 секунд, время испарения
+MASS_BURNOUT_RATE = 0.06  # массовая скорость выгорания
+WIND_VELOCITY = 1  # скорость ветра, м/с
+DAMAGE_EXPLOSION = 0.6
+DAMAGE_STRAIT = 1
+DAMAGE_LCLP = 0.3
+DAMAGE_ELIMINATION = 0.1
+PART = 0.3
 
 
 class Device:
@@ -24,12 +39,15 @@ class Device:
         self.temperature = float(char_set["temperature"])
         self.volume = float(char_set["volume"])
         self.completion = float(char_set["completion"])
-        self.steam_pressure = float(char_set["steam_pressure"])
-        self.spreading = float(char_set["steam_pressure"])
+        self.spreading = float(char_set["spreading"])
+        self.type = int(char_set["type"])
+        self.place = float(char_set["place"])
+        self.death_person = int(char_set['death_person'])
+        self.injured_person = int(char_set['injured_person'])
         # Характеристики вещества
         self.density = float(char_set["density"])
-        self.density_gas = float(char_set["steam_pressure"])
-        self.water_cut = float(char_set["density_gas"])
+        self.density_gas = float(char_set["density_gas"])
+        self.water_cut = float(char_set["water_cut"])
         self.sulfur = float(char_set["sulfur"])
         self.resins = float(char_set["resins"])  # смолы
         self.asphalt = float(char_set["asphalt"])  # асфальтены
@@ -38,11 +56,255 @@ class Device:
         self.hydrogen_sulfide = float(char_set["hydrogen_sulfide"])  # сероводород
         self.molecular_weight = float(char_set["molecular_weight"])
         self.steam_pressure = float(char_set["steam_pressure"])
+        self.flash_temperature = float(char_set["flash_temperature"])
+        self.boiling_temperature = float(char_set["boiling_temperature"])
+        self.class_substance = int(char_set["class_substance"])
+        self.view_space = int(char_set["view_space"])
+        self.heat_of_combustion = int(char_set["heat_of_combustion"])
+        self.sigma = int(char_set["sigma"])
+        self.energy_level = int(char_set["energy_level"])
+        self.lower_concentration = float(char_set['lower_concentration'])
+        self.cost_sub = float(char_set['cost_sub'])
         # Расчетные значения
-        self.volume_sub = self.emergency_volume()  # аварийный объем
-        self.mass_sub = self.volume_sub / self.density # аварийная масса выброса
-        self.square_sub = self.volume_sub * self.spreading  # аварийная плащодь пролива
-        self.evaporated_sub = self.intensity() * self.square_sub * TIME_EVAPORATED # количество испарившегося вещества
+        self.calc_full()
+        self.calc_part()
+
+
+
+        self.group_risk = 0
+        self.individual_risk = 0
+
+    def calc_full(self):
+        # 1. Расчетные значения для полного пролива
+        # 1.1. Объем, масса, площадь, количество испарившегося вещества
+        self.volume_sub = self.emergency_volume()  # аварийный объем, м3
+        self.mass_sub = self.volume_sub * self.density  # аварийная масса выброса, кг
+        self.square_sub = self.volume_sub * self.spreading  # аварийная плащодь пролива, м2
+        self.evaporated_sub = class_evaporation_liguid.Evapor_liqud().evapor_liguid(self.molecular_weight,
+                                                                                    self.steam_pressure,
+                                                                                    self.square_sub,
+                                                                                    self.mass_sub,
+                                                                                    TIME_EVAPORATED)  # количество исп. вещества, кг
+        # 1.2.  Сценарии аварии при полном разрушении
+        self.probability = class_probability.Probability().probability_rosteh(self.type, self.length)
+        self.scenarios_full = class_event_tree.Event_tree().event_tree_inflammable(self.flash_temperature,
+                                                                                   0,
+                                                                                   self.probability[0]
+                                                                                   )
+        # 1.3. Расчет зон действия ПФ
+        # 1.3.1. Взрыв
+        self.explosion_radius = class_tvs_explosion.Explosion().explosion_class_zone(self.class_substance,
+                                                                                     self.view_space,
+                                                                                     self.evaporated_sub * self.place,
+                                                                                     self.heat_of_combustion,
+                                                                                     self.sigma,
+                                                                                     self.energy_level
+                                                                                     )
+        # 1.3.2. Пожар пролива
+        self.fire_radius = class_strait_fire.Strait_fire().termal_class_zone(self.square_sub,
+                                                                             MASS_BURNOUT_RATE,
+                                                                             self.molecular_weight,
+                                                                             self.boiling_temperature,
+                                                                             WIND_VELOCITY
+                                                                             )
+        # 1.3.3 Пожар вспышка
+        self.lclp_radius = class_lower_concentration.LCLP().culculation_R_LCLP(self.evaporated_sub,
+                                                                               self.molecular_weight,
+                                                                               self.boiling_temperature,
+                                                                               self.lower_concentration
+                                                                               )
+        # 1.4 Ущерб
+        self.explosion_damage = class_damage.Damage().damage_array(self.volume * DAMAGE_EXPLOSION,
+                                                                   self.diameter,
+                                                                   self.length * 1000 * DAMAGE_EXPLOSION,
+                                                                   self.cost_sub,
+                                                                   DAMAGE_EXPLOSION,
+                                                                   self.death_person, self.injured_person,
+                                                                   self.evaporated_sub / 1000,
+                                                                   self.evaporated_sub / 1000,
+                                                                   self.square_sub
+                                                                   )
+
+        self.strait_damage = class_damage.Damage().damage_array(self.volume * DAMAGE_STRAIT,
+                                                                self.diameter,
+                                                                self.length * 1000 * DAMAGE_STRAIT,
+                                                                self.cost_sub,
+                                                                DAMAGE_STRAIT,
+                                                                1, 1,
+                                                                self.evaporated_sub / 1000,
+                                                                self.mass_sub / 1000,
+                                                                self.square_sub
+                                                                )
+
+        self.lclp_damage = class_damage.Damage().damage_array(self.volume * DAMAGE_LCLP,
+                                                              self.diameter,
+                                                              self.length * 1000 * DAMAGE_LCLP,
+                                                              self.cost_sub,
+                                                              DAMAGE_LCLP,
+                                                              1, 1,
+                                                              self.evaporated_sub / 1000,
+                                                              self.evaporated_sub / 1000,
+                                                              self.square_sub
+                                                              )
+
+        self.elimination_damage = class_damage.Damage().damage_array(self.volume * DAMAGE_ELIMINATION,
+                                                                     self.diameter,
+                                                                     self.length * 1000 * DAMAGE_ELIMINATION,
+                                                                     self.cost_sub,
+                                                                     DAMAGE_ELIMINATION,
+                                                                     0, 0,
+                                                                     self.evaporated_sub / 1000,
+                                                                     0,
+                                                                     self.square_sub
+                                                                     )
+        # 1.5 Риск
+        self.explosion_risk = (self.name,
+                               "C1",
+                               self.scenarios_full[0],
+                               self.explosion_damage[-1],
+                               "{:.2e}".format(float(self.scenarios_full[0]) * self.explosion_damage[-1]),
+                               self.death_person,
+                               self.injured_person)
+
+        self.strait_risk = (self.name,
+                            "C2",
+                            self.scenarios_full[1],
+                            self.strait_damage[-1],
+                            "{:.2e}".format(float(self.scenarios_full[1]) * self.strait_damage[-1]),
+                            1,
+                            1)
+
+        self.lslp_risk = (self.name,
+                          "C3",
+                          self.scenarios_full[2],
+                          self.lclp_damage[-1],
+                          "{:.2e}".format(float(self.scenarios_full[2]) * self.lclp_damage[-1]),
+                          1,
+                          1)
+
+        self.elimination_risk = (self.name,
+                                 "C4",
+                                 self.scenarios_full[3],
+                                 self.elimination_damage[-1],
+                                 "{:.2e}".format(float(self.scenarios_full[3]) * self.elimination_damage[-1]),
+                                 0,
+                                 0)
+
+    def calc_part(self):
+        # 1. Расчетные значения для частичного пролива
+        # 1.1. Объем, масса, площадь, количество испарившегося вещества
+        self.volume_sub_part = self.emergency_volume()*PART  # аварийный объем, м3
+        self.mass_sub_part = self.volume_sub_part * self.density  # аварийная масса выброса, кг
+        self.square_sub_part = self.volume_sub_part * self.spreading  # аварийная плащодь пролива, м2
+        self.evaporated_sub_part = class_evaporation_liguid.Evapor_liqud().evapor_liguid(self.molecular_weight,
+                                                                                    self.steam_pressure,
+                                                                                    self.square_sub_part,
+                                                                                    self.mass_sub_part,
+                                                                                    TIME_EVAPORATED)  # количество исп. вещества, кг
+        # 1.2.  Сценарии аварии при полном разрушении
+        self.probability_part = class_probability.Probability().probability_rosteh(self.type, self.length)
+        self.scenarios_part = class_event_tree.Event_tree().event_tree_inflammable(self.flash_temperature,
+                                                                                   0,
+                                                                                   self.probability_part[1]
+                                                                                   )
+        # 1.3. Расчет зон действия ПФ
+        # 1.3.1. Взрыв
+        self.explosion_radius_part = class_tvs_explosion.Explosion().explosion_class_zone(self.class_substance,
+                                                                                     self.view_space,
+                                                                                     self.evaporated_sub_part * self.place,
+                                                                                     self.heat_of_combustion,
+                                                                                     self.sigma,
+                                                                                     self.energy_level
+                                                                                     )
+        # 1.3.2. Пожар пролива
+        self.fire_radius_part = class_strait_fire.Strait_fire().termal_class_zone(self.square_sub_part,
+                                                                             MASS_BURNOUT_RATE,
+                                                                             self.molecular_weight,
+                                                                             self.boiling_temperature,
+                                                                             WIND_VELOCITY
+                                                                             )
+        # 1.3.3 Пожар вспышка
+        self.lclp_radius_part = class_lower_concentration.LCLP().culculation_R_LCLP(self.evaporated_sub_part,
+                                                                               self.molecular_weight,
+                                                                               self.boiling_temperature,
+                                                                               self.lower_concentration
+                                                                               )
+        # 1.4 Ущерб
+        self.explosion_damage_part = class_damage.Damage().damage_array(self.volume * DAMAGE_EXPLOSION*PART,
+                                                                   self.diameter,
+                                                                   self.length * 1000 * DAMAGE_EXPLOSION*PART,
+                                                                   self.cost_sub,
+                                                                   DAMAGE_EXPLOSION,
+                                                                  0, 1,
+                                                                   self.evaporated_sub_part / 1000,
+                                                                   self.evaporated_sub_part / 1000,
+                                                                   self.square_sub_part
+                                                                   )
+
+        self.strait_damage_part = class_damage.Damage().damage_array(self.volume * DAMAGE_STRAIT*PART,
+                                                                self.diameter,
+                                                                self.length * 1000 * DAMAGE_STRAIT*PART,
+                                                                self.cost_sub,
+                                                                DAMAGE_STRAIT,
+                                                                0, 1,
+                                                                self.evaporated_sub_part / 1000,
+                                                                self.mass_sub_part / 1000,
+                                                                self.square_sub_part
+                                                                )
+
+        self.lclp_damage_part = class_damage.Damage().damage_array(self.volume * DAMAGE_LCLP*PART,
+                                                              self.diameter,
+                                                              self.length * 1000 * DAMAGE_LCLP*PART,
+                                                              self.cost_sub,
+                                                              DAMAGE_LCLP,
+                                                              0, 1,
+                                                              self.evaporated_sub_part / 1000,
+                                                              self.evaporated_sub_part / 1000,
+                                                              self.square_sub_part
+                                                              )
+
+        self.elimination_damage_part = class_damage.Damage().damage_array(self.volume * DAMAGE_ELIMINATION*PART,
+                                                                     self.diameter,
+                                                                     self.length * 1000 * DAMAGE_ELIMINATION*PART,
+                                                                     self.cost_sub,
+                                                                     DAMAGE_ELIMINATION,
+                                                                     0, 0,
+                                                                     self.evaporated_sub_part / 1000,
+                                                                     0,
+                                                                     self.square_sub_part
+                                                                     )
+        # 1.5 Риск
+        self.explosion_risk_part = (self.name,
+                               "C1част",
+                               self.scenarios_part[0],
+                               self.explosion_damage_part[-1],
+                               "{:.2e}".format(float(self.scenarios_part[0]) * self.explosion_damage_part[-1]),
+                               0,
+                               1)
+
+        self.strait_risk_part = (self.name,
+                            "C2част",
+                            self.scenarios_part[1],
+                            self.strait_damage_part[-1],
+                            "{:.2e}".format(float(self.scenarios_part[1]) * self.strait_damage_part[-1]),
+                            0,
+                            1)
+
+        self.lslp_risk_part = (self.name,
+                          "C3част",
+                          self.scenarios_part[2],
+                          self.lclp_damage_part[-1],
+                          "{:.2e}".format(float(self.scenarios_part[2]) * self.lclp_damage_part[-1]),
+                          1,
+                          1)
+
+        self.elimination_risk_part = (self.name,
+                                 "C4",
+                                 self.scenarios_part[3],
+                                 self.elimination_damage_part[-1],
+                                 "{:.2e}".format(float(self.scenarios_part[3]) * self.elimination_damage_part[-1]),
+                                 0,
+                                 0)
 
     def emergency_volume(self):
         """
@@ -51,11 +313,9 @@ class Device:
         """
         volume = 0
         if self.length == 0 and self.volume == 0:
-            raise ValueError("Объем емкости и длина трубы не могут быть нулевыми!")
+            raise ValueError("Объем емкости и длина трубы не могут быть нулевыми одновременно!")
         if self.length != 0 and self.volume != 0:
-            raise ValueError("Объем емкости и длина трубы не могут быть одновременно заполненными!")
-        if self.length != 0 and self.volume != 0:
-            raise ValueError("Объем емкости и длина трубы не могут быть одновременно заполненными!")
+            raise ValueError("Емкости и трубы не могут быть одновременно заполненными!")
         # Если трубопровод, то есть длина не равно 0
         if self.length != 0:
             volume = math.pi * math.pow(self.diameter / 2000, 2) * (self.length * 1000)
@@ -63,9 +323,6 @@ class Device:
         if self.volume != 0:
             volume = self.volume * self.completion
         return volume
-
-    def intensity(self):
-        return math.pow(10, -6) * math.sqrt(self.molecular_weight) * self.steam_pressure
 
 
 class Dangerous_object:
@@ -86,213 +343,82 @@ class Dangerous_object:
     def append_device(self, device: Union[Device]) -> None:
         self.list_device.append(device)
 
-    # def device_char_table(self):
-    #     """Функция создания таблицы с характеристиками опасных веществ"""
-    #
-    #     def create_str(i: int) -> str:
-    #         """Подфункция формирования строки с характеристиками для таблицы"""
-    #         char = ''
-    #         if self.list_device[i].length != 0:
-    #             char = char + "L = " + str(self.list_device[i].length) + " км\n"
-    #         if self.list_device[i].diameter != 0:
-    #             char = char + "D = " + str(self.list_device[i].diameter) + " мм\n"
-    #         if self.list_device[i].pressure != 0:
-    #             char = char + "P = " + str(self.list_device[i].pressure) + " МПа\n"
-    #         if self.list_device[i].volume != 0:
-    #             char = char + "V = " + str(self.list_device[i].volume) + " м3\n"
-    #         if self.list_device[i].completion != 0:
-    #             char = char + "a = " + str(self.list_device[i].completion) + " -\n"
-    #         return char
-    #
-    #     pozitions = [self.list_device[i].name for i in range(0, len(self.list_device))]
-    #     name_equps = [self.list_device[i].material for i in range(0, len(self.list_device))]
-    #     locations = [self.list_device[i].ground for i in range(0, len(self.list_device))]
-    #     numbers = ["1" for _ in range(0, len(self.list_device))]
-    #     appointments = [self.list_device[i].target for i in range(0, len(self.list_device))]
-    #     characteristics = [create_str(i) for i in range(0, len(self.list_device))]
-    #     device_char = [{'pozition': pozition, 'name_equp': name_equp, 'location': location, 'number': number,
-    #                     'appointment': appointment, 'characteristic': characteristic}
-    #                    for pozition, name_equp, location, number, appointment, characteristic in
-    #                    zip(pozitions, name_equps, locations, numbers, appointments, characteristics)]
-    #
-    #     return device_char
-    #
-    # def mass_sub_table(self):
-    #     """Функция создания таблицы с распределением опасного вещества"""
-    #
-    #     def create_num(i: int) -> str:
-    #         """Подфункция формирования строки  с количеством оборудования"""
-    #         char = ''
-    #         if self.list_device[i].length != 0:
-    #             char = char + str(self.list_device[i].length) + " км"
-    #         if self.list_device[i].volume != 0:
-    #             char = "1"
-    #         return char
-    #
-    #     def create_quantity(i: int) -> str:
-    #         """Подфункция формирования строки  с количеством оборудования"""
-    #         quantity = 0
-    #         if self.list_device[i].length != 0:
-    #             volume = math.pi * math.pow(self.list_device[i].diameter / 2000, 2) * (
-    #                     self.list_device[i].length * 1000)
-    #             quantity = volume * self.sub.density / 1000
-    #         if self.list_device[i].volume != 0:
-    #             quantity = self.list_device[i].volume * self.sub.density / 1000 * self.list_device[i].completion + \
-    #                        self.list_device[i].volume * self.sub.density_gas / 1000 * (
-    #                                1 - self.list_device[i].completion)
-    #         # расчетные значения в класс
-    #         self.list_device[i].volume_sub = quantity / (self.sub.density / 1000)
-    #         self.list_device[i].square = self.list_device[i].volume_sub * SPREADING
-    #         self.list_device[i].evaporated = math.pow(10,-6)*math.sqrt(self.sub.)*58
-    #         return str(round(quantity, 1))
-    #
-    #     def create_phase(i: int) -> str:
-    #         """Подфункция формирования строки  с количеством оборудования"""
-    #         char = ''
-    #         if self.list_device[i].length != 0:
-    #             char = "ж.ф."
-    #         if self.list_device[i].volume != 0:
-    #             char = "ж.ф. + г.ф."
-    #         return char
-    #
-    #     components = [self.list_device[i].located for i in range(0, len(self.list_device))]
-    #     pozitions_with_sub = [str(self.list_device[i].name) + ', нефть' for i in range(0, len(self.list_device))]
-    #     lenghts_or_num = [create_num(i) for i in range(0, len(self.list_device))]
-    #     quantitis = [create_quantity(i) for i in range(0, len(self.list_device))]
-    #     states = [create_phase(i) for i in range(0, len(self.list_device))]
-    #     pressures = [self.list_device[i].pressure for i in range(0, len(self.list_device))]
-    #     temperatures = [self.list_device[i].temperature for i in range(0, len(self.list_device))]
-    #
-    #     sub_table = [
-    #         {'component': component, 'pozition_with_sub': pozition_with_sub, 'lenght_or_num': lenght_or_num,
-    #          'quantity': quantity,
-    #          'state': state, 'pressure': pressure, 'temperature': temperature}
-    #         for component, pozition_with_sub, lenght_or_num, quantity, state, pressure, temperature in
-    #         zip(components, pozitions_with_sub, lenghts_or_num, quantitis, states, pressures, temperatures)]
-    #
-    #     return sub_table, sum([float(i) for i in quantitis])
-    #
-    # def index_table(self):
-    #     # индексы оборудования при обозначении сценария
-    #     indexs = [i + 1 for i in range(0, len(self.list_device))]
-    #     pozitions = [self.list_device[i].name for i in range(0, len(self.list_device))]
-    #
-    #     index_table = [{'pozition': pozition, 'index': index}
-    #                    for pozition, index in
-    #                    zip(pozitions, indexs)]
-    #
-    #     return index_table
-    #
-    # def mass_table(self):
-    #     indexs = [i + 1 for i in range(0, len(self.list_device))]
-    #     # TODO
-    #     # TODO
-    #     # TODO
-    #     # TODO # TODO # TODO # TODO # TODO # TODO
-    #     scenarios = []
-    #     for i in indexs:
-    #         scenarios += scenarios + [f"С1П{i}", f"С2П{i}", f"С3П{i}", f"С4П{i}"] + \
-    #                      [f"С1ТР{i}", f"С2ТР{i}", f"С3ТР{i}", f"С4ТР{i}"] + \
-    #                      [f"С1СВ{i}", f"С2СВ{i}", f"С3СВ{i}", f"С4СВ{i}"]
-    #
-    #     frequencis = []
-    #     for i in indexs:
-    #         frequencis += frequencis + [i if i == 'труба' else 3E-7 in data_for_table[10], f"С2П{i}", f"С3П{i}",
-    #                                     f"С4П{i}"] + \
-    #                       [f"С1ТР{i}", f"С2ТР{i}", f"С3ТР{i}", f"С4ТР{i}"] + \
-    #                       [f"С1СВ{i}", f"С2СВ{i}", f"С3СВ{i}", f"С4СВ{i}"]
-    #
-    #     damaging_factors = ['Тепловое излучение',
-    #                         'Ударная волна',
-    #                         'Тепловое излучение',
-    #                         'Воздействие поллютанта'] * len(scenarios)
-    #
-    #     effects = ['Термический ожог',
-    #                'Поражение избыточным давлением',
-    #                'Термический ожог',
-    #                'Загрязнение окружающей среды'] * len(scenarios)
-    #
-    #     sub_mass_alls = [20,
-    #                      30,
-    #                      40,
-    #                      50] * len(scenarios)
-    #
-    #     sub_mass_parts = [2,
-    #                       3,
-    #                       4,
-    #                       5] * len(scenarios)
-    #
-    #     mass_table = [{'scenario': scenario, 'frequency': frequency, 'damaging_factor': damaging_factor,
-    #                    'effect': effect, 'sub_mass_all': sub_mass_all, 'sub_mass_part': sub_mass_part}
-    #                   for scenario, frequency, damaging_factor, effect, sub_mass_all, sub_mass_part in
-    #                   zip(scenarios, frequencis, damaging_factors, effects, sub_mass_alls, sub_mass_parts)] * len(
-    #         scenarios)
-
 
 if __name__ == '__main__':
-    # 1. Инициализируем вещество и объект
-    sub = Substance()
-    start_obj = Dangerous_object()
-    # создадим оборудование
-    dev1 = Device()
-    # Добавим оборудование в список
-    start_obj.append_device(dev1, sub)
+    # 1. Создадим новые объекты
+    tube_dict = {
+        'name': 'Трубопровод от К-2 до т.вр.12',
+        'located': 'Зимнее м.н.',
+        'material': 'B20',
+        'ground': 'Подземное',
+        'target': 'Траспортирование нефти',
+        'length': 0.899,  # км
+        'diameter': 114,  # мм
+        'pressure': 0.24,  # кПа
+        'temperature': 30,  # град.С
+        'volume': 0,  # м3
+        'completion': 1,  # - (степень заполнения)
+        'spreading': 20,  # м^-1
+        'type': 0,  # тип оборудования
+        'place': 0.1,  # коэф.участия во взрыве
+        'density': 850,  # кг/м3
+        'density_gas': 2,  # кг/м3
+        'water_cut': 20,  # %
+        'sulfur': 34,  # %
+        'resins': 2,  # % смолы
+        'asphalt': 3,  # % асфальтены
+        'paraffin': 4,  # %
+        'viscosity': 220,  # МПа*с
+        'hydrogen_sulfide': 32,  # % сероводород
+        'molecular_weight': 210,  # кг/кмоль
+        'steam_pressure': 28,  # кПа
+        'flash_temperature': -28,  # град.С
+        'boiling_temperature': -20,  # град.С
+        'class_substance': 3,  # класс вещества по детонационной ячейки
+        'view_space': 4,  # класс окрущающего пространства
+        'heat_of_combustion': 46000,  # кДж/кг
+        'sigma': 7,  # -
+        'energy_level': 1,  # -
+        'lower_concentration': 1.8,
+        'cost_sub': 0.06,
+        'death_person': 1,
+        'injured_person': 2,
 
-    # path_template = Path(os.getcwd())
-    # doc = DocxTemplate(f'{path_template}\\templates\\temp_rpz.docx')
-    # заполнение шаблона
-    # sub_table, quantitis = start_obj.mass_sub_table()
-    # context = {'company_name': start_obj.name,
-    #            'project_name': start_obj.project,
-    #            'project_shifr': start_obj.number,
-    #            'tom_shifr': start_obj.code,
-    #            'year': date.today().year,
-    #            'water_cut': start_obj.sub.water_cut,
-    #            'sulfur': start_obj.sub.sulfur,
-    #            'resins': start_obj.sub.resins,
-    #            'asphalt': start_obj.sub.asphalt,
-    #            'paraffin': start_obj.sub.paraffin,
-    #            'density': start_obj.sub.density,
-    #            'viscosity': start_obj.sub.viscosity,
-    #            'hydrogen_sulfide ': start_obj.sub.hydrogen_sulfide,
-    #            'density_gas': start_obj.sub.density_gas,
-    #            'project_description': start_obj.description,
-    #            'equp_table': start_obj.device_char_table(),
-    #            'mass_sub_table': sub_table,
-    #            'sum_sub': quantitis,
-    #            'automation': start_obj.automation,
-    #            'index_table': start_obj.index_table(),
-    #            'mass_crash_table': mass_crash_table,
-    #            'most_possible': "сценарий А12(27), А12(30) Трубопровод от скв.4722 до БГЗЖ загрязнение окружающей среды,",
-    #            'most_dangerous': "сценарий А12(25), А12(26), А12(28), А12(29) Трубопровод от БГЗЖ К-1063 до т.9 - участок №1 пожар.",
-    #            'C2_table_factor': C2_table_factor,
-    #            'C1_table_factor': C1_table_factor,
-    #            'C3_table_factor': C3_table_factor,
-    #            'damage_table': damage_table,
-    #            'risk_table': risk_table,
-    #            'result_table': result_table,
-    #            'fn': InlineImage(doc, f'{path_template}\\templates\\fn.jpg', width=Mm(160)),
-    #            'fq': InlineImage(doc, f'{path_template}\\templates\\fq.jpg', width=Mm(160))
-    #
-    #            }
-    #
-    # doc.render(context)
-    # path_save = os.environ['USERPROFILE']
-    # doc.save(f'{path_save}\\Desktop\\generated_rpz.docx')
-
-# name = 'Трубопровод от скв.4763 до БГЗЖ'
-#         located = "Тавельское м.н."
-#         material = 'Трубопровод, сталь В20'
-#         ground = 'Подземное'
-#         target = 'Транспорт нефти'
-#         length = 0.899
-#         diameter = 114
-#         pressure = 0.25
-#         temperature = 10
-#         volume = 0
-#         completion = 0  # степень заполнения
-#         steam_pressure = 35  # давление пара
-#         # расчетные значения
-#         volume_sub = 0
-#         square = 0
-#         evaporated = 0
+    }
+    test_tube = Device(tube_dict)
+    print(test_tube.volume_sub)
+    print(test_tube.mass_sub)
+    print(test_tube.square_sub)
+    print(test_tube.evaporated_sub)
+    print(test_tube.probability)
+    print(test_tube.scenarios_full)
+    print(test_tube.explosion_radius)
+    print(test_tube.fire_radius)
+    print(test_tube.lclp_radius)
+    print(test_tube.explosion_damage)
+    print(test_tube.strait_damage)
+    print(test_tube.lclp_damage)
+    print(test_tube.elimination_damage)
+    print(test_tube.explosion_risk)
+    print(test_tube.strait_risk)
+    print(test_tube.lslp_risk)
+    print(test_tube.elimination_risk)
+    print(20*'-')
+    print(20 * '-')
+    print(test_tube.volume_sub_part)
+    print(test_tube.mass_sub_part)
+    print(test_tube.square_sub_part)
+    print(test_tube.evaporated_sub_part)
+    print(test_tube.probability_part)
+    print(test_tube.scenarios_part)
+    print(test_tube.explosion_radius_part)
+    print(test_tube.fire_radius_part)
+    print(test_tube.lclp_radius_part)
+    print(test_tube.explosion_damage_part)
+    print(test_tube.strait_damage_part)
+    print(test_tube.lclp_damage_part)
+    print(test_tube.elimination_damage_part)
+    print(test_tube.explosion_risk_part)
+    print(test_tube.strait_risk_part)
+    print(test_tube.lslp_risk_part)
+    print(test_tube.elimination_risk_part)

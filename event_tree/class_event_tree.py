@@ -1,6 +1,6 @@
 class Event_tree:
 
-    def event_tree_inflammable(self, flash_temperature: float, flow_rate: float, probability: float) -> list:
+    def event_tree_inflammable(self, flash_temperature: float, flow_rate: float, probability: float) -> tuple:
         """
 
         Parametrs:
@@ -59,6 +59,6 @@ class Event_tree:
         no_overpressure = "{:.2e}".format(probability * (1 - a) * b * (1 - c))
         elimination = "{:.2e}".format(probability * (1 - a) * (1 - b))
 
-        scenarios_array = [instant_ignition, overpressure, no_overpressure, elimination]
+        scenarios_array = (instant_ignition, overpressure, no_overpressure, elimination)
 
         return scenarios_array
