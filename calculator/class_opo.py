@@ -413,9 +413,9 @@ class Dangerous_object:
             for item in self.list_device:
                 for add_fr in item.scenarios_full:
                     frequencis.append(add_fr)
-                sub_mass_alls.extend([round(item.mass_sub,2) for _ in range(4)])
-                sub_mass_parts.extend([round(item.mass_sub,2), round(item.evaporated_sub,2),
-                                       round(item.mass_sub,2), "-"])
+                sub_mass_alls.extend([round(item.mass_sub, 2) for _ in range(4)])
+                sub_mass_parts.extend([round(item.mass_sub, 2), round(item.evaporated_sub, 2),
+                                       round(item.mass_sub, 2), "-"])
                 name_equps.extend([item.name for _ in range(4)])
 
             effects = ['Термический ожог',
@@ -423,8 +423,7 @@ class Dangerous_object:
                        'Термический ожог',
                        'Загрязнение окружающей среды'] * len(scenarios)
 
-
-            mass_crash_table = [{'scenario': scenario, 'name_equp':name_equp, 'frequency': frequency,
+            mass_crash_table = [{'scenario': scenario, 'name_equp': name_equp, 'frequency': frequency,
                                  'effect': effect, 'sub_mass_all': sub_mass_all, 'sub_mass_part': sub_mass_part}
                                 for scenario, name_equp, frequency, effect, sub_mass_all, sub_mass_part in
                                 zip(scenarios, name_equps, frequencis, effects, sub_mass_alls,
@@ -441,22 +440,23 @@ class Dangerous_object:
             for item in self.list_device:
                 for add_fr in item.scenarios_part:
                     frequencis_part.append(add_fr)
-                sub_mass_alls_part.extend([round(item.mass_sub_part,2) for _ in range(4)])
-                sub_mass_parts_part.extend([round(item.mass_sub_part,2), round(item.evaporated_sub_part,2),
-                                       round(item.mass_sub_part,2), "-"])
+                sub_mass_alls_part.extend([round(item.mass_sub_part, 2) for _ in range(4)])
+                sub_mass_parts_part.extend([round(item.mass_sub_part, 2), round(item.evaporated_sub_part, 2),
+                                            round(item.mass_sub_part, 2), "-"])
                 name_equps_part.extend([item.name for _ in range(4)])
 
             effects_part = ['Термический ожог',
-                       'Избыточное давление',
-                       'Термический ожог',
-                       'Загрязнение окружающей среды'] * len(scenarios_part)
+                            'Избыточное давление',
+                            'Термический ожог',
+                            'Загрязнение окружающей среды'] * len(scenarios_part)
 
-
-            mass_crash_table_part = [{'scenario_part': scenario_part, 'name_equp_part':name_equp_part, 'frequency_part': frequency_part,
-                                 'effect_part': effect_part, 'sub_mass_all_part': sub_mass_all_part, 'sub_mass_part_part': sub_mass_part_part}
-                                for scenario_part, name_equp_part, frequency_part, effect_part, sub_mass_all_part, sub_mass_part_part in
-                                zip(scenarios_part, name_equps_part, frequencis_part, effects_part, sub_mass_alls_part,
-                                    sub_mass_parts_part)]
+            mass_crash_table_part = [
+                {'scenario_part': scenario_part, 'name_equp_part': name_equp_part, 'frequency_part': frequency_part,
+                 'effect_part': effect_part, 'sub_mass_all_part': sub_mass_all_part,
+                 'sub_mass_part_part': sub_mass_part_part}
+                for scenario_part, name_equp_part, frequency_part, effect_part, sub_mass_all_part, sub_mass_part_part in
+                zip(scenarios_part, name_equps_part, frequencis_part, effects_part, sub_mass_alls_part,
+                    sub_mass_parts_part)]
 
             return mass_crash_table_part
 
@@ -505,15 +505,15 @@ class Dangerous_object:
                 pressures_3.append(item.explosion_radius[5])
                 men_C2.append('1/1')
 
-
-            C2_table_factor = [{'scenario_C2': scenario_C2, 'name_equp':name_equp, 'sub_mass_C2': sub_mass_C2, 'heat_C2': heat_C2,
-                                'dp_100': dp_100, 'dp_53': dp_53, 'dp_28': dp_28,
-                                'dp_12': dp_12, 'dp_5': dp_5, 'dp_3': dp_3, 'people_C2': people_C2}
-                               for
-                               scenario_C2, name_equp, sub_mass_C2, heat_C2, dp_100, dp_53, dp_28, dp_12, dp_5, dp_3, people_C2
-                               in
-                               zip(scenarios_C2, name_equps, sub_masses_C2, heats_C2, pressures_100, pressures_53,
-                                   pressures_28, pressures_12, pressures_5, pressures_3, men_C2)]
+            C2_table_factor = [
+                {'scenario_C2': scenario_C2, 'name_equp': name_equp, 'sub_mass_C2': sub_mass_C2, 'heat_C2': heat_C2,
+                 'dp_100': dp_100, 'dp_53': dp_53, 'dp_28': dp_28,
+                 'dp_12': dp_12, 'dp_5': dp_5, 'dp_3': dp_3, 'people_C2': people_C2}
+                for
+                scenario_C2, name_equp, sub_mass_C2, heat_C2, dp_100, dp_53, dp_28, dp_12, dp_5, dp_3, people_C2
+                in
+                zip(scenarios_C2, name_equps, sub_masses_C2, heats_C2, pressures_100, pressures_53,
+                    pressures_28, pressures_12, pressures_5, pressures_3, men_C2)]
 
             return C2_table_factor
 
@@ -544,52 +544,134 @@ class Dangerous_object:
                 pressures_3.append(item.explosion_radius_part[5])
                 men_C2.append('0/1')
 
-
-            C2_table_factor_part = [{'scenario_C2': scenario_C2, 'name_equp':name_equp, 'sub_mass_C2': sub_mass_C2, 'heat_C2': heat_C2,
-                                'dp_100': dp_100, 'dp_53': dp_53, 'dp_28': dp_28,
-                                'dp_12': dp_12, 'dp_5': dp_5, 'dp_3': dp_3, 'people_C2': people_C2}
-                               for
-                               scenario_C2, name_equp, sub_mass_C2, heat_C2, dp_100, dp_53, dp_28, dp_12, dp_5, dp_3, people_C2
-                               in
-                               zip(scenarios_C2, name_equps, sub_masses_C2, heats_C2, pressures_100, pressures_53,
-                                   pressures_28, pressures_12, pressures_5, pressures_3, men_C2)]
+            C2_table_factor_part = [
+                {'scenario_C2': scenario_C2, 'name_equp': name_equp, 'sub_mass_C2': sub_mass_C2, 'heat_C2': heat_C2,
+                 'dp_100': dp_100, 'dp_53': dp_53, 'dp_28': dp_28,
+                 'dp_12': dp_12, 'dp_5': dp_5, 'dp_3': dp_3, 'people_C2': people_C2}
+                for
+                scenario_C2, name_equp, sub_mass_C2, heat_C2, dp_100, dp_53, dp_28, dp_12, dp_5, dp_3, people_C2
+                in
+                zip(scenarios_C2, name_equps, sub_masses_C2, heats_C2, pressures_100, pressures_53,
+                    pressures_28, pressures_12, pressures_5, pressures_3, men_C2)]
 
             return C2_table_factor_part
 
         def fire_crash():
             # таблица пожаров
-            scenarios_C1 = []
-
+            scenarios_C1 = ["C1"] * len(self.list_device)
+            name_equps = []
             squares_C1 = []
-            heats_C1 = []
-
-            burnouts_C1 = []
-
-            intensitis_17 = []
-
-            intensitis_12 = []
-
             intensitis_10 = []
-
             intensitis_7 = []
-
             intensitis_4 = []
-
             intensitis_1 = []
-
             men_C1 = []
+            for item in self.list_device:
+                name_equps.append(item.name)
+                squares_C1.append(round(item.square_sub, 2))
+                intensitis_10.append(item.fire_radius[0])
+                intensitis_7.append(item.fire_radius[1])
+                intensitis_4.append(item.fire_radius[2])
+                intensitis_1.append(item.fire_radius[3])
+                men_C1.append(f'{item.death_person}/{item.injured_person}')
 
-            C1_table_factor = [{'scenario_C1': scenario_C1, 'square_C1': square_C1, 'heat_C1': heat_C1,
-                                'burnout_C1': burnout_C1, 'q_17': q_17, 'q_12': q_12, 'q_10': q_10,
-                                'q_7': q_7, 'q_4': q_4, 'q_1': q_1, 'people_C1': people_C1}
+            C1_table_factor = [{'scenario_C1': scenario_C1, 'name_equp': name_equp, 'square_C1': square_C1,
+                                'q_10': q_10, 'q_7': q_7, 'q_4': q_4, 'q_1': q_1, 'people_C1': people_C1}
                                for
-                               scenario_C1, square_C1, heat_C1, burnout_C1, q_17, q_12, q_10, q_7, q_4, q_1, people_C1
+                               scenario_C1, name_equp, square_C1, q_10, q_7, q_4, q_1, people_C1
                                in
-                               zip(scenarios_C1, squares_C1, heats_C1, burnouts_C1, intensitis_17, intensitis_12,
-                                   intensitis_10,
+                               zip(scenarios_C1, name_equps, squares_C1, intensitis_10,
                                    intensitis_7, intensitis_4, intensitis_1, men_C1)]
 
             return C1_table_factor
+
+        def fire_crash_part():
+            # таблица пожаров
+            scenarios_C1 = ["C1_1"] * len(self.list_device)
+            name_equps = []
+            squares_C1 = []
+            intensitis_10 = []
+            intensitis_7 = []
+            intensitis_4 = []
+            intensitis_1 = []
+            men_C1 = []
+            for item in self.list_device:
+                name_equps.append(item.name)
+                squares_C1.append(round(item.square_sub_part, 2))
+                intensitis_10.append(item.fire_radius_part[0])
+                intensitis_7.append(item.fire_radius_part[1])
+                intensitis_4.append(item.fire_radius_part[2])
+                intensitis_1.append(item.fire_radius_part[3])
+                men_C1.append(f'0/1')
+
+            C1_table_factor_part = [{'scenario_C1': scenario_C1, 'name_equp': name_equp, 'square_C1': square_C1,
+                                     'q_10': q_10, 'q_7': q_7, 'q_4': q_4, 'q_1': q_1, 'people_C1': people_C1}
+                                    for
+                                    scenario_C1, name_equp, square_C1, q_10, q_7, q_4, q_1, people_C1
+                                    in
+                                    zip(scenarios_C1, name_equps, squares_C1, intensitis_10,
+                                        intensitis_7, intensitis_4, intensitis_1, men_C1)]
+
+            return C1_table_factor_part
+
+        def lclp_crash():
+            # таблица вспышек
+            scenarios_C3 = ["C3"] * len(self.list_device)
+            name_equps = []
+            sub_masses_C3 = []
+            heats_C3 = []
+            radiuses_nkpr_C3 = []
+            radiuses_vsp_C3 = []
+            men_C3 = []
+
+            for item in self.list_device:
+                name_equps.append(item.name)
+                sub_masses_C3.append(round(item.evaporated_sub,2))
+                heats_C3.append(item.heat_of_combustion)
+                radiuses_nkpr_C3.append(item.lclp_radius[0])
+                radiuses_vsp_C3.append(item.lclp_radius[1])
+                men_C3.append('1/1')
+
+
+            C3_table_factor = [
+                {'scenario_C3': scenario_C3, 'name_equp': name_equp, 'sub_mass_C3': sub_mass_C3, 'heat_C3': heat_C3,
+                 'radius_nkpr_C3': radius_nkpr_C3, 'radius_vsp_C3': radius_vsp_C3,
+                 'people_C3': people_C3}
+                for
+                scenario_C3, name_equp, sub_mass_C3, heat_C3, radius_nkpr_C3, radius_vsp_C3, people_C3 in
+                zip(scenarios_C3, name_equps, sub_masses_C3, heats_C3, radiuses_nkpr_C3, radiuses_vsp_C3, men_C3)]
+
+            return C3_table_factor
+
+        def lclp_crash_part():
+            # таблица вспышек
+            scenarios_C3 = ["C3_1"] * len(self.list_device)
+            name_equps = []
+            sub_masses_C3 = []
+            heats_C3 = []
+            radiuses_nkpr_C3 = []
+            radiuses_vsp_C3 = []
+            men_C3 = []
+
+            for item in self.list_device:
+                name_equps.append(item.name)
+                sub_masses_C3.append(round(item.evaporated_sub_part,2))
+                heats_C3.append(item.heat_of_combustion)
+                radiuses_nkpr_C3.append(item.lclp_radius_part[0])
+                radiuses_vsp_C3.append(item.lclp_radius_part[1])
+                men_C3.append('0/1')
+
+
+            C3_table_factor_part = [
+                {'scenario_C3': scenario_C3, 'name_equp': name_equp, 'sub_mass_C3': sub_mass_C3, 'heat_C3': heat_C3,
+                 'radius_nkpr_C3': radius_nkpr_C3, 'radius_vsp_C3': radius_vsp_C3,
+                 'people_C3': people_C3}
+                for
+                scenario_C3, name_equp, sub_mass_C3, heat_C3, radius_nkpr_C3, radius_vsp_C3, people_C3 in
+                zip(scenarios_C3, name_equps, sub_masses_C3, heats_C3, radiuses_nkpr_C3, radiuses_vsp_C3, men_C3)]
+
+            return C3_table_factor_part
+
 
         if len(self.list_device) == 0:
             return
@@ -603,6 +685,10 @@ class Dangerous_object:
         most_possible = most_possible()
         C2_table_factor = explosion_crash()
         C2_table_factor_part = explosion_crash_part()
+        C1_table_factor = fire_crash()
+        C1_table_factor_part = fire_crash_part()
+        C3_table_factor = lclp_crash()
+        C3_table_factor_part = lclp_crash_part()
 
         context = {'company_name': self.name,
                    'project_name': self.project,
@@ -629,6 +715,10 @@ class Dangerous_object:
                    'most_dangerous': most_dangerous,
                    'C2_table_factor': C2_table_factor,
                    'C2_table_factor_part': C2_table_factor_part,
+                   'C1_table_factor': C1_table_factor,
+                   'C1_table_factor_part': C1_table_factor_part,
+                   'C3_table_factor': C3_table_factor,
+                   'C3_table_factor_part': C3_table_factor_part,
 
                    }
         doc.render(context)
