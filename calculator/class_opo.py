@@ -672,6 +672,61 @@ class Dangerous_object:
 
             return C3_table_factor_part
 
+        def damage():
+            # таблица ущерба
+            scenarios_damage = ["C1", "C2", "C3", "C4"] * len(self.list_device)
+            name_equps = []
+            straights = []
+            localizations = []
+            economics = []
+            works = []
+            indirects = []
+            ecologys = []
+            sums_damage = []
+
+            for item in self.list_device:
+                name_equps.extend([item.name for _ in range(4)])
+                straights.append(item.strait_damage[0])
+                localizations.append(item.strait_damage[1])
+                economics.append(item.strait_damage[2])
+                works.append(item.strait_damage[8])
+                indirects.append(item.strait_damage[3])
+                ecologys.append(item.strait_damage[7])
+                sums_damage.append(item.strait_damage[9])
+
+                straights.append(item.explosion_damage[0])
+                localizations.append(item.explosion_damage[1])
+                economics.append(item.explosion_damage[2])
+                works.append(item.explosion_damage[8])
+                indirects.append(item.explosion_damage[3])
+                ecologys.append(item.explosion_damage[7])
+                sums_damage.append(item.explosion_damage[9])
+
+                straights.append(item.lclp_damage[0])
+                localizations.append(item.lclp_damage[1])
+                economics.append(item.lclp_damage[2])
+                works.append(item.lclp_damage[8])
+                indirects.append(item.lclp_damage[3])
+                ecologys.append(item.lclp_damage[7])
+                sums_damage.append(item.lclp_damage[9])
+
+                straights.append(item.elimination_damage[0])
+                localizations.append(item.elimination_damage[1])
+                economics.append(item.elimination_damage[2])
+                works.append(item.elimination_damage[8])
+                indirects.append(item.elimination_damage[3])
+                ecologys.append(item.elimination_damage[7])
+                sums_damage.append(item.elimination_damage[9]) # TODO!!!!!!!!!!!
+
+            damage_table = [{'scenario_damage': scenario_damage, 'name_equp': name_equp, 'straight': straight, 'localization': localization,
+                             'economic': economic, 'work': work, 'indirect': indirect, 'ecology': ecology,
+                             'sum_damage': sum_damage}
+                            for
+                            scenario_damage, name_equp, straight, localization, economic, work, indirect, ecology, sum_damage in
+                            zip(scenarios_damage, name_equps, straights, localizations, economics, works, indirects, ecologys,
+                                sums_damage)]
+
+            return damage_table
 
         if len(self.list_device) == 0:
             return
@@ -689,6 +744,7 @@ class Dangerous_object:
         C1_table_factor_part = fire_crash_part()
         C3_table_factor = lclp_crash()
         C3_table_factor_part = lclp_crash_part()
+        damage_table = damage()
 
         context = {'company_name': self.name,
                    'project_name': self.project,
@@ -719,6 +775,7 @@ class Dangerous_object:
                    'C1_table_factor_part': C1_table_factor_part,
                    'C3_table_factor': C3_table_factor,
                    'C3_table_factor_part': C3_table_factor_part,
+                   'damage_table': damage_table,
 
                    }
         doc.render(context)
