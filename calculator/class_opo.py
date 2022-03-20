@@ -134,7 +134,6 @@ class Device:
                                                                    self.square_sub
                                                                    )
 
-
         self.strait_damage = class_damage.Damage().damage_array(self.volume * DAMAGE_STRAIT,
                                                                 self.diameter,
                                                                 self.length * 1000 * DAMAGE_STRAIT,
@@ -145,7 +144,6 @@ class Device:
                                                                 self.mass_sub / 1000,
                                                                 self.square_sub
                                                                 )
-
 
         self.lclp_damage = class_damage.Damage().damage_array(self.volume * DAMAGE_LCLP,
                                                               self.diameter,
@@ -158,7 +156,6 @@ class Device:
                                                               self.square_sub
                                                               )
 
-
         self.elimination_damage = class_damage.Damage().damage_array(self.volume * DAMAGE_ELIMINATION,
                                                                      self.diameter,
                                                                      self.length * 1000 * DAMAGE_ELIMINATION,
@@ -170,23 +167,22 @@ class Device:
                                                                      self.square_sub
                                                                      )
 
-
         # 1.5 Риск
         self.explosion_risk = (self.name,
                                "C1",
                                self.scenarios_full[0],
                                self.explosion_damage[-1],
                                "{:.2e}".format(float(self.scenarios_full[0]) * self.explosion_damage[-1]),
-                               self.death_person,
-                               self.injured_person)
+                               1,
+                               1)
 
         self.strait_risk = (self.name,
                             "C2",
                             self.scenarios_full[1],
                             self.strait_damage[-1],
                             "{:.2e}".format(float(self.scenarios_full[1]) * self.strait_damage[-1]),
-                            1,
-                            1)
+                            self.death_person,
+                            self.injured_person)
 
         self.lslp_risk = (self.name,
                           "C3",
@@ -255,7 +251,6 @@ class Device:
                                                                         self.square_sub_part
                                                                         )
 
-
         self.strait_damage_part = class_damage.Damage().damage_array(self.volume * DAMAGE_STRAIT * PART,
                                                                      self.diameter,
                                                                      self.length * 1000 * DAMAGE_STRAIT * PART,
@@ -320,6 +315,10 @@ class Device:
                                       "{:.2e}".format(float(self.scenarios_part[3]) * self.elimination_damage_part[-1]),
                                       0,
                                       0)
+        print(self.explosion_risk_part)
+        print(self.strait_risk_part)
+        print(self.lslp_risk_part)
+        print(self.elimination_risk_part)
 
     def emergency_volume(self):
         """
@@ -632,12 +631,11 @@ class Dangerous_object:
 
             for item in self.list_device:
                 name_equps.append(item.name)
-                sub_masses_C3.append(round(item.evaporated_sub,2))
+                sub_masses_C3.append(round(item.evaporated_sub, 2))
                 heats_C3.append(item.heat_of_combustion)
                 radiuses_nkpr_C3.append(item.lclp_radius[0])
                 radiuses_vsp_C3.append(item.lclp_radius[1])
                 men_C3.append('1/1')
-
 
             C3_table_factor = [
                 {'scenario_C3': scenario_C3, 'name_equp': name_equp, 'sub_mass_C3': sub_mass_C3, 'heat_C3': heat_C3,
@@ -661,12 +659,11 @@ class Dangerous_object:
 
             for item in self.list_device:
                 name_equps.append(item.name)
-                sub_masses_C3.append(round(item.evaporated_sub_part,2))
+                sub_masses_C3.append(round(item.evaporated_sub_part, 2))
                 heats_C3.append(item.heat_of_combustion)
                 radiuses_nkpr_C3.append(item.lclp_radius_part[0])
                 radiuses_vsp_C3.append(item.lclp_radius_part[1])
                 men_C3.append('0/1')
-
 
             C3_table_factor_part = [
                 {'scenario_C3': scenario_C3, 'name_equp': name_equp, 'sub_mass_C3': sub_mass_C3, 'heat_C3': heat_C3,
@@ -724,12 +721,15 @@ class Dangerous_object:
                 ecologys.append(item.elimination_damage[7])
                 sums_damage.append(item.elimination_damage[9])
 
-            damage_table = [{'scenario_damage': scenario_damage, 'name_equp': name_equp, 'straight': straight, 'localization': localization,
+            damage_table = [{'scenario_damage': scenario_damage, 'name_equp': name_equp, 'straight': straight,
+                             'localization': localization,
                              'economic': economic, 'work': work, 'indirect': indirect, 'ecology': ecology,
                              'sum_damage': sum_damage}
                             for
-                            scenario_damage, name_equp, straight, localization, economic, work, indirect, ecology, sum_damage in
-                            zip(scenarios_damage, name_equps, straights, localizations, economics, works, indirects, ecologys,
+                            scenario_damage, name_equp, straight, localization, economic, work, indirect, ecology, sum_damage
+                            in
+                            zip(scenarios_damage, name_equps, straights, localizations, economics, works, indirects,
+                                ecologys,
                                 sums_damage)]
 
             return damage_table
@@ -780,15 +780,108 @@ class Dangerous_object:
                 ecologys.append(item.elimination_damage_part[7])
                 sums_damage.append(item.elimination_damage_part[9])
 
-            damage_table_part = [{'scenario_damage': scenario_damage, 'name_equp': name_equp, 'straight': straight, 'localization': localization,
-                             'economic': economic, 'work': work, 'indirect': indirect, 'ecology': ecology,
-                             'sum_damage': sum_damage}
-                            for
-                            scenario_damage, name_equp, straight, localization, economic, work, indirect, ecology, sum_damage in
-                            zip(scenarios_damage, name_equps, straights, localizations, economics, works, indirects, ecologys,
-                                sums_damage)]
+            damage_table_part = [{'scenario_damage': scenario_damage, 'name_equp': name_equp, 'straight': straight,
+                                  'localization': localization,
+                                  'economic': economic, 'work': work, 'indirect': indirect, 'ecology': ecology,
+                                  'sum_damage': sum_damage}
+                                 for
+                                 scenario_damage, name_equp, straight, localization, economic, work, indirect, ecology, sum_damage
+                                 in
+                                 zip(scenarios_damage, name_equps, straights, localizations, economics, works,
+                                     indirects, ecologys,
+                                     sums_damage)]
 
             return damage_table_part
+
+        def math_risk():
+            # таблица результатов расчета риска
+            scenarios_risk = ["C1", "C2", "C3", "C4"] * len(self.list_device)
+            name_equps =[]
+            frequencies_risk = []
+            sums_damage_risk = []
+            maths_expectation = []
+            men_dead = []
+            men_injured = []
+
+            for item in self.list_device:
+                name_equps.extend([item.name for _ in range(4)])
+                frequencies_risk.append(item.explosion_risk[2])
+                sums_damage_risk.append(item.explosion_risk[3])
+                maths_expectation.append(item.explosion_risk[4])
+                men_dead.append(item.explosion_risk[5])
+                men_injured.append(item.explosion_risk[6])
+
+                frequencies_risk.append(item.strait_risk[2])
+                sums_damage_risk.append(item.strait_risk[3])
+                maths_expectation.append(item.strait_risk[4])
+                men_dead.append(item.strait_risk[5])
+                men_injured.append(item.strait_risk[6])
+
+                frequencies_risk.append(item.lslp_risk[2])
+                sums_damage_risk.append(item.lslp_risk[3])
+                maths_expectation.append(item.lslp_risk[4])
+                men_dead.append(item.lslp_risk[5])
+                men_injured.append(item.lslp_risk[6])
+
+                frequencies_risk.append(item.elimination_risk[2])
+                sums_damage_risk.append(item.elimination_risk[3])
+                maths_expectation.append(item.elimination_risk[4])
+                men_dead.append(item.elimination_risk[5])
+                men_injured.append(item.elimination_risk[6])
+
+            risk_table = [
+                {'scenario_risk': scenario_risk, 'name_equp': name_equp, 'frequency_risk': frequency_risk, 'sum_damage_risk': sum_damage_risk,
+                 'math_expectation': math_expectation, 'people_dead': people_dead, 'people_injured': people_injured}
+                for
+                scenario_risk, name_equp, frequency_risk, sum_damage_risk, math_expectation, people_dead, people_injured in
+                zip(scenarios_risk, name_equps, frequencies_risk, sums_damage_risk, maths_expectation, men_dead, men_injured)]
+
+            return risk_table
+
+        def math_risk_part():
+            # таблица результатов расчета риска
+            scenarios_risk = ["C1_1", "C2_1", "C3_1", "C4_1"] * len(self.list_device)
+            name_equps =[]
+            frequencies_risk = []
+            sums_damage_risk = []
+            maths_expectation = []
+            men_dead = []
+            men_injured = []
+
+            for item in self.list_device:
+                name_equps.extend([item.name for _ in range(4)])
+                frequencies_risk.append(item.explosion_risk_part[2])
+                sums_damage_risk.append(item.explosion_risk_part[3])
+                maths_expectation.append(item.explosion_risk_part[4])
+                men_dead.append(item.explosion_risk_part[5])
+                men_injured.append(item.explosion_risk_part[6])
+
+                frequencies_risk.append(item.strait_risk_part[2])
+                sums_damage_risk.append(item.strait_risk_part[3])
+                maths_expectation.append(item.strait_risk_part[4])
+                men_dead.append(item.strait_risk_part[5])
+                men_injured.append(item.strait_risk_part[6])
+
+                frequencies_risk.append(item.lslp_risk_part[2])
+                sums_damage_risk.append(item.lslp_risk_part[3])
+                maths_expectation.append(item.lslp_risk_part[4])
+                men_dead.append(item.lslp_risk_part[5])
+                men_injured.append(item.lslp_risk_part[6])
+
+                frequencies_risk.append(item.elimination_risk_part[2])
+                sums_damage_risk.append(item.elimination_risk_part[3])
+                maths_expectation.append(item.elimination_risk_part[4])
+                men_dead.append(item.elimination_risk_part[5])
+                men_injured.append(item.elimination_risk_part[6])
+
+            risk_table_part = [
+                {'scenario_risk': scenario_risk, 'name_equp': name_equp, 'frequency_risk': frequency_risk, 'sum_damage_risk': sum_damage_risk,
+                 'math_expectation': math_expectation, 'people_dead': people_dead, 'people_injured': people_injured}
+                for
+                scenario_risk, name_equp, frequency_risk, sum_damage_risk, math_expectation, people_dead, people_injured in
+                zip(scenarios_risk, name_equps, frequencies_risk, sums_damage_risk, maths_expectation, men_dead, men_injured)]
+
+            return risk_table_part
 
 
         if len(self.list_device) == 0:
@@ -809,6 +902,9 @@ class Dangerous_object:
         C3_table_factor_part = lclp_crash_part()
         damage_table = damage()
         damage_table_part = damage_part()
+        risk_table = math_risk()
+        risk_table_part = math_risk_part()
+
 
         context = {'company_name': self.name,
                    'project_name': self.project,
@@ -841,6 +937,8 @@ class Dangerous_object:
                    'C3_table_factor_part': C3_table_factor_part,
                    'damage_table': damage_table,
                    'damage_table_part': damage_table_part,
+                   'risk_table': risk_table,
+                   'risk_table_part': risk_table_part,
 
                    }
         doc.render(context)
