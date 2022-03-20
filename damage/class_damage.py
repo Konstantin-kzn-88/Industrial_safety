@@ -226,7 +226,7 @@ class     Damage:
         direct_damage = self.direct_damage(volume, diametr, lenght, cost_sub, part_sub)
         liquidation_failures = round(direct_damage * 0.1,2)
         se_damage = self.se_damage(death_person, injured_person)
-        consequential_damage = (se_damage + direct_damage)*0.125
+        consequential_damage = round((se_damage + direct_damage)*0.125,2)
         # ________________Ecological____________________________________
         damage_air = self.damage_air(m_out_spill)               #от испарения
         damage_air_fire = self.damage_air_fire(m_in_spill)      #от горения
