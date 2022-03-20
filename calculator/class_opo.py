@@ -315,10 +315,6 @@ class Device:
                                       "{:.2e}".format(float(self.scenarios_part[3]) * self.elimination_damage_part[-1]),
                                       0,
                                       0)
-        print(self.explosion_risk_part)
-        print(self.strait_risk_part)
-        print(self.lslp_risk_part)
-        print(self.elimination_risk_part)
 
     def emergency_volume(self):
         """
@@ -883,6 +879,22 @@ class Dangerous_object:
 
             return risk_table_part
 
+        def result():
+            # таблица инд. и коллективного риска
+            pozitions_res = []
+            maths_ind = []
+            maths_koll = []
+
+            for item in self.list_device:
+                pozitions_res.append(item.name)
+                maths_ind.append(item.individual_risk)
+                maths_koll.append(item.group_risk)
+
+            result_table = [{'pozition_res': pozition_res, 'math_ind': math_ind, 'math_koll': math_koll, }
+                            for pozition_res, math_ind, math_koll in
+                            zip(pozitions_res, maths_ind, maths_koll)]
+            return result_table
+
 
         if len(self.list_device) == 0:
             return
@@ -904,6 +916,8 @@ class Dangerous_object:
         damage_table_part = damage_part()
         risk_table = math_risk()
         risk_table_part = math_risk_part()
+        result_table = result()
+
 
 
         context = {'company_name': self.name,
@@ -939,6 +953,9 @@ class Dangerous_object:
                    'damage_table_part': damage_table_part,
                    'risk_table': risk_table,
                    'risk_table_part': risk_table_part,
+                   'result_table': result_table,
+                   'fn': InlineImage(doc, f'{path_template}\\templates\\fn.jpg', width=Mm(160)),
+                   'fq': InlineImage(doc, f'{path_template}\\templates\\fq.jpg', width=Mm(160)),
 
                    }
         doc.render(context)
