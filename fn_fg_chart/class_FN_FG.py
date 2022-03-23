@@ -77,7 +77,7 @@ class FN_FG_chart:
         fig.set_figheight(8)
 
         # plt.show()
-        plt.savefig(f'{path}\\fn.jpg')
+        plt.savefig(f'{self.path}\\fn.jpg')
 
 
     def fg_chart(self, data: list):
@@ -152,7 +152,7 @@ class FN_FG_chart:
         fig.set_figheight(8)
 
         # plt.show()
-        plt.savefig(f'{path}\\fg.jpg')
+        plt.savefig(f'{self.path}\\fg.jpg')
 
 
 if __name__ == '__main__':

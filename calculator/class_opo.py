@@ -14,6 +14,8 @@ from tvs_explosion import class_tvs_explosion
 from strait_fire import class_strait_fire
 from lower_concentration import class_lower_concentration
 from damage import class_damage
+from fn_fg_chart import class_FN_FG
+
 
 TIME_EVAPORATED = 3600  # 3600 секунд, время испарения
 MASS_BURNOUT_RATE = 0.06  # массовая скорость выгорания
@@ -792,7 +794,7 @@ class Dangerous_object:
         def math_risk():
             # таблица результатов расчета риска
             scenarios_risk = ["C1", "C2", "C3", "C4"] * len(self.list_device)
-            name_equps =[]
+            name_equps = []
             frequencies_risk = []
             sums_damage_risk = []
             maths_expectation = []
@@ -826,18 +828,21 @@ class Dangerous_object:
                 men_injured.append(item.elimination_risk[6])
 
             risk_table = [
-                {'scenario_risk': scenario_risk, 'name_equp': name_equp, 'frequency_risk': frequency_risk, 'sum_damage_risk': sum_damage_risk,
+                {'scenario_risk': scenario_risk, 'name_equp': name_equp, 'frequency_risk': frequency_risk,
+                 'sum_damage_risk': sum_damage_risk,
                  'math_expectation': math_expectation, 'people_dead': people_dead, 'people_injured': people_injured}
                 for
-                scenario_risk, name_equp, frequency_risk, sum_damage_risk, math_expectation, people_dead, people_injured in
-                zip(scenarios_risk, name_equps, frequencies_risk, sums_damage_risk, maths_expectation, men_dead, men_injured)]
+                scenario_risk, name_equp, frequency_risk, sum_damage_risk, math_expectation, people_dead, people_injured
+                in
+                zip(scenarios_risk, name_equps, frequencies_risk, sums_damage_risk, maths_expectation, men_dead,
+                    men_injured)]
 
             return risk_table
 
         def math_risk_part():
             # таблица результатов расчета риска
             scenarios_risk = ["C1_1", "C2_1", "C3_1", "C4_1"] * len(self.list_device)
-            name_equps =[]
+            name_equps = []
             frequencies_risk = []
             sums_damage_risk = []
             maths_expectation = []
@@ -871,11 +876,14 @@ class Dangerous_object:
                 men_injured.append(item.elimination_risk_part[6])
 
             risk_table_part = [
-                {'scenario_risk': scenario_risk, 'name_equp': name_equp, 'frequency_risk': frequency_risk, 'sum_damage_risk': sum_damage_risk,
+                {'scenario_risk': scenario_risk, 'name_equp': name_equp, 'frequency_risk': frequency_risk,
+                 'sum_damage_risk': sum_damage_risk,
                  'math_expectation': math_expectation, 'people_dead': people_dead, 'people_injured': people_injured}
                 for
-                scenario_risk, name_equp, frequency_risk, sum_damage_risk, math_expectation, people_dead, people_injured in
-                zip(scenarios_risk, name_equps, frequencies_risk, sums_damage_risk, maths_expectation, men_dead, men_injured)]
+                scenario_risk, name_equp, frequency_risk, sum_damage_risk, math_expectation, people_dead, people_injured
+                in
+                zip(scenarios_risk, name_equps, frequencies_risk, sums_damage_risk, maths_expectation, men_dead,
+                    men_injured)]
 
             return risk_table_part
 
@@ -894,6 +902,33 @@ class Dangerous_object:
                             for pozition_res, math_ind, math_koll in
                             zip(pozitions_res, maths_ind, maths_koll)]
             return result_table
+
+        def create_fn():
+            path = f'{path_template}\\templates'
+            fn = class_FN_FG.FN_FG_chart(path)
+            people = []
+            probability = []
+
+            for item in self.list_device:
+                probability.extend([float(i) for i in item.scenarios_full])
+                people.extend([1, item.death_person, 1, 0])
+
+            fn.fn_chart([probability, people])
+
+        def create_fg():
+            path = f'{path_template}\\templates'
+            fg = class_FN_FG.FN_FG_chart(path)
+            money = []
+            probability = []
+
+            for item in self.list_device:
+                probability.extend([float(i) for i in item.scenarios_full])
+                money.extend([item.explosion_damage[-1],
+                              item.strait_damage[-1],
+                              item.lclp_damage[-1],
+                              item.elimination_damage[-1]])
+
+            fg.fg_chart([probability, money])
 
 
         if len(self.list_device) == 0:
@@ -917,7 +952,8 @@ class Dangerous_object:
         risk_table = math_risk()
         risk_table_part = math_risk_part()
         result_table = result()
-
+        create_fg()
+        create_fn()
 
 
         context = {'company_name': self.name,
@@ -955,7 +991,7 @@ class Dangerous_object:
                    'risk_table_part': risk_table_part,
                    'result_table': result_table,
                    'fn': InlineImage(doc, f'{path_template}\\templates\\fn.jpg', width=Mm(160)),
-                   'fq': InlineImage(doc, f'{path_template}\\templates\\fq.jpg', width=Mm(160)),
+                   'fg': InlineImage(doc, f'{path_template}\\templates\\fg.jpg', width=Mm(160)),
 
                    }
         doc.render(context)
@@ -981,7 +1017,7 @@ if __name__ == '__main__':
         'spreading': 20,  # м^-1
         'type': 1,  # тип оборудования
         'place': 0.1,  # коэф.участия во взрыве
-        'death_person': 1,
+        'death_person': 2,
         'injured_person': 2,
         'time_person': 0.33,
         'density': 750,  # кг/м3

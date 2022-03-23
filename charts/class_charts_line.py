@@ -9,6 +9,7 @@
 
 import matplotlib.pyplot as plt
 
+
 class Charts_line:
 
     def single_chart(self, title: str, x_lbl: str, y_lbl: str,
@@ -107,9 +108,9 @@ class Charts_line:
         plt.show()
 
     def quadruple_chart(self, title: str, x_lbl: str, y_lbl_1: str,
-                     y_lbl_2: str, y_lbl_3: str, y_lbl_4: str, x_arr: list, y_arr_1: list,
-                     y_arr_2: list, y_arr_3: list, y_arr_4: list, chart_lbl_1: str,
-                     chart_lbl_2: str, chart_lbl_3: str, chart_lbl_4: str):
+                        y_lbl_2: str, y_lbl_3: str, y_lbl_4: str, x_arr: list, y_arr_1: list,
+                        y_arr_2: list, y_arr_3: list, y_arr_4: list, chart_lbl_1: str,
+                        chart_lbl_2: str, chart_lbl_3: str, chart_lbl_4: str):
         """
 
         :param title: "Зависимости интенсивности излучения"
@@ -157,7 +158,6 @@ class Charts_line:
         plt.legend()
         #
         plt.show()
-
 
 
 if __name__ == '__main__':
