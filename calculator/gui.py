@@ -8,8 +8,36 @@ class Painter(QtWidgets.QMainWindow):
     def __init__(self, parent=None) -> None:
         super().__init__()
         # Иконки
-        self.main_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/painter.png')
+        self.main_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/comp.png')
         tree_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/tree.png')
+
+        paint_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/painter.png')
+
+        db_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/data_base.png')
+        ok_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/ok.png')
+        replace_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/replace.png')
+        save_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/save.png')
+        clear_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/clear.png')
+        del_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/del.png')
+        question_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/question.png')
+        scale_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/scale.png')
+        dist_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/polyline.png')
+        area_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/area.png')
+        object_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/object.png')
+        settings_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/settings.png')
+        draw_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/draw.png')
+        state_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/state.png')
+        tube_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/tube.png')
+        tree_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/tree.png')
+        exit_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/exit.png')
+        info_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/info.png')
+        color_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/color_select.png')
+        excel_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/excel.png')
+        plus_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/plus.png')
+        minus_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/minus.png')
+        dbl_minus_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/double_minus.png')
+        hand_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/hand.png')
+        risk_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/risk.png')
 
         # Главное окно
         self.setGeometry(300, 300, 350, 250)
@@ -50,8 +78,8 @@ class Painter(QtWidgets.QMainWindow):
         self.tab_settings = QtWidgets.QWidget()  # 1. Настройки
         # добавляем "0" таб на вкладку табов
         self.tabs.addTab(self.tab_main, "")  # 0. Главная вкладка с данными
-        # self.tabs.setTabIcon(0, draw_ico)
-        self.tabs.setTabToolTip(0, "Главня вкладка")
+        self.tabs.setTabIcon(0, draw_ico)
+        self.tabs.setTabToolTip(0, "Инструменты")
         self.tab_main.layout = QtWidgets.QFormLayout(self)
 
         # Рамка №1 (то что будет в рамке 1)
@@ -62,11 +90,10 @@ class Painter(QtWidgets.QMainWindow):
 
         # Рамка №2 (то что будет в рамке 2)
         self.type_act = QtWidgets.QComboBox()
-        self.type_act.addItems(["Объект", "Масштаб", "Расстояние", "Площадь"])
-        # self.type_act.setItemIcon(0, object_ico)
-        # self.type_act.setItemIcon(1, scale_ico)
-        # self.type_act.setItemIcon(2, dist_ico)
-        # self.type_act.setItemIcon(3, area_ico)
+        self.type_act.addItems(["Масштаб", "Расстояние", "Площадь"])
+        self.type_act.setItemIcon(0, scale_ico)
+        self.type_act.setItemIcon(1, dist_ico)
+        self.type_act.setItemIcon(2, area_ico)
         # self.type_act.activated[str].connect(self.select_type_act)
         self.result_lbl = QtWidgets.QLabel()
         self.draw_btn = QtWidgets.QPushButton("Применить")
@@ -74,18 +101,6 @@ class Painter(QtWidgets.QMainWindow):
         self.draw_btn.setCheckable(True)
         self.draw_btn.setChecked(False)
 
-        # Рамка №3 (то что будет в рамке 3)
-        self.obj_name = QtWidgets.QLineEdit()
-        self.obj_name.setPlaceholderText("Наименование объекта")
-        self.obj_name.setToolTip("Е-1")
-        self.obj_coord = QtWidgets.QLineEdit()
-        self.obj_coord.setPlaceholderText("Координаты объекта")
-        self.obj_coord.setToolTip("[x,y]")
-        self.obj_coord.setReadOnly(True)
-        self.obj_type = QtWidgets.QComboBox()
-        self.obj_type.addItems(["Линейный", "Стационарный"])
-        # self.obj_type.setItemIcon(0, tube_ico)
-        # self.obj_type.setItemIcon(1, state_ico)
 
         # Упаковываем все на вкладку таба "0" (делаем все в QGroupBox
         # т.к. элементы будут добавляться и их
@@ -105,27 +120,18 @@ class Painter(QtWidgets.QMainWindow):
         layout_act.addRow("", self.draw_btn)
         layout_act.addRow("", self.result_lbl)
         GB_act.setLayout(layout_act)
-        # Рамка №3
-        layout_obj = QtWidgets.QFormLayout(self)
-        GB_obj = QtWidgets.QGroupBox('Объект')
-        GB_obj.setStyleSheet("QGroupBox { font-weight : bold; }")
-        layout_obj.addRow("", self.obj_name)
-        layout_obj.addRow("", self.obj_coord)
-        layout_obj.addRow("", self.obj_type)
-        GB_obj.setLayout(layout_obj)
 
         # Собираем рамки
         self.tab_main.layout.addWidget(GB_scale)
         self.tab_main.layout.addWidget(GB_act)
-        self.tab_main.layout.addWidget(GB_obj)
 
         # Размещаем на табе
         self.tab_main.setLayout(self.tab_main.layout)
 
         # добавляем "1" таб на вкладку табов
         self.tabs.addTab(self.tab_settings, "")  # 1. Настройки
-        # self.tabs.setTabIcon(1, settings_ico)
-        self.tabs.setTabToolTip(1, "Настройки")
+        self.tabs.setTabIcon(1, paint_ico)
+        self.tabs.setTabToolTip(1, "Рисование")
         self.tab_settings.layout = QtWidgets.QFormLayout(self)
         # Рамка №1 (то что будет в рамке 1)
         self.db_name = QtWidgets.QLineEdit()  # Наименование  базы данных
@@ -190,20 +196,8 @@ class Painter(QtWidgets.QMainWindow):
         # Упаковываем все на вкладку таба "0" (делаем все в QGroupBox
         # т.к. элементы будут добавляться и их
         # потом нужно будет объединять в группы
+
         # Рамка №1
-        layout_db = QtWidgets.QFormLayout(self)
-        GB_db = QtWidgets.QGroupBox('База данных')
-        GB_db.setStyleSheet("QGroupBox { font-weight : bold; }")
-        layout_db.addRow("", self.db_name)
-        layout_db.addRow("", self.db_path)
-        GB_db.setLayout(layout_db)
-        # Рамка №2
-        layout_plan = QtWidgets.QFormLayout(self)
-        GB_plan = QtWidgets.QGroupBox('Ген.план')
-        GB_plan.setStyleSheet("QGroupBox { font-weight : bold; }")
-        layout_plan.addRow("", self.plan_list)
-        GB_plan.setLayout(layout_plan)
-        # Рамка №3
         layout_zone = QtWidgets.QFormLayout(self)
         GB_zone = QtWidgets.QGroupBox('Выбор цвета')
         GB_zone.setStyleSheet("QGroupBox { font-weight : bold; }")
@@ -220,14 +214,14 @@ class Painter(QtWidgets.QMainWindow):
         hbox_3.addWidget(self.color_zone6_btn)
         layout_zone.addRow("", hbox_3)
         GB_zone.setLayout(layout_zone)
-        # Рамка №4
+        # Рамка №2
         layout_xl = QtWidgets.QFormLayout(self)
         GB_xl = QtWidgets.QGroupBox('Данные из Excel')
         GB_xl.setStyleSheet("QGroupBox { font-weight : bold; }")
         layout_xl.addRow("", self.data_excel)
         layout_xl.addRow("", self.get_data_btn)
         GB_xl.setLayout(layout_xl)
-        # Рамка №5
+        # Рамка №3
         layout_opacity = QtWidgets.QFormLayout(self)
         GB_opacity = QtWidgets.QGroupBox('Прозрачность')
         GB_opacity.setStyleSheet("QGroupBox { font-weight : bold; }")
@@ -235,8 +229,6 @@ class Painter(QtWidgets.QMainWindow):
         GB_opacity.setLayout(layout_opacity)
 
         # Размещаем на табе
-        self.tab_settings.layout.addWidget(GB_db)
-        self.tab_settings.layout.addWidget(GB_plan)
         self.tab_settings.layout.addWidget(GB_zone)
         self.tab_settings.layout.addWidget(GB_xl)
         self.tab_settings.layout.addWidget(GB_opacity)
@@ -265,6 +257,140 @@ class Painter(QtWidgets.QMainWindow):
         central_grid.addWidget(self.tabs, 1, 0, 1, 1)
         central_widget.setLayout(central_grid)
         self.setCentralWidget(central_widget)
+
+        # 3. Меню (тулбар)
+        # База данных (меню)
+        db_menu = QtWidgets.QMenu('База данных', self)
+        db_create = QtWidgets.QAction(ok_ico, 'Создать', self)
+        db_create.setStatusTip('Создать новую базу данных')
+        # db_create.triggered.connect(self.db_create)
+        db_menu.addAction(db_create)
+        db_connect = QtWidgets.QAction(db_ico, 'Подключиться', self)
+        db_connect.setStatusTip('Подключиться к существующей базе данных')
+        # db_connect.triggered.connect(self.db_connect)
+        db_menu.addAction(db_connect)
+
+        # Генплан (меню)
+        plan_menu = QtWidgets.QMenu('Ген.план', self)
+        plan_add = QtWidgets.QAction(ok_ico, 'Добавить', self)
+        plan_add.setStatusTip('Добавить новый план объекта')
+        plan_add.setShortcut('Ctrl+N')
+        # plan_add.triggered.connect(self.plan_add)
+        plan_menu.addAction(plan_add)
+        plan_replace = QtWidgets.QAction(replace_ico, 'Заменить', self)
+        plan_replace.setStatusTip('Заменить план объекта')
+        plan_replace.setShortcut('Ctrl+R')
+        # plan_replace.triggered.connect(self.plan_replace)
+        plan_menu.addAction(plan_replace)
+        plan_save = QtWidgets.QAction(save_ico, 'Coхранить', self)
+        plan_save.setStatusTip('Сохранить текущее изображение плана объекта как файл')
+        plan_save.setShortcut('Ctrl+S')
+        # plan_save.triggered.connect(self.plan_save)
+        plan_menu.addAction(plan_save)
+        plan_clear = QtWidgets.QAction(clear_ico, 'Очистить', self)
+        plan_clear.setStatusTip('Очистить план объекта')
+        plan_clear.setShortcut('Ctrl+С')
+        # plan_clear.triggered.connect(self.plan_clear)
+        plan_menu.addAction(plan_clear)
+        plan_del = QtWidgets.QAction(del_ico, 'Удалить план с объектами', self)
+        plan_del.setStatusTip('Удалить изображение плана объекта')
+        plan_del.setShortcut('Ctrl+X')
+        # plan_del.triggered.connect(self.plan_del)
+        # plan_menu.addAction(plan_del)
+
+        # Выход из приложения
+        exit_prog = QtWidgets.QAction(exit_ico, 'Выход', self)
+        exit_prog.setShortcut('Ctrl+Q')
+        exit_prog.setStatusTip('Выход из Painter')
+        # exit_prog.triggered.connect(self.close_event)
+
+        # Вид +/- и "рука"
+        scale_plus = QtWidgets.QAction(plus_ico, 'Увеличить план', self)
+        scale_plus.setShortcut('Ctrl+P')
+        scale_plus.setStatusTip('Увеличить план')
+        # scale_plus.triggered.connect(self.scale_view_plus)
+
+        scale_min = QtWidgets.QAction(minus_ico, 'Уменьшить план', self)
+        scale_min.setShortcut('Ctrl+M')
+        scale_min.setStatusTip('Уменьшить план')
+        # scale_min.triggered.connect(self.scale_view_min)
+
+        hand_act = QtWidgets.QAction(hand_ico, 'Рука', self)
+        hand_act.setShortcut('Ctrl+H')
+        hand_act.setStatusTip('Рука')
+        # hand_act.triggered.connect(self.plan_hand)
+
+        # # Редактировать объект
+        del_end_point = QtWidgets.QAction(minus_ico, 'Удалить последнюю точку', self)
+        del_end_point.setShortcut('Ctrl+D')
+        del_end_point.setStatusTip('Удалить последнюю точку')
+        # del_end_point.triggered.connect(self.delete_end_point)
+
+        del_all_point = QtWidgets.QAction(dbl_minus_ico, 'Удалить все точки', self)
+        del_all_point.setShortcut('Ctrl+A')
+        del_all_point.setStatusTip('Удалить все точки')
+        # del_all_point.triggered.connect(self.delete_all_point)
+
+        save_obj = QtWidgets.QAction(save_ico, 'Сохранить', self)
+        save_obj.setShortcut('Ctrl+W')
+        save_obj.setStatusTip('Сохранить объект')
+        # save_obj.triggered.connect(self.save_object)
+
+        del_obj = QtWidgets.QAction(del_ico, 'Удалить', self)
+        del_obj.setShortcut('Ctrl+R')
+        del_obj.setStatusTip('Удалить объект')
+        # del_obj.triggered.connect(self.on_del_object)
+
+        # Рисование объекта
+        draw_all = QtWidgets.QAction(self.main_ico, 'Все объекты', self)
+        draw_all.setStatusTip('Рисовать все объекты')
+        # draw_all.triggered.connect(self.draw_all_object)
+
+        draw_one = QtWidgets.QAction(object_ico, 'Один объект', self)
+        draw_one.setStatusTip('Рисовать один объект')
+        # draw_one.triggered.connect(self.draw_one_object)
+
+        draw_risk = QtWidgets.QAction(risk_ico, 'Риск', self)
+        draw_risk.setStatusTip('Рисовать риск')
+        # draw_risk.triggered.connect(self.draw_risk_object)
+
+        # Справка
+        help_show = QtWidgets.QAction(question_ico, 'Справка', self)
+        help_show.setShortcut('F1')
+        help_show.setStatusTip('Открыть справку Painter')
+        # help_show.triggered.connect(self.help_show)
+
+        # О приложении
+        about_prog = QtWidgets.QAction(info_ico, 'О приложении', self)
+        about_prog.setShortcut('F2')
+        about_prog.setStatusTip('О приложении Painter')
+        # about_prog.triggered.connect(self.about_programm)
+
+        # Меню приложения (верхняя плашка)
+        menubar = self.menuBar()
+        file_menu = menubar.addMenu('Файл')
+        file_menu.addMenu(db_menu)
+        file_menu.addMenu(plan_menu)
+        file_menu.addAction(exit_prog)
+        view_menu = menubar.addMenu('Вид')
+        view_menu.addAction(scale_plus)
+        view_menu.addAction(scale_min)
+        view_menu.addAction(hand_act)
+        edit_menu = menubar.addMenu('Объект')
+        edit_menu.addAction(del_end_point)
+        edit_menu.addAction(del_all_point)
+        edit_menu.addAction(save_obj)
+        edit_menu.addAction(del_obj)
+        draw_menu = menubar.addMenu('Рисование')
+        draw_menu.addAction(draw_all)
+        draw_menu.addAction(draw_one)
+        draw_menu.addAction(draw_risk)
+        help_menu = menubar.addMenu('Справка')
+        help_menu.addAction(help_show)
+        help_menu.addAction(about_prog)
+        # Установить статусбар
+        self.statusBar()
+
 
         if not parent:
             self.show()
