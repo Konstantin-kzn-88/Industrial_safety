@@ -8,6 +8,7 @@ class Painter(QtWidgets.QMainWindow):
     def __init__(self, parent=None) -> None:
         super().__init__()
         # Иконки
+        
         self.main_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/comp.png')
         tree_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/tree.png')
 
