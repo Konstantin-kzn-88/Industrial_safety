@@ -241,6 +241,10 @@ class Painter(QtWidgets.QMainWindow):
 
         # 2. Колонка "Карта + таблица данных"
         # 2.1. В второй колонке создаем место под ген.план
+        # Рамка
+        layout_picture = QtWidgets.QFormLayout(self)
+        GB_picture = QtWidgets.QGroupBox('План расположения')
+        GB_picture.setStyleSheet("QGroupBox { font-weight : bold; }")
         # создаем сцену  #создаем сцену и плосы прокрутки картинки
         self.scene = QtWidgets.QGraphicsScene(self)
         # создаем полосы прокрутки
@@ -254,11 +258,42 @@ class Painter(QtWidgets.QMainWindow):
         self.view = QtWidgets.QGraphicsView(self.scene, self)
         self.area.setWidget(self.view)
         self.area.setWidgetResizable(True)
+        layout_picture.addRow("", self.area)
+        GB_picture.setLayout(layout_picture)
+
 
         # 2.2. Таблица данных
-        self.table_data = QtWidgets.QTableWidget(10, 10)
-        header_item = QtWidgets.QTableWidgetItem("Foo")
-        self.table_data.setHorizontalHeaderItem(1, header_item)
+
+        # Рамка
+        layout_data = QtWidgets.QFormLayout(self)
+        GB_data = QtWidgets.QGroupBox('Данные об объекте')
+        GB_data.setStyleSheet("QGroupBox { font-weight : bold; }")
+
+
+        data_grid = QtWidgets.QGridLayout(self)
+        data_grid.setColumnStretch(0, 7)
+        data_grid.setColumnStretch(1, 1)
+
+
+        self.table_data = QtWidgets.QTableWidget(5,3,self)
+
+        item1 = QtWidgets.QTableWidgetItem('red')
+        item1.setBackground(QtGui.QColor(255, 0, 0))
+        self.table_data.setHorizontalHeaderItem(0,item1)
+
+        item2 = QtWidgets.QTableWidgetItem('green')
+        item2.setBackground(QtGui.QColor(0, 255, 0))
+        self.table_data.setHorizontalHeaderItem(1,item2)
+
+        item3 = QtWidgets.QTableWidgetItem('blue')
+        item3.setBackground(QtGui.QColor(0, 0, 255))
+        self.table_data.setHorizontalHeaderItem(2,item3)
+
+        data_grid.addWidget(self.table_data, 0, 0, 1, 1)
+
+        layout_data.addRow("", data_grid)
+        GB_data.setLayout(layout_data)
+
 
 
 
@@ -266,9 +301,9 @@ class Painter(QtWidgets.QMainWindow):
 
 
         central_grid.addWidget(GB_tree, 0, 0, 1, 1)
-        central_grid.addWidget(self.area, 0, 1, 1, 1)
+        central_grid.addWidget(GB_picture, 0, 1, 1, 1)
         central_grid.addWidget(self.tabs, 1, 0, 1, 1)
-        central_grid.addWidget(self.table_data, 1, 1, 1, 1)
+        central_grid.addWidget(GB_data, 1, 1, 1, 1)
         central_widget.setLayout(central_grid)
         self.setCentralWidget(central_widget)
 
@@ -415,5 +450,6 @@ class Painter(QtWidgets.QMainWindow):
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
+    app.setStyle(QtWidgets.QStyleFactory.create('Fusion'))
     ex = Painter()
     app.exec_()
