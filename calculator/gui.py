@@ -1,7 +1,8 @@
-from PySide2 import QtWidgets, QtGui, QtCore
+from PySide2 import QtWidgets, QtGui, QtCore, QtSql
 import os
 import sys
 from pathlib import Path
+
 
 class Painter(QtWidgets.QMainWindow):
 
@@ -39,6 +40,12 @@ class Painter(QtWidgets.QMainWindow):
         dbl_minus_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/double_minus.png')
         hand_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/hand.png')
         risk_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/risk.png')
+
+        self.create_connection()
+        self.fillTable() # TODO Отключить после отладки
+
+        self.create_sql_model()
+
 
         # Главное окно
         self.setGeometry(300, 300, 350, 250)
@@ -237,7 +244,7 @@ class Painter(QtWidgets.QMainWindow):
         self.tab_settings.setLayout(self.tab_settings.layout)
 
         # 2. Колонка "Карта + база данных"
-        # В второй колонке создаем место под ген.план
+        # 2.1. В второй колонке создаем место под ген.план
         # создаем сцену  #создаем сцену и плосы прокрутки картинки
         self.scene = QtWidgets.QGraphicsScene(self)
         # создаем полосы прокрутки
@@ -252,10 +259,21 @@ class Painter(QtWidgets.QMainWindow):
         self.area.setWidget(self.view)
         self.area.setWidgetResizable(True)
 
+        # 2.2. База данных
+        # ВИД
+        self.view_sql = QtWidgets.QTableView()
+        self.view_sql.setModel(self.model_sql)
+        mode = QtWidgets.QAbstractItemView.SingleSelection
+        self.view_sql.setSelectionMode(mode)
+        # выравнивание по содержимому
+        self.view_sql.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+        self.view_sql.horizontalHeader().setMinimumSectionSize(0)
+
 
         central_grid.addWidget(GB_tree, 0, 0, 1, 1)
         central_grid.addWidget(self.area, 0, 1, 1, 1)
         central_grid.addWidget(self.tabs, 1, 0, 1, 1)
+        central_grid.addWidget(self.view_sql, 1, 1, 1, 1)
         central_widget.setLayout(central_grid)
         self.setCentralWidget(central_widget)
 
@@ -393,9 +411,54 @@ class Painter(QtWidgets.QMainWindow):
         self.statusBar()
 
 
+
+
         if not parent:
             self.show()
 
+    def create_sql_model(self):
+        """
+        Создание модели для отображения
+        """
+        self.model_sql = QtSql.QSqlRelationalTableModel(db=self.db)
+        self.model_sql.setTable("equipment")
+        self.model_sql.setEditStrategy(QtSql.QSqlTableModel.OnFieldChange)
+        self.model_sql.setHeaderData(0, QtCore.Qt.Horizontal, "id")
+        self.model_sql.setHeaderData(1, QtCore.Qt.Horizontal, "Характеристики")
+        self.model_sql.setHeaderData(2, QtCore.Qt.Horizontal, "Прочее")
+        self.model_sql.select()
+
+    def create_connection(self):
+        self.db = QtSql.QSqlDatabase.addDatabase("QSQLITE")
+        self.db.setDatabaseName("local_base.db")  # !!! .db
+        if not self.db.open():
+            print("Cannot establish a database connection")
+            return False
+
+    def fillTable(self):
+        """
+        Вспомогательная функция заполнениия базы данных
+        Отключить после тестового запуска
+        """
+        self.db.transaction()
+        q = QtSql.QSqlQuery()
+        #
+        q.exec_("DROP TABLE IF EXISTS equipment;")
+        q.exec_("CREATE TABLE equipment ("
+                "id INT PRIMARY KEY, "
+                "char1 TEXT NOT NULL, "
+                "char2 TEXT NOT NULL );")
+
+        # Вставка тестовых значений
+        query = QtSql.QSqlQuery()
+        query.prepare("INSERT INTO equipment (id, char1, char2)"
+                      "VALUES (:id, :char1, :char2)")
+
+        query.bindValue(":id", 1)
+        query.bindValue(":char1", '100')
+        query.bindValue(":char2", '200')
+        query.exec_()
+        self.db.commit()
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
