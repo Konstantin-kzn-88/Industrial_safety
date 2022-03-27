@@ -79,6 +79,9 @@ class FreezeTableWidget(QtWidgets.QTableView):
                 self.viewport().height() + self.horizontalHeader().height())
 
 
+
+
+
 class Painter(QtWidgets.QMainWindow):
 
     def __init__(self, parent=None) -> None:
@@ -345,9 +348,9 @@ class Painter(QtWidgets.QMainWindow):
         data_grid.setColumnStretch(0, 15)
         data_grid.setColumnStretch(1, 1)
 
-        self.model_data = QtGui.QStandardItemModel(1, 20)
+        self.model_data = QtGui.QStandardItemModel(5, 32)
         self.table_data = FreezeTableWidget(self.model_data)
-        self.table_data_view()
+        self.table_data_view() # фукция отрисовки заголовков таблицы
         # кнопки управления
         layout_control = QtWidgets.QFormLayout(self)
         GB_control = QtWidgets.QGroupBox()
@@ -362,8 +365,15 @@ class Painter(QtWidgets.QMainWindow):
         self.del_row.setToolTip("Удалить строку из таблицу")
         # self.add_in_db.clicked.connect(self.add_in_data_base)
 
+        self.example_obj = QtWidgets.QPushButton("Пример объекта")
+        self.example_obj.setIcon(minus_ico)
+        self.example_obj.setToolTip("Добавить примерный объект")
+        self.example_obj.clicked.connect(self.add_example_obj)
+
+
         layout_control.addRow("", self.add_row)
         layout_control.addRow("", self.del_row)
+        layout_control.addRow("", self.example_obj)
         GB_control.setLayout(layout_control)
 
         data_grid.addWidget(self.table_data, 0, 0, 1, 1)
@@ -529,7 +539,7 @@ class Painter(QtWidgets.QMainWindow):
 
         header_list_tech = ['Длина, км', 'Диаметр, мм', 'Давление, кПа',
                             'Тем-ра, гр.С', 'Объем, м3',
-                            'Ст.заполн., -', 'Тип']
+                            'Ст.заполн., -', 'Обвалование, м2', 'Тип']
 
         for header in header_list_tech:
             item = QtGui.QStandardItem(header)
@@ -552,7 +562,10 @@ class Painter(QtWidgets.QMainWindow):
 
             self.model_data.setHorizontalHeaderItem(poz, item)
 
-        header_list_sub = ['fp, 1/м', 'z, -']
+        header_list_sub = ['fp, 1/м', 'z, -', 'po ж.ф., кг/м3',
+                           'po г.ф., кг/м3', 'М, кг/кмоль', 'Pn, кПа',
+                           'Твсп, гр.С', 'Ткип, гр.С', 'Класс в-ва', 'Вид пространства',
+                           'Qсг, кДж/кг', 'sigma, -', 'Энергозапас, -', 'S, млн.руб/т']
 
         for header in header_list_sub:
             item = QtGui.QStandardItem(header)
@@ -571,8 +584,7 @@ class Painter(QtWidgets.QMainWindow):
                     150 - при проливе на бетонное или асфальтовое покрытие.
                     """
                 )
-
-            if header == 'z, -':
+            elif header == 'z, -':
                 item.setToolTip(
                     """
                     Коэф. участия во взрыве:
@@ -580,6 +592,71 @@ class Painter(QtWidgets.QMainWindow):
                     0,1  -  на открытой площадке
                     """
                 )
+            elif header == 'po ж.ф., кг/м3' or header == 'po г.ф., кг/м3':
+                item.setToolTip('Плотность жидкой или газовой фазы')
+            elif header == 'М, кг/кмоль':
+                item.setToolTip('Молярная масса')
+            elif header == 'Pn, кПа':
+                item.setToolTip('Давление насыщенного пара')
+            elif header == 'Твсп, гр.С':
+                item.setToolTip('Температура вспышки')
+            elif header == 'Ткип, гр.С':
+                item.setToolTip('Температура кипения')
+            elif header == 'Класс в-ва':
+                item.setToolTip(
+                    """
+                    Классификация горючих веществ по степени чувствительности:
+
+                    Класс 1 - Особо чувствительные вещества;
+                    Класс 2 - Чувствительные вещества;
+                    Класс 3 - Средне-чувствительные вещества;
+                    Класс 4 - Слабочувствительные вещества.
+                    """
+                )
+            elif header == 'Вид пространства':
+                item.setToolTip(
+                    """
+                    Классификация горючих веществ по степени чувствительности:
+
+                    Вид 1. Наличие длинных труб, полостей, каверн, заполненных горючей смесью;
+                    Вид 2. Сильно загроможденное пространство: наличие полузамкнутых объемов, 
+                    высокая плотность оборудования;
+                    
+                    Вид 3. Средне загроможденное пространство: отдельно стоящие технологические установки;
+                    Вид 4. Слабо загроможденное и свободное пространство.
+                    """
+                )
+            elif header == 'Qсг, кДж/кг':
+                item.setToolTip('Теплота сгорания')
+            elif header == 'sigma, -':
+                item.setToolTip("""
+                Параметр горения: 
+                sigma = 7 (пар и/или газ)
+                sigma = 4 (газокапельная смесь)
+                """)
+            elif header == 'Энергозапас, -':
+                item.setToolTip('1 - легкий газ; 2 - тяжелый газ')
+            elif header == 'S, млн.руб/т':
+                item.setToolTip('Стоимость вещества')
+
+        header_list_obj = ['Погиб., чел', 'Постр., чел', 'Пребывание, -',
+                           'Координаты']
+
+        for header in header_list_obj:
+            item = QtGui.QStandardItem(header)
+            item.setBackground(QtGui.QColor(255, 200, 200))
+            poz = header_list_obj.index(header) + len(header_list) + \
+                  len(header_list_tech) + len(header_list_sub)
+            self.model_data.setHorizontalHeaderItem(poz, item)
+            if header == 'Пребывание, -':
+                item.setToolTip('Вероятность пребывания: 8 часов / 24 часа = 0,33')
+
+    def add_example_obj(self):
+        # print(self.model_data.item(0,0).text()) # получить текст ячейки
+        # print(self.model_data.appendRow(QtGui.QStandardItem(1,32)))  # добавить строку
+        # print(self.model_data.rowCount()) #количество строк
+        print(None)
+
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
