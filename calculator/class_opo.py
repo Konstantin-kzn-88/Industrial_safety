@@ -1043,6 +1043,8 @@ if __name__ == '__main__':
 
     }
 
+    print(len(container_dict))
+
     tube_dict = {
         'name': 'Нефтепровод от К-12 до т.3.',
         'name_full': 'Нефтепровод',

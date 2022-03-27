@@ -4,6 +4,81 @@ import sys
 from pathlib import Path
 
 
+
+class FreezeTableWidget(QtWidgets.QTableView):
+    def __init__(self, model):
+        super(FreezeTableWidget, self).__init__()
+        self.setModel(model)
+        self.frozenTableView = QtWidgets.QTableView(self)
+        self.init()
+        self.horizontalHeader().sectionResized.connect(self.updateSectionWidth)
+        self.verticalHeader().sectionResized.connect(self.updateSectionHeight)
+        self.frozenTableView.verticalScrollBar().valueChanged.connect(
+            self.verticalScrollBar().setValue)
+        self.verticalScrollBar().valueChanged.connect(
+            self.frozenTableView.verticalScrollBar().setValue)
+
+    def init(self):
+        self.frozenTableView.setModel(self.model())
+        self.frozenTableView.setFocusPolicy(QtGui.Qt.NoFocus)
+        self.frozenTableView.verticalHeader().hide()
+        self.frozenTableView.horizontalHeader().setSectionResizeMode(
+                QtWidgets.QHeaderView.Fixed)
+        self.viewport().stackUnder(self.frozenTableView)
+
+        self.frozenTableView.setStyleSheet('''
+            QTableView { border: none;
+                         background-color: #FFFAF0;
+                         selection-background-color: #FFF5EE;
+            }''')
+
+        self.frozenTableView.setSelectionModel(self.selectionModel())
+        for col in range(1, self.model().columnCount()):
+            self.frozenTableView.setColumnHidden(col, True)
+        self.frozenTableView.setColumnWidth(0, self.columnWidth(0))
+        self.frozenTableView.setHorizontalScrollBarPolicy(QtGui.Qt.ScrollBarAlwaysOff)
+        self.frozenTableView.setVerticalScrollBarPolicy(QtGui.Qt.ScrollBarAlwaysOff)
+        self.frozenTableView.show()
+        self.updateFrozenTableGeometry()
+        self.setHorizontalScrollMode(self.ScrollPerPixel)
+        self.setVerticalScrollMode(self.ScrollPerPixel)
+        self.frozenTableView.setVerticalScrollMode(self.ScrollPerPixel)
+
+    def updateSectionWidth(self, logicalIndex, oldSize, newSize):
+        if self.logicalIndex == 0:
+            self.frozenTableView.setColumnWidth(0, newSize)
+            self.updateFrozenTableGeometry()
+
+    def updateSectionHeight(self, logicalIndex, oldSize, newSize):
+        self.frozenTableView.setRowHeight(logicalIndex, newSize)
+
+    def resizeEvent(self, event):
+        super(FreezeTableWidget, self).resizeEvent(event)
+        self.updateFrozenTableGeometry()
+
+    def moveCursor(self, cursorAction, modifiers):
+        current = super(FreezeTableWidget, self).moveCursor(cursorAction, modifiers)
+        if (cursorAction == self.MoveLeft and
+                self.current.column() > 0 and
+                self.visualRect(current).topLeft().x() <
+                    self.frozenTableView.columnWidth(0)):
+            newValue = (self.horizontalScrollBar().value() +
+                        self.visualRect(current).topLeft().x() -
+                        self.frozenTableView.columnWidth(0))
+            self.horizontalScrollBar().setValue(newValue)
+        return current
+
+    def scrollTo(self, index, hint):
+        if index.column() > 0:
+            super(FreezeTableWidget, self).scrollTo(index, hint)
+
+    def updateFrozenTableGeometry(self):
+        self.frozenTableView.setGeometry(
+                self.verticalHeader().width() + self.frameWidth(),
+                self.frameWidth(), self.columnWidth(0),
+                self.viewport().height() + self.horizontalHeader().height())
+
+
 class Painter(QtWidgets.QMainWindow):
 
     def __init__(self, parent=None) -> None:
@@ -40,8 +115,6 @@ class Painter(QtWidgets.QMainWindow):
         dbl_minus_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/double_minus.png')
         hand_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/hand.png')
         risk_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/risk.png')
-
-
 
         # Главное окно
         self.setGeometry(300, 300, 350, 250)
@@ -104,7 +177,6 @@ class Painter(QtWidgets.QMainWindow):
         # self.draw_btn.clicked.connect(self.change_draw_btn)
         self.draw_btn.setCheckable(True)
         self.draw_btn.setChecked(False)
-
 
         # Упаковываем все на вкладку таба "0" (делаем все в QGroupBox
         # т.к. элементы будут добавляться и их
@@ -261,7 +333,6 @@ class Painter(QtWidgets.QMainWindow):
         layout_picture.addRow("", self.area)
         GB_picture.setLayout(layout_picture)
 
-
         # 2.2. Таблица данных
 
         # Рамка
@@ -269,36 +340,36 @@ class Painter(QtWidgets.QMainWindow):
         GB_data = QtWidgets.QGroupBox('Данные об объекте')
         GB_data.setStyleSheet("QGroupBox { font-weight : bold; }")
 
-
+        # таблица
         data_grid = QtWidgets.QGridLayout(self)
-        data_grid.setColumnStretch(0, 7)
+        data_grid.setColumnStretch(0, 15)
         data_grid.setColumnStretch(1, 1)
 
+        self.model_data = QtGui.QStandardItemModel(1, 20)
+        self.table_data = FreezeTableWidget(self.model_data)
+        self.table_data_view()
+        # кнопки управления
+        layout_control = QtWidgets.QFormLayout(self)
+        GB_control = QtWidgets.QGroupBox()
 
-        self.table_data = QtWidgets.QTableWidget(5,3,self)
+        self.add_row = QtWidgets.QPushButton("Добавить объект")
+        self.add_row.setIcon(plus_ico)
+        self.add_row.setToolTip("Добавить строку в таблицу")
+        # self.add_in_db.clicked.connect(self.add_in_data_base)
 
-        item1 = QtWidgets.QTableWidgetItem('red')
-        item1.setBackground(QtGui.QColor(255, 0, 0))
-        self.table_data.setHorizontalHeaderItem(0,item1)
+        self.del_row = QtWidgets.QPushButton("Удалить объект")
+        self.del_row.setIcon(minus_ico)
+        self.del_row.setToolTip("Удалить строку из таблицу")
+        # self.add_in_db.clicked.connect(self.add_in_data_base)
 
-        item2 = QtWidgets.QTableWidgetItem('green')
-        item2.setBackground(QtGui.QColor(0, 255, 0))
-        self.table_data.setHorizontalHeaderItem(1,item2)
-
-        item3 = QtWidgets.QTableWidgetItem('blue')
-        item3.setBackground(QtGui.QColor(0, 0, 255))
-        self.table_data.setHorizontalHeaderItem(2,item3)
+        layout_control.addRow("", self.add_row)
+        layout_control.addRow("", self.del_row)
+        GB_control.setLayout(layout_control)
 
         data_grid.addWidget(self.table_data, 0, 0, 1, 1)
-
+        data_grid.addWidget(GB_control, 0, 1, 1, 1)
         layout_data.addRow("", data_grid)
         GB_data.setLayout(layout_data)
-
-
-
-
-
-
 
         central_grid.addWidget(GB_tree, 0, 0, 1, 1)
         central_grid.addWidget(GB_picture, 0, 1, 1, 1)
@@ -440,13 +511,75 @@ class Painter(QtWidgets.QMainWindow):
         # Установить статусбар
         self.statusBar()
 
-
-
-
         if not parent:
             self.show()
 
+    def table_data_view(self):
+        """
+        Оформление таблицы для введения данных
+        """
+        header_list = ['Позиция', 'Наименование', 'Локация',
+                       'Материал', 'Расположение',
+                       'Назначение']
 
+        for header in header_list:
+            item = QtGui.QStandardItem(header)
+            item.setBackground(QtGui.QColor(225, 225, 225))
+            self.model_data.setHorizontalHeaderItem(header_list.index(header), item)
+
+        header_list_tech = ['Длина, км', 'Диаметр, мм', 'Давление, кПа',
+                            'Тем-ра, гр.С', 'Объем, м3',
+                            'Ст.заполн., -', 'Тип']
+
+        for header in header_list_tech:
+            item = QtGui.QStandardItem(header)
+            item.setBackground(QtGui.QColor(200, 255, 200))
+            poz = header_list_tech.index(header) + len(header_list)
+            if header == 'Тип':
+                item.setToolTip(
+                    '''
+                    Тип оборудования:
+                    
+                    0 - трубопровод
+                    1 - емкость под давлением
+                    2 - насос герметичный
+                    3 - колонны конденсаторы фильтры
+                    4 - резервуар хранения
+                    5 - теплообменники
+                    6 - цистерны
+                    '''
+                )
+
+            self.model_data.setHorizontalHeaderItem(poz, item)
+
+        header_list_sub = ['fp, 1/м', 'z, -']
+
+        for header in header_list_sub:
+            item = QtGui.QStandardItem(header)
+            item.setBackground(QtGui.QColor(200, 255, 255))
+            poz = header_list_sub.index(header) + len(header_list) + len(header_list_tech)
+
+            self.model_data.setHorizontalHeaderItem(poz, item)
+
+            if header == 'fp, 1/м':
+                item.setToolTip(
+                    """
+                    Коэф. толщины слоя:
+    
+                    5  -  при проливе на неспланированную грунтовую поверхность;
+                    20 -  при проливе на спланированное грунтовое покрытие;
+                    150 - при проливе на бетонное или асфальтовое покрытие.
+                    """
+                )
+
+            if header == 'z, -':
+                item.setToolTip(
+                    """
+                    Коэф. участия во взрыве:
+
+                    0,1  -  на открытой площадке
+                    """
+                )
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
