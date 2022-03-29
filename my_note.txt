@@ -5,3 +5,7 @@ ctrl+alt+l - отступы по коду
 https://skesov.ru/kak-sdelat-yarlyik-s-otnositelnyim-putem-do-programmyi-na-windows-8-1-8-7-vista/
 https://www.download3k.ru/Install-Bat-To-Exe-Converter.html
 https://andreyv.ru/python-embedded-ili-kak-dobavit-python-v-svoe-prilozhenie.html
+
+TableWidget
+https://russianblogs.com/article/56622357447/
+https://russianblogs.com/article/594578971/
