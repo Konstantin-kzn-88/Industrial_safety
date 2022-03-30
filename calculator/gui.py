@@ -2,83 +2,7 @@ from PySide2 import QtWidgets, QtGui, QtCore
 import os
 import sys
 from pathlib import Path
-
-
-
-class FreezeTableWidget(QtWidgets.QTableView):
-    def __init__(self, model):
-        super(FreezeTableWidget, self).__init__()
-        self.setModel(model)
-        self.frozenTableView = QtWidgets.QTableView(self)
-        self.init()
-        self.horizontalHeader().sectionResized.connect(self.updateSectionWidth)
-        self.verticalHeader().sectionResized.connect(self.updateSectionHeight)
-        self.frozenTableView.verticalScrollBar().valueChanged.connect(
-            self.verticalScrollBar().setValue)
-        self.verticalScrollBar().valueChanged.connect(
-            self.frozenTableView.verticalScrollBar().setValue)
-
-    def init(self):
-        self.frozenTableView.setModel(self.model())
-        self.frozenTableView.setFocusPolicy(QtGui.Qt.NoFocus)
-        self.frozenTableView.verticalHeader().hide()
-        self.frozenTableView.horizontalHeader().setSectionResizeMode(
-                QtWidgets.QHeaderView.Fixed)
-        self.viewport().stackUnder(self.frozenTableView)
-
-        self.frozenTableView.setStyleSheet('''
-            QTableView { border: none;
-                         background-color: #FFFAF0;
-                         selection-background-color: #FFF5EE;
-            }''')
-
-        self.frozenTableView.setSelectionModel(self.selectionModel())
-        for col in range(1, self.model().columnCount()):
-            self.frozenTableView.setColumnHidden(col, True)
-        self.frozenTableView.setColumnWidth(0, self.columnWidth(0))
-        self.frozenTableView.setHorizontalScrollBarPolicy(QtGui.Qt.ScrollBarAlwaysOff)
-        self.frozenTableView.setVerticalScrollBarPolicy(QtGui.Qt.ScrollBarAlwaysOff)
-        self.frozenTableView.show()
-        self.updateFrozenTableGeometry()
-        self.setHorizontalScrollMode(self.ScrollPerPixel)
-        self.setVerticalScrollMode(self.ScrollPerPixel)
-        self.frozenTableView.setVerticalScrollMode(self.ScrollPerPixel)
-
-    def updateSectionWidth(self, logicalIndex, oldSize, newSize):
-        if self.logicalIndex == 0:
-            self.frozenTableView.setColumnWidth(0, newSize)
-            self.updateFrozenTableGeometry()
-
-    def updateSectionHeight(self, logicalIndex, oldSize, newSize):
-        self.frozenTableView.setRowHeight(logicalIndex, newSize)
-
-    def resizeEvent(self, event):
-        super(FreezeTableWidget, self).resizeEvent(event)
-        self.updateFrozenTableGeometry()
-
-    def moveCursor(self, cursorAction, modifiers):
-        current = super(FreezeTableWidget, self).moveCursor(cursorAction, modifiers)
-        if (cursorAction == self.MoveLeft and
-                self.current.column() > 0 and
-                self.visualRect(current).topLeft().x() <
-                    self.frozenTableView.columnWidth(0)):
-            newValue = (self.horizontalScrollBar().value() +
-                        self.visualRect(current).topLeft().x() -
-                        self.frozenTableView.columnWidth(0))
-            self.horizontalScrollBar().setValue(newValue)
-        return current
-
-    def scrollTo(self, index, hint):
-        if index.column() > 0:
-            super(FreezeTableWidget, self).scrollTo(index, hint)
-
-    def updateFrozenTableGeometry(self):
-        self.frozenTableView.setGeometry(
-                self.verticalHeader().width() + self.frameWidth(),
-                self.frameWidth(), self.columnWidth(0),
-                self.viewport().height() + self.horizontalHeader().height())
-
-
+import random
 
 
 
@@ -92,6 +16,7 @@ class Painter(QtWidgets.QMainWindow):
         tree_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/tree.png')
 
         paint_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/painter.png')
+        book_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/book.png')
 
         db_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/data_base.png')
         ok_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/ok.png')
@@ -348,9 +273,8 @@ class Painter(QtWidgets.QMainWindow):
         data_grid.setColumnStretch(0, 15)
         data_grid.setColumnStretch(1, 1)
 
-        self.model_data = QtGui.QStandardItemModel(5, 32)
-        self.table_data = FreezeTableWidget(self.model_data)
-        self.table_data_view() # фукция отрисовки заголовков таблицы
+        self.table_data = QtWidgets.QTableWidget(0, 32)
+        self.table_data_view()  # фукция отрисовки заголовков таблицы
         # кнопки управления
         layout_control = QtWidgets.QFormLayout(self)
         GB_control = QtWidgets.QGroupBox()
@@ -358,18 +282,17 @@ class Painter(QtWidgets.QMainWindow):
         self.add_row = QtWidgets.QPushButton("Добавить объект")
         self.add_row.setIcon(plus_ico)
         self.add_row.setToolTip("Добавить строку в таблицу")
-        # self.add_in_db.clicked.connect(self.add_in_data_base)
+        self.add_row.clicked.connect(self.add_in_table)
 
         self.del_row = QtWidgets.QPushButton("Удалить объект")
         self.del_row.setIcon(minus_ico)
         self.del_row.setToolTip("Удалить строку из таблицу")
-        # self.add_in_db.clicked.connect(self.add_in_data_base)
+        self.del_row.clicked.connect(self.del_in_table)
 
         self.example_obj = QtWidgets.QPushButton("Пример объекта")
-        self.example_obj.setIcon(minus_ico)
+        self.example_obj.setIcon(book_ico)
         self.example_obj.setToolTip("Добавить примерный объект")
         self.example_obj.clicked.connect(self.add_example_obj)
-
 
         layout_control.addRow("", self.add_row)
         layout_control.addRow("", self.del_row)
@@ -524,32 +447,37 @@ class Painter(QtWidgets.QMainWindow):
         if not parent:
             self.show()
 
+    # Группа функций работы с таблицей
     def table_data_view(self):
         """
         Оформление таблицы для введения данных
         """
+        # item = QtWidgets.QTableWidgetItem("header")
+        # item.setBackground(QtGui.QColor(225, 225, 225))
+        # self.table_data.setHorizontalHeaderItem(0, item)
+
         header_list = ['Позиция', 'Наименование', 'Локация',
                        'Материал', 'Расположение',
                        'Назначение']
 
         for header in header_list:
-            item = QtGui.QStandardItem(header)
+            item = QtWidgets.QTableWidgetItem(header)
             item.setBackground(QtGui.QColor(225, 225, 225))
-            self.model_data.setHorizontalHeaderItem(header_list.index(header), item)
+            self.table_data.setHorizontalHeaderItem(header_list.index(header), item)
 
         header_list_tech = ['Длина, км', 'Диаметр, мм', 'Давление, кПа',
                             'Тем-ра, гр.С', 'Объем, м3',
                             'Ст.заполн., -', 'Обвалование, м2', 'Тип']
 
         for header in header_list_tech:
-            item = QtGui.QStandardItem(header)
+            item = QtWidgets.QTableWidgetItem(header)
             item.setBackground(QtGui.QColor(200, 255, 200))
             poz = header_list_tech.index(header) + len(header_list)
             if header == 'Тип':
                 item.setToolTip(
                     '''
                     Тип оборудования:
-                    
+
                     0 - трубопровод
                     1 - емкость под давлением
                     2 - насос герметичный
@@ -560,7 +488,7 @@ class Painter(QtWidgets.QMainWindow):
                     '''
                 )
 
-            self.model_data.setHorizontalHeaderItem(poz, item)
+            self.table_data.setHorizontalHeaderItem(poz, item)
 
         header_list_sub = ['fp, 1/м', 'z, -', 'po ж.ф., кг/м3',
                            'po г.ф., кг/м3', 'М, кг/кмоль', 'Pn, кПа',
@@ -568,17 +496,17 @@ class Painter(QtWidgets.QMainWindow):
                            'Qсг, кДж/кг', 'sigma, -', 'Энергозапас, -', 'S, млн.руб/т']
 
         for header in header_list_sub:
-            item = QtGui.QStandardItem(header)
+            item = QtWidgets.QTableWidgetItem(header)
             item.setBackground(QtGui.QColor(200, 255, 255))
             poz = header_list_sub.index(header) + len(header_list) + len(header_list_tech)
 
-            self.model_data.setHorizontalHeaderItem(poz, item)
+            self.table_data.setHorizontalHeaderItem(poz, item)
 
             if header == 'fp, 1/м':
                 item.setToolTip(
                     """
                     Коэф. толщины слоя:
-    
+
                     5  -  при проливе на неспланированную грунтовую поверхность;
                     20 -  при проливе на спланированное грунтовое покрытие;
                     150 - при проливе на бетонное или асфальтовое покрытие.
@@ -619,9 +547,9 @@ class Painter(QtWidgets.QMainWindow):
                     Классификация горючих веществ по степени чувствительности:
 
                     Вид 1. Наличие длинных труб, полостей, каверн, заполненных горючей смесью;
-                    Вид 2. Сильно загроможденное пространство: наличие полузамкнутых объемов, 
+                    Вид 2. Сильно загроможденное пространство: наличие полузамкнутых объемов,
                     высокая плотность оборудования;
-                    
+
                     Вид 3. Средне загроможденное пространство: отдельно стоящие технологические установки;
                     Вид 4. Слабо загроможденное и свободное пространство.
                     """
@@ -630,7 +558,7 @@ class Painter(QtWidgets.QMainWindow):
                 item.setToolTip('Теплота сгорания')
             elif header == 'sigma, -':
                 item.setToolTip("""
-                Параметр горения: 
+                Параметр горения:
                 sigma = 7 (пар и/или газ)
                 sigma = 4 (газокапельная смесь)
                 """)
@@ -643,19 +571,43 @@ class Painter(QtWidgets.QMainWindow):
                            'Координаты']
 
         for header in header_list_obj:
-            item = QtGui.QStandardItem(header)
+            item = QtWidgets.QTableWidgetItem(header)
             item.setBackground(QtGui.QColor(255, 200, 200))
             poz = header_list_obj.index(header) + len(header_list) + \
                   len(header_list_tech) + len(header_list_sub)
-            self.model_data.setHorizontalHeaderItem(poz, item)
+            self.table_data.setHorizontalHeaderItem(poz, item)
             if header == 'Пребывание, -':
                 item.setToolTip('Вероятность пребывания: 8 часов / 24 часа = 0,33')
 
+    def add_in_table(self):
+        count_row = self.table_data.rowCount()  # посчитаем количество строк
+        self.table_data.insertRow(count_row)
+
+    def del_in_table(self):
+        index = self.table_data.currentIndex()
+        self.table_data.removeRow(index.row())
+
     def add_example_obj(self):
-        # print(self.model_data.item(0,0).text()) # получить текст ячейки
-        # print(self.model_data.appendRow(QtGui.QStandardItem(1,32)))  # добавить строку
-        # print(self.model_data.rowCount()) #количество строк
-        print(None)
+
+        data_list = [
+            [f'Е-{random.randint(1,20)}', 'Емкость', 'Наземная', 'Сталь', 'ДНС-2', 'Хранение нефти',
+             '0', '0', '0,8', '10', f'{random.randrange(100, 500, 100)}', '0.8 ', f'{random.randrange(100, 500, 25)}', '1', ],
+            ['Нефтепровод от т.10 до УПСВ', 'Нефтепровод', 'Поздемная', 'Сталь В20', 'Ивинское м.н.', 'Транспорт нефти',
+             '0,985', f'{random.choice([89,114,159,219])}', '1.25', '10', '0', '0 ', '0', '0', ]
+        ]
+        # Добавить данные
+        count_row = self.table_data.rowCount()  # посчитаем количество строк
+
+        for item in data_list:  # возьмем каждый словарь из data_list
+            count_col = 0  # колонка с индесом 0
+            # вставим строку, т.е. если строк 0, то на 0 позицию по индексу,
+            # если кол-во строк 1 то на 1 позицию по индексу
+            self.table_data.insertRow(count_row)
+            for var in item:  # для каждого значения из словаря item пробежим по столбцам
+                TableWidgetItem = QtWidgets.QTableWidgetItem(var)
+                self.table_data.setItem(count_row, count_col, TableWidgetItem)
+                count_col += 1  # + 1 к столбцу
+            count_row += 1  # +1 к строке (новая строка если len(data_list) > 1)
 
 
 if __name__ == '__main__':

@@ -94,3 +94,22 @@ if __name__ == '__main__':
     win = Table()
     win.show()
     sys.exit(app.exec())
+
+
+# Запрет редактирования столбцов
+# from PyQt5.QtWidgets import *
+# from PyQt5.QtCore import *
+# import sys
+#
+# if __name__=="__main__":
+#     app = QApplication([])
+#     rows,cols = 5,7
+#     w = QTableWidget(rows,cols)
+#     for row in range(rows):
+#         for col in range(cols):
+#             item = QTableWidgetItem(str(row+col))
+#             if col == 1:
+#                 item.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)
+#             w.setItem(row,col,item)
+#     w.show()
+#     app.exec_()
