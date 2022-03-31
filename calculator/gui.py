@@ -89,21 +89,21 @@ class Painter(QtWidgets.QMainWindow):
         # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         # 2. Панель набора действий
         # т.к. данных  много создадим вкладки табов
-        self.tabs = QtWidgets.QTabWidget()  # создаем набор вкладок табов
+        tabs = QtWidgets.QTabWidget()  # создаем набор вкладок табов
         # 2.1 Главная вкладка (масштаб, измерения, выбор генплана, состояние подключения к БД)
-        self.tab_main = QtWidgets.QWidget()
+        tab_main = QtWidgets.QWidget()
         # 2.2. Рисование
-        self.tab_draw = QtWidgets.QWidget()
+        tab_draw = QtWidgets.QWidget()
         # добавляем к п.1.1. на главную вкладку
-        self.tabs.addTab(self.tab_main, "")
-        self.tabs.setTabIcon(0, settings_ico)
-        self.tabs.setTabToolTip(0, "Основные действия")
-        self.tab_main.layout = QtWidgets.QFormLayout(self)
+        tabs.addTab(tab_main, "")
+        tabs.setTabIcon(0, settings_ico)
+        tabs.setTabToolTip(0, "Основные действия")
+        tab_main.layout = QtWidgets.QFormLayout(self)
         # добавляем к п.1.2. на вкладку рисование
-        self.tabs.addTab(self.tab_draw, "")  # 1. Рисование
-        self.tabs.setTabIcon(1, paint_ico)
-        self.tabs.setTabToolTip(1, "Рисование")
-        self.tab_draw.layout = QtWidgets.QFormLayout(self)
+        tabs.addTab(tab_draw, "")  # 1. Рисование
+        tabs.setTabIcon(1, paint_ico)
+        tabs.setTabToolTip(1, "Рисование")
+        tab_draw.layout = QtWidgets.QFormLayout(self)
         # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
         # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -127,7 +127,7 @@ class Painter(QtWidgets.QMainWindow):
         self.type_act.setItemIcon(1, dist_ico)
         self.type_act.setItemIcon(2, area_ico)
         # self.type_act.activated[str].connect(self.select_type_act)
-        self.result_type_act = QtWidgets.QLabel() # для вывода результата применения type_act + draw_type_act
+        result_type_act = QtWidgets.QLabel() # для вывода результата применения type_act + draw_type_act
         self.draw_type_act = QtWidgets.QPushButton("Применить")
         # self.draw_type_act.clicked.connect(self.change_draw_type_act)
         self.draw_type_act.setCheckable(True)
@@ -139,14 +139,14 @@ class Painter(QtWidgets.QMainWindow):
         GB_act.setStyleSheet("QGroupBox { font-weight : bold; }")
         layout_act.addRow("", self.type_act)
         layout_act.addRow("", self.draw_type_act)
-        layout_act.addRow("", self.result_type_act)
+        layout_act.addRow("", result_type_act)
         GB_act.setLayout(layout_act)
 
         # Собираем рамки №№ 1-2
-        self.tab_main.layout.addWidget(GB_scale)
-        self.tab_main.layout.addWidget(GB_act)
+        tab_main.layout.addWidget(GB_scale)
+        tab_main.layout.addWidget(GB_act)
         # Размещаем на табе рамки №№ 1-2
-        self.tab_main.setLayout(self.tab_main.layout)
+        tab_main.setLayout(tab_main.layout)
         # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
         # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -248,11 +248,11 @@ class Painter(QtWidgets.QMainWindow):
         GB_opacity.setLayout(layout_opacity)
 
         # Собираем рамки №№ 1-3
-        self.tab_draw.layout.addWidget(GB_zone)
-        self.tab_draw.layout.addWidget(GB_xl)
-        self.tab_draw.layout.addWidget(GB_opacity)
+        tab_draw.layout.addWidget(GB_zone)
+        tab_draw.layout.addWidget(GB_xl)
+        tab_draw.layout.addWidget(GB_opacity)
         # Размещаем на табе
-        self.tab_draw.setLayout(self.tab_draw.layout)
+        tab_draw.setLayout(tab_draw.layout)
         # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
         # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -302,9 +302,9 @@ class Painter(QtWidgets.QMainWindow):
         # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
         # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-        # 4. Размещение всего на центральной сетке
+        # 4. Размещение основных элементов на центральной сетке
         central_grid.addWidget(GB_picture, 0, 0, 1, 0)
-        central_grid.addWidget(self.tabs, 1, 0, 1, 1)
+        central_grid.addWidget(tabs, 1, 0, 1, 1)
         central_grid.addWidget(GB_data, 1, 1, 1, 1)
         central_widget.setLayout(central_grid)
         self.setCentralWidget(central_widget)
