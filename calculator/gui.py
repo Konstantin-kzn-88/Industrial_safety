@@ -18,6 +18,8 @@ class Painter(QtWidgets.QMainWindow):
 
         paint_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/painter.png')
         book_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/book.png')
+        word_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/word.png')
+        project_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/project2.png')
 
         db_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/data_base.png')
         ok_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/ok.png')
@@ -52,9 +54,6 @@ class Painter(QtWidgets.QMainWindow):
         self.setWindowTitle('Safety_risk')
         self.setWindowIcon(self.main_ico)
         # Центральный виджет
-        # создаем сетку из двух колонок
-        # окно для дерева объектов и элементов рисования
-        # окно для базыданных и кнопок
         central_widget = QtWidgets.QWidget()
         central_grid = QtWidgets.QGridLayout(self)
         central_grid.setColumnStretch(0, 1)
@@ -92,18 +91,25 @@ class Painter(QtWidgets.QMainWindow):
         tabs = QtWidgets.QTabWidget()  # создаем набор вкладок табов
         # 2.1 Главная вкладка (масштаб, измерения, выбор генплана, состояние подключения к БД)
         tab_main = QtWidgets.QWidget()
-        # 2.2. Рисование
+        # 2.2. Зоны поражения
         tab_draw = QtWidgets.QWidget()
-        # добавляем к п.1.1. на главную вкладку
+        # 2.3. Ситуационные планы
+        tab_situational_plans = QtWidgets.QWidget()
+        # добавляем к п.2.1. на главную вкладку
         tabs.addTab(tab_main, "")
-        tabs.setTabIcon(0, settings_ico)
+        tabs.setTabIcon(0, project_ico)
         tabs.setTabToolTip(0, "Основные действия")
         tab_main.layout = QtWidgets.QFormLayout(self)
-        # добавляем к п.1.2. на вкладку рисование
-        tabs.addTab(tab_draw, "")  # 1. Рисование
+        # добавляем к п.2.2. на вкладку зон поражения
+        tabs.addTab(tab_draw, "")  # 2. Зоны поражения
         tabs.setTabIcon(1, paint_ico)
-        tabs.setTabToolTip(1, "Рисование")
+        tabs.setTabToolTip(1, "Зоны поражения")
         tab_draw.layout = QtWidgets.QFormLayout(self)
+        # добавляем к п.2.3. на вкладку ситуационных планов
+        tabs.addTab(tab_situational_plans, "")  # 3. Ситуационные планы
+        tabs.setTabIcon(2, word_ico)
+        tabs.setTabToolTip(2, "Отчет")
+        tab_situational_plans.layout = QtWidgets.QFormLayout(self)
         # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
         # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -127,11 +133,12 @@ class Painter(QtWidgets.QMainWindow):
         self.type_act.setItemIcon(1, dist_ico)
         self.type_act.setItemIcon(2, area_ico)
         # self.type_act.activated[str].connect(self.select_type_act)
-        result_type_act = QtWidgets.QLabel() # для вывода результата применения type_act + draw_type_act
+        self.result_type_act = QtWidgets.QLabel() # для вывода результата применения type_act + draw_type_act
         self.draw_type_act = QtWidgets.QPushButton("Применить")
         # self.draw_type_act.clicked.connect(self.change_draw_type_act)
         self.draw_type_act.setCheckable(True)
         self.draw_type_act.setChecked(False)
+
         # Упаковываем все в QGroupBox
         # Рамка №2
         layout_act = QtWidgets.QFormLayout(self)
@@ -139,34 +146,40 @@ class Painter(QtWidgets.QMainWindow):
         GB_act.setStyleSheet("QGroupBox { font-weight : bold; }")
         layout_act.addRow("", self.type_act)
         layout_act.addRow("", self.draw_type_act)
-        layout_act.addRow("", result_type_act)
+        layout_act.addRow("", self.result_type_act)
         GB_act.setLayout(layout_act)
 
-        # Собираем рамки №№ 1-2
+        # 2.1.3. Рамка №3. Главной вкладки. Ситуацилнные планы. (то что будет в рамке 3)
+        self.plan_list = QtWidgets.QComboBox()  # ген.планы объекта
+        self.plan_list.addItems(["--Нет ген.планов--"])
+        self.plan_list.setToolTip("""Ген.планы объекта""")
+        # # self.plan_list.activated[str].connect(self.plan_list_select)
+        self.data_base_info_connect = QtWidgets.QLabel()  # информация о подключении базы данных
+        self.data_base_info_connect.setText('Нет подключения к базе данных...')
+        self.data_base_info_connect.setFont(QtGui.QFont("Times", 10, QtGui.QFont.Bold))
+        self.data_base_info_connect.setStyleSheet('color: red')
+
+
+        # Упаковываем все в QGroupBox
+        # Рамка №2
+        layout_plan = QtWidgets.QFormLayout(self)
+        GB_plan = QtWidgets.QGroupBox('Выбор ген.плана')
+        GB_plan.setStyleSheet("QGroupBox { font-weight : bold; }")
+        layout_plan.addRow("", self.plan_list)
+        layout_plan.addRow("", self.data_base_info_connect)
+        GB_plan.setLayout(layout_plan)
+
+        # Собираем рамки №№ 1-3
         tab_main.layout.addWidget(GB_scale)
         tab_main.layout.addWidget(GB_act)
+        tab_main.layout.addWidget(GB_plan)
         # Размещаем на табе рамки №№ 1-2
         tab_main.setLayout(tab_main.layout)
         # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
         # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-        # self.db_name = QtWidgets.QLineEdit()  # Наименование  базы данных
-        # self.db_name.setPlaceholderText("Наименование базы данных")
-        # self.db_name.setToolTip("Наименование базы данных")
-        # self.db_name.setReadOnly(True)
-        # self.db_path = QtWidgets.QLineEdit()  # путь  базы данных
-        # self.db_path.setPlaceholderText("Путь базы данных")
-        # self.db_path.setToolTip("Путь базы данных")
-        # self.db_path.setReadOnly(True)
-        # # Рамка №2 (то что будет в рамке 2)
-        # self.plan_list = QtWidgets.QComboBox()  # ген.планы объекта
-        # self.plan_list.addItems(["--Нет ген.планов--"])
-        # self.plan_list.setToolTip("""Ген.планы объекта""")
-        # # self.plan_list.activated[str].connect(self.plan_list_select)
-
-        # 2.2.1. Рамка №1. Владки рисования. (то что будет в рамке 1)
-        # color_zone набор кнопок для рисования 6 возможных зон поражения
+        # 2.2.1. Рамка №1. Владки зон поражения. (то что будет в рамке 1)
+        # color_zone набор кнопок для зон 6 возможных зон поражения
         self.color_zone1_btn = QtWidgets.QPushButton("Зона 1")
         self.color_zone1_btn.setIcon(color_ico)
         self.color_zone1_btn.setToolTip("Цвет зоны 1")
@@ -198,7 +211,7 @@ class Painter(QtWidgets.QMainWindow):
         self.color_zone6_btn.setStyleSheet("background-color: yellow")
         # self.color_zone6_btn.clicked.connect(self.select_color)
 
-        # 2.2.2. Рамка №2. Владки рисования. (то что будет в рамке 2)
+        # 2.2.2. Рамка №2. Владки зон поражения. (то что будет в рамке 2)
         self.data_excel = QtWidgets.QLineEdit()
         self.data_excel.setPlaceholderText("Данные из Excel")
         self.data_excel.setToolTip("Данные из Excel")
@@ -208,7 +221,7 @@ class Painter(QtWidgets.QMainWindow):
         self.get_data_btn.setToolTip("Загрузить выделенный диапазон")
         # self.get_data_btn.clicked.connect(self.get_data_excel)
 
-        # 2.2.3. Рамка №3. Владки рисования. (то что будет в рамке 3)
+        # 2.2.3. Рамка №3. Владки зон поражения. (то что будет в рамке 3)
         self.opacity = QtWidgets.QDoubleSpinBox()
         self.opacity.setDecimals(1)
         self.opacity.setRange(0, 1)
@@ -273,26 +286,38 @@ class Painter(QtWidgets.QMainWindow):
         self.table_data_view()  # фукция отрисовки заголовков таблицы
         # кнопки управления
         layout_control = QtWidgets.QFormLayout(self)
-        GB_control = QtWidgets.QGroupBox()
+        GB_control = QtWidgets.QGroupBox('Действия объекта')
 
         self.add_row = QtWidgets.QPushButton("Добавить объект")
+        self.add_row.setStyleSheet("text-align: left;")
         self.add_row.setIcon(plus_ico)
         self.add_row.setToolTip("Добавить строку в таблицу")
         self.add_row.clicked.connect(self.add_in_table)
 
         self.del_row = QtWidgets.QPushButton("Удалить объект")
+        self.del_row.setStyleSheet("text-align: left;")
         self.del_row.setIcon(minus_ico)
         self.del_row.setToolTip("Удалить строку из таблицу")
         self.del_row.clicked.connect(self.del_in_table)
 
         self.example_obj = QtWidgets.QPushButton("Пример объекта")
+        self.example_obj.setStyleSheet("text-align: left;")
         self.example_obj.setIcon(book_ico)
         self.example_obj.setToolTip("Добавить примерный объект")
         self.example_obj.clicked.connect(self.add_example_obj)
 
+        self.draw_obj = QtWidgets.QPushButton("Координаты")
+        self.draw_obj.setStyleSheet ("text-align: left;")
+        self.draw_obj.setToolTip('Указать координаты выбранного в таблице объекта')
+        self.draw_obj.setIcon(object_ico)
+        # self.draw_obj.clicked.connect(self.change_draw_type_act)
+        self.draw_obj.setCheckable(True)
+        self.draw_obj.setChecked(False)
+
         layout_control.addRow("", self.add_row)
         layout_control.addRow("", self.del_row)
         layout_control.addRow("", self.example_obj)
+        layout_control.addRow("", self.draw_obj)
         GB_control.setLayout(layout_control)
 
         data_grid.addWidget(self.table_data, 0, 0, 1, 1)

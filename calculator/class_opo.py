@@ -1,5 +1,5 @@
 import math
-from typing import Any, Union
+from typing import Union
 import os
 from datetime import date
 from docxtpl import DocxTemplate, InlineImage
