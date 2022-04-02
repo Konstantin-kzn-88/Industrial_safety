@@ -20,6 +20,12 @@ class Painter(QtWidgets.QMainWindow):
         book_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/book.png')
         word_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/word.png')
         project_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/project2.png')
+        pen_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/pen.png')
+        download_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/download.png')
+        fire_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/fire.png')
+        explosion_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/explosion.png')
+        flash_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/flash.png')
+        show_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/planshow.png')
 
         db_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/data_base.png')
         ok_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/ok.png')
@@ -94,7 +100,7 @@ class Painter(QtWidgets.QMainWindow):
         # 2.2. Зоны поражения
         tab_draw = QtWidgets.QWidget()
         # 2.3. Ситуационные планы
-        tab_situational_plans = QtWidgets.QWidget()
+        tab_report = QtWidgets.QWidget()
         # добавляем к п.2.1. на главную вкладку
         tabs.addTab(tab_main, "")
         tabs.setTabIcon(0, project_ico)
@@ -106,10 +112,10 @@ class Painter(QtWidgets.QMainWindow):
         tabs.setTabToolTip(1, "Зоны поражения")
         tab_draw.layout = QtWidgets.QFormLayout(self)
         # добавляем к п.2.3. на вкладку ситуационных планов
-        tabs.addTab(tab_situational_plans, "")  # 3. Ситуационные планы
+        tabs.addTab(tab_report, "")  # 3. Ситуационные планы
         tabs.setTabIcon(2, word_ico)
         tabs.setTabToolTip(2, "Отчет")
-        tab_situational_plans.layout = QtWidgets.QFormLayout(self)
+        tab_report.layout = QtWidgets.QFormLayout(self)
         # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
         # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -267,6 +273,87 @@ class Painter(QtWidgets.QMainWindow):
         # Размещаем на табе
         tab_draw.setLayout(tab_draw.layout)
         # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+        # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        # 2.3.1. Рамка №1. Вкладка отчетов. Организация  (то что будет в рамке 1)
+        self.organization = QtWidgets.QComboBox() # тип организации
+        self.organization.addItems(["--Выбрать организацию--"])
+        # # self.type_act.activated[str].connect(self.select_type_act)
+        self.organization_add = QtWidgets.QPushButton("Добавить")
+        self.organization_add.setIcon(plus_ico)
+        # # self.draw_type_act.clicked.connect(self.change_draw_type_act)
+        self.organization_edit = QtWidgets.QPushButton("Редактировать")
+        self.organization_edit.setIcon(pen_ico)
+        # # self.draw_type_act.clicked.connect(self.change_draw_type_act)
+        self.organization_del = QtWidgets.QPushButton("Удалить")
+        self.organization_del.setIcon(minus_ico)
+        # # self.draw_type_act.clicked.connect(self.change_draw_type_act)
+        #
+        # # Упаковываем все в QGroupBox
+        # # Рамка №1
+        layout_org = QtWidgets.QFormLayout(self)
+        GB_org = QtWidgets.QGroupBox('Организация')
+        GB_org.setStyleSheet("QGroupBox { font-weight : bold; }")
+        layout_org.addRow("", self.organization)
+        hbox_org = QtWidgets.QHBoxLayout()
+        hbox_org.addWidget(self.organization_add)
+        hbox_org.addWidget(self.organization_edit)
+        hbox_org.addWidget(self.organization_del)
+        layout_org.addRow("", hbox_org)
+        GB_org.setLayout(layout_org)
+
+        # 2.3.2. Рамка №2. Вкладка отчетов. Тип документа  (то что будет в рамке 2)
+        self.type_doc = QtWidgets.QComboBox() # тип документа
+        self.type_doc.addItems(["ДПБ", "ПМ ГОЧС"])
+        self.type_doc.setItemIcon(0, word_ico)
+        self.type_doc.setItemIcon(1, word_ico)
+        # # self.type_act.activated[str].connect(self.select_type_act)
+        doc_report = QtWidgets.QPushButton("Сохранить")
+        doc_report.setIcon(download_ico)
+        # # self.draw_type_act.clicked.connect(self.change_draw_type_act)
+
+        # Упаковываем все в QGroupBox
+        # Рамка №2
+        layout_doc = QtWidgets.QFormLayout(self)
+        GB_doc = QtWidgets.QGroupBox('Выбор документа')
+        GB_doc.setStyleSheet("QGroupBox { font-weight : bold; }")
+        hbox_doc = QtWidgets.QHBoxLayout()
+        hbox_doc.addWidget(self.type_doc)
+        hbox_doc.addWidget(doc_report)
+        layout_doc.addRow("", hbox_doc)
+        GB_doc.setLayout(layout_doc)
+
+        # 2.3.3. Рамка №3. Вкладка отчетов. Тип плана  (то что будет в рамке 3)
+        self.type_plan = QtWidgets.QComboBox() # тип плана
+        self.type_plan.addItems(["Взрыв", "Пожар", "Вспышка", "Риск"])
+        self.type_plan.setItemIcon(0, explosion_ico)
+        self.type_plan.setItemIcon(1, fire_ico)
+        self.type_plan.setItemIcon(2, flash_ico)
+        self.type_plan.setItemIcon(3, risk_ico)
+        # # self.type_act.activated[str].connect(self.select_type_act)
+        plan_report = QtWidgets.QPushButton("Нарисовать")
+        plan_report.setIcon(show_ico)
+        # # self.draw_type_act.clicked.connect(self.change_draw_type_act)
+
+        # Упаковываем все в QGroupBox
+        # Рамка №2
+        layout_get_plan = QtWidgets.QFormLayout(self)
+        GB_get_plan = QtWidgets.QGroupBox('Ситуационный план')
+        GB_get_plan.setStyleSheet("QGroupBox { font-weight : bold; }")
+        hbox_get_plan = QtWidgets.QHBoxLayout()
+        hbox_get_plan.addWidget(self.type_plan)
+        hbox_get_plan.addWidget(plan_report)
+        layout_get_plan.addRow("", hbox_get_plan)
+        GB_get_plan.setLayout(layout_get_plan)
+
+
+        # Собираем рамки №№ 1-3
+        tab_report.layout.addWidget(GB_org)
+        tab_report.layout.addWidget(GB_doc)
+        tab_report.layout.addWidget(GB_get_plan)
+        # Размещаем на табе рамки №№ 1-2
+        tab_report.setLayout(tab_report.layout)
+        # # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
         # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
