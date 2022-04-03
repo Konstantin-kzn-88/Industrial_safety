@@ -4,54 +4,61 @@ import sys
 from pathlib import Path
 import random
 
+sys.path.append(Path(os.getcwd()))
+from class_db import Data_base
+
 
 
 class Painter(QtWidgets.QMainWindow):
 
     def __init__(self, parent=None) -> None:
         super().__init__()
+        self.db_name = ''
+        self.db_path = ''
 
         # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         # Иконки
-        self.main_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/comp.png')
-        tree_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/tree.png')
+        path_ico = str(Path(os.getcwd()).parents[0])
 
-        paint_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/painter.png')
-        book_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/book.png')
-        word_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/word.png')
-        project_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/project2.png')
-        pen_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/pen.png')
-        download_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/download.png')
-        fire_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/fire.png')
-        explosion_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/explosion.png')
-        flash_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/flash.png')
-        show_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/planshow.png')
+        self.main_ico = QtGui.QIcon(path_ico + '/ico/comp.png')
+        tree_ico = QtGui.QIcon(path_ico + '/ico/tree.png')
 
-        db_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/data_base.png')
-        ok_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/ok.png')
-        replace_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/replace.png')
-        save_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/save.png')
-        clear_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/clear.png')
-        del_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/del.png')
-        question_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/question.png')
-        scale_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/scale.png')
-        dist_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/polyline.png')
-        area_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/area.png')
-        object_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/object.png')
-        settings_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/settings.png')
-        draw_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/draw.png')
-        state_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/state.png')
-        tube_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/tube.png')
-        tree_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/tree.png')
-        exit_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/exit.png')
-        info_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/info.png')
-        color_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/color_select.png')
-        excel_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/excel.png')
-        plus_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/plus.png')
-        minus_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/minus.png')
-        dbl_minus_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/double_minus.png')
-        hand_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/hand.png')
-        risk_ico = QtGui.QIcon(str(Path(os.getcwd()).parents[0]) + '/ico/risk.png')
+        paint_ico = QtGui.QIcon(path_ico + '/ico/painter.png')
+        book_ico = QtGui.QIcon(path_ico + '/ico/book.png')
+        word_ico = QtGui.QIcon(path_ico + '/ico/word.png')
+        project_ico = QtGui.QIcon(path_ico + '/ico/project2.png')
+        pen_ico = QtGui.QIcon(path_ico + '/ico/pen.png')
+        download_ico = QtGui.QIcon(path_ico + '/ico/download.png')
+        fire_ico = QtGui.QIcon(path_ico + '/ico/fire.png')
+        explosion_ico = QtGui.QIcon(path_ico + '/ico/explosion.png')
+        flash_ico = QtGui.QIcon(path_ico + '/ico/flash.png')
+        show_ico = QtGui.QIcon(path_ico + '/ico/planshow.png')
+
+        db_ico = QtGui.QIcon(path_ico + '/ico/data_base.png')
+        ok_ico = QtGui.QIcon(path_ico + '/ico/ok.png')
+        replace_ico = QtGui.QIcon(path_ico + '/ico/replace.png')
+        save_ico = QtGui.QIcon(path_ico + '/ico/save.png')
+        clear_ico = QtGui.QIcon(path_ico + '/ico/clear.png')
+        del_ico = QtGui.QIcon(path_ico + '/ico/del.png')
+        question_ico = QtGui.QIcon(path_ico + '/ico/question.png')
+        scale_ico = QtGui.QIcon(path_ico + '/ico/scale.png')
+        dist_ico = QtGui.QIcon(path_ico + '/ico/polyline.png')
+        area_ico = QtGui.QIcon(path_ico + '/ico/area.png')
+        object_ico = QtGui.QIcon(path_ico + '/ico/object.png')
+        settings_ico = QtGui.QIcon(path_ico + '/ico/settings.png')
+        draw_ico = QtGui.QIcon(path_ico + '/ico/draw.png')
+        state_ico = QtGui.QIcon(path_ico + '/ico/state.png')
+        tube_ico = QtGui.QIcon(path_ico + '/ico/tube.png')
+        tree_ico = QtGui.QIcon(path_ico + '/ico/tree.png')
+        exit_ico = QtGui.QIcon(path_ico + '/ico/exit.png')
+        info_ico = QtGui.QIcon(path_ico + '/ico/info.png')
+        color_ico = QtGui.QIcon(path_ico + '/ico/color_select.png')
+        excel_ico = QtGui.QIcon(path_ico + '/ico/excel.png')
+        plus_ico = QtGui.QIcon(path_ico + '/ico/plus.png')
+        minus_ico = QtGui.QIcon(path_ico + '/ico/minus.png')
+        dbl_minus_ico = QtGui.QIcon(path_ico + '/ico/double_minus.png')
+        hand_ico = QtGui.QIcon(path_ico + '/ico/hand.png')
+        risk_ico = QtGui.QIcon(path_ico + '/ico/risk.png')
         # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
         # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -428,7 +435,7 @@ class Painter(QtWidgets.QMainWindow):
         db_menu = QtWidgets.QMenu('База данных', self)
         db_create = QtWidgets.QAction(ok_ico, 'Создать', self)
         db_create.setStatusTip('Создать новую базу данных')
-        # db_create.triggered.connect(self.db_create)
+        db_create.triggered.connect(self.db_create)
         db_menu.addAction(db_create)
         db_connect = QtWidgets.QAction(db_ico, 'Подключиться', self)
         db_connect.setStatusTip('Подключиться к существующей базе данных')
@@ -721,6 +728,14 @@ class Painter(QtWidgets.QMainWindow):
                 count_col += 1  # + 1 к столбцу
             count_row += 1  # +1 к строке (новая строка если len(data_list) > 1)
     # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+    # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    # Группа функций для работы с азой данных
+    def db_create(self):
+        self.db_name, self.db_path = Data_base(self.db_name, self.db_path).db_create()
+
+    # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)

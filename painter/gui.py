@@ -495,7 +495,7 @@ class Painter(QtWidgets.QMainWindow):
         if ok:
             # получить путь сохранения базы данных
             dir = QtWidgets.QFileDialog.getExistingDirectory(self, "Выбрать путь базы данных",
-                                                             "/home",
+                                                             str(Path(os.getcwd()))[:3],
                                                              QtWidgets.QFileDialog.ShowDirsOnly
                                                              | QtWidgets.QFileDialog.DontResolveSymlinks)
             # проверить нет ли такого же файла в той же директории
