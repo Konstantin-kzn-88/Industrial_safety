@@ -77,3 +77,63 @@ class Data_base(QtWidgets.QWidget):
         self.db_path = file_path
 
         return (self.db_name, self.db_path)
+
+    def plan_add(self):
+        """
+         Загрузка файла картинки в базу данных
+        """
+        # Проверка подключения к базе данных
+        # проверка базы данных
+        if self.db_path != '' and self.db_name != '':
+
+            file_path = QtWidgets.QFileDialog.getOpenFileName(self, 'Открыть генеральный план',
+                                                              str(Path(os.getcwd()))[:3], ("Images (*.jpg)"))[0]
+            file_name = QtCore.QFileInfo(file_path).fileName()
+            # Проверка выбран ли файл ген.плана
+            if file_path == "":
+                msg = QtWidgets.QMessageBox(self)
+                msg.setIcon(QtWidgets.QMessageBox.Warning)
+                msg.setWindowTitle("Информация")
+                msg.setText("Файл не выбран")
+                msg.exec()
+                return
+
+
+            # Подключение к базе данных
+            path_str = f'{self.db_path}/{self.db_name}'.replace("/", "//")
+
+            with sql.connect(path_str) as connection:
+                cursor = connection.cursor()
+                cursor.execute("SELECT id FROM objects")
+                real_id = cursor.fetchall()
+                print()
+                # проверка максимального id в базе
+                max_id = 1 if real_id == [] else max(real_id)[0] + 1
+                # SQL запрос на вставку BLOB
+                sqlite_insert_blob_query = """ INSERT INTO 'objects'
+                                                    ('id', 'data', 'plan', 'name_plan') VALUES (?, ?, ?, ?)"""
+                # Конвертация файла в BLOB
+                plan_to_blob = self.convertToBinaryData(file_path)
+                # Проготовим множество к вставке в SQL запрос
+                data_tuple = (max_id, "", plan_to_blob, file_name)
+                cursor.execute(sqlite_insert_blob_query, data_tuple)
+
+
+
+
+
+            # cursorObj.close()
+            # self.plan_list_update()
+        else:
+            msg = QtWidgets.QMessageBox(self)
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+            msg.setWindowTitle("Информация")
+            msg.setText("База данных не подключена!")
+            msg.exec()
+            return
+
+    def convertToBinaryData(self, file_path):
+        # Конвертирование в BLOB
+        with open(file_path, 'rb') as file:
+            blobData = file.read()
+        return blobData

@@ -447,7 +447,7 @@ class Painter(QtWidgets.QMainWindow):
         plan_add = QtWidgets.QAction(ok_ico, 'Добавить', self)
         plan_add.setStatusTip('Добавить новый план объекта')
         plan_add.setShortcut('Ctrl+N')
-        # plan_add.triggered.connect(self.plan_add)
+        plan_add.triggered.connect(self.plan_add_func)
         plan_menu.addAction(plan_add)
         plan_replace = QtWidgets.QAction(replace_ico, 'Заменить', self)
         plan_replace.setStatusTip('Заменить план объекта')
@@ -752,6 +752,9 @@ class Painter(QtWidgets.QMainWindow):
         else:
             self.data_base_info_connect.setText('Нет подключения к базе данных...')
             self.data_base_info_connect.setStyleSheet('color: red')
+
+    def plan_add_func(self):
+        Data_base(self.db_name, self.db_path).plan_add()
 
     # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
