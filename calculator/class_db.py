@@ -1,4 +1,4 @@
-from PySide2 import QtWidgets, QtGui
+from PySide2 import QtWidgets, QtGui, QtCore
 import sqlite3 as sql
 import os
 from pathlib import Path
@@ -15,6 +15,9 @@ class Data_base(QtWidgets.QWidget):
         self.setWindowIcon(main_ico)
 
     def db_create(self) -> tuple:
+        """
+        Создание новой БД
+        """
         # 1. Получить имя новой базы данных
         text, ok = QtWidgets.QInputDialog.getText(self, 'Создать новую базу данных', 'Введите имя новой базы данных:')
 
@@ -51,5 +54,26 @@ class Data_base(QtWidgets.QWidget):
             cursor = connection.cursor()
             cursor.execute("""CREATE TABLE objects(id INTEGER PRIMARY KEY, data TEXT NOT NULL,
                                                     plan BLOB NOT NULL, name_plan TEXT NOT NULL)""")
+
+        return (self.db_name, self.db_path)
+
+    def db_connect(self) -> tuple:
+        """
+        Подключение к существующей БД
+        """
+
+        path = QtWidgets.QFileDialog.getOpenFileName(self, 'Открыть базу данных',
+                                                     str(Path(os.getcwd()))[:3], ("Data base (*.db)"))[0]
+        if path == "":
+            msg = QtWidgets.QMessageBox(self)
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+            msg.setWindowTitle("Информация")
+            msg.setText("Файл базы данных не выбран")
+            msg.exec()
+            return ('', '')
+        file_name = QtCore.QFileInfo(path).fileName()
+        file_path = QtCore.QFileInfo(path).path()
+        self.db_name = file_name
+        self.db_path = file_path
 
         return (self.db_name, self.db_path)

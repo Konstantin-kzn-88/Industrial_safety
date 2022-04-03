@@ -439,7 +439,7 @@ class Painter(QtWidgets.QMainWindow):
         db_menu.addAction(db_create)
         db_connect = QtWidgets.QAction(db_ico, 'Подключиться', self)
         db_connect.setStatusTip('Подключиться к существующей базе данных')
-        # db_connect.triggered.connect(self.db_connect)
+        db_connect.triggered.connect(self.db_connect)
         db_menu.addAction(db_connect)
 
         # Генплан (меню)
@@ -734,6 +734,24 @@ class Painter(QtWidgets.QMainWindow):
     # Группа функций для работы с азой данных
     def db_create(self):
         self.db_name, self.db_path = Data_base(self.db_name, self.db_path).db_create()
+        self.connect_info(self.db_name, self.db_path)
+
+    def db_connect(self):
+        self.db_name, self.db_path = Data_base(self.db_name, self.db_path).db_connect()
+        self.connect_info(self.db_name, self.db_path)
+    #     TODO Поставить функцию очиски ген.плана
+
+    def connect_info(self, name:str, path:str):
+        """
+        Проверка наличия данных о подключения БД
+        Путь и имя базы данных не равны пустым строкам
+        """
+        if path != '' and name != '':
+            self.data_base_info_connect.setText(f'База  данных {self.db_name} подключена!')
+            self.data_base_info_connect.setStyleSheet('color: green')
+        else:
+            self.data_base_info_connect.setText('Нет подключения к базе данных...')
+            self.data_base_info_connect.setStyleSheet('color: red')
 
     # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
