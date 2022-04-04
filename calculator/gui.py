@@ -4,8 +4,7 @@ import sys
 from pathlib import Path
 import random
 
-sys.path.append(Path(os.getcwd()))
-from class_db import Data_base
+from data_base import class_db
 
 
 
@@ -731,14 +730,15 @@ class Painter(QtWidgets.QMainWindow):
 
     # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-    # Группа функций для работы с азой данных
+    # Группа функций для работы с базой данных
     def db_create(self):
-        self.db_name, self.db_path = Data_base(self.db_name, self.db_path).db_create()
+        self.db_name, self.db_path = class_db.Data_base(self.db_name, self.db_path).db_create()
         self.connect_info(self.db_name, self.db_path)
 
     def db_connect(self):
-        self.db_name, self.db_path = Data_base(self.db_name, self.db_path).db_connect()
+        self.db_name, self.db_path = class_db.Data_base(self.db_name, self.db_path).db_connect()
         self.connect_info(self.db_name, self.db_path)
+        class_db.Data_base(self.db_name, self.db_path).plan_list_update(self.plan_list)
     #     TODO Поставить функцию очиски ген.плана
 
     def connect_info(self, name:str, path:str):
@@ -753,8 +753,10 @@ class Painter(QtWidgets.QMainWindow):
             self.data_base_info_connect.setText('Нет подключения к базе данных...')
             self.data_base_info_connect.setStyleSheet('color: red')
 
+    # Функции работы с ген.планом
     def plan_add_func(self):
-        Data_base(self.db_name, self.db_path).plan_add()
+        class_db.Data_base(self.db_name, self.db_path).plan_add()
+        class_db.Data_base(self.db_name, self.db_path).plan_list_update(self.plan_list)
 
     # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
