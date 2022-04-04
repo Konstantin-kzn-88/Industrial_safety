@@ -165,7 +165,7 @@ class Painter(QtWidgets.QMainWindow):
         self.plan_list = QtWidgets.QComboBox()  # ген.планы объекта
         self.plan_list.addItems(["--Нет ген.планов--"])
         self.plan_list.setToolTip("""Ген.планы объекта""")
-        # # self.plan_list.activated[str].connect(self.plan_list_select)
+        self.plan_list.activated[str].connect(self.plan_list_select)
         self.data_base_info_connect = QtWidgets.QLabel()  # информация о подключении базы данных
         self.data_base_info_connect.setText('Нет подключения к базе данных...')
         self.data_base_info_connect.setFont(QtGui.QFont("Times", 10, QtGui.QFont.Bold))
@@ -445,29 +445,24 @@ class Painter(QtWidgets.QMainWindow):
         plan_menu = QtWidgets.QMenu('Ген.план', self)
         plan_add = QtWidgets.QAction(ok_ico, 'Добавить', self)
         plan_add.setStatusTip('Добавить новый план объекта')
-        plan_add.setShortcut('Ctrl+N')
         plan_add.triggered.connect(self.plan_add_func)
         plan_menu.addAction(plan_add)
         plan_replace = QtWidgets.QAction(replace_ico, 'Заменить', self)
         plan_replace.setStatusTip('Заменить план объекта')
-        plan_replace.setShortcut('Ctrl+R')
         # plan_replace.triggered.connect(self.plan_replace)
         plan_menu.addAction(plan_replace)
         plan_save = QtWidgets.QAction(save_ico, 'Coхранить', self)
         plan_save.setStatusTip('Сохранить текущее изображение плана объекта как файл')
-        plan_save.setShortcut('Ctrl+S')
         # plan_save.triggered.connect(self.plan_save)
         plan_menu.addAction(plan_save)
         plan_clear = QtWidgets.QAction(clear_ico, 'Очистить', self)
         plan_clear.setStatusTip('Очистить план объекта')
-        plan_clear.setShortcut('Ctrl+С')
         # plan_clear.triggered.connect(self.plan_clear)
         plan_menu.addAction(plan_clear)
         plan_del = QtWidgets.QAction(del_ico, 'Удалить план с объектами', self)
         plan_del.setStatusTip('Удалить изображение плана объекта')
-        plan_del.setShortcut('Ctrl+X')
         # plan_del.triggered.connect(self.plan_del)
-        # plan_menu.addAction(plan_del)
+        plan_menu.addAction(plan_del)
 
         # Выход из приложения
         exit_prog = QtWidgets.QAction(exit_ico, 'Выход', self)
@@ -757,6 +752,15 @@ class Painter(QtWidgets.QMainWindow):
     def plan_add_func(self):
         class_db.Data_base(self.db_name, self.db_path).plan_add()
         class_db.Data_base(self.db_name, self.db_path).plan_list_update(self.plan_list)
+
+    def plan_list_select(self, text):
+        image_data = class_db.Data_base(self.db_name, self.db_path).get_plan_in_db(text)
+        if image_data is not None:
+            self.scene.clear()
+            qimg = QtGui.QImage.fromData(image_data)
+            self.pixmap = QtGui.QPixmap.fromImage(qimg)
+            self.scene.addPixmap(self.pixmap)
+            self.scene.setSceneRect(QtCore.QRectF(self.pixmap.rect()))
 
     # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 

@@ -165,3 +165,26 @@ class Data_base(QtWidgets.QWidget):
                     plan_list.addItems(plan_item)
 
 
+    def get_plan_in_db(self, text: str):
+        """
+        Функция получения картинки из базы данных
+        :param text - строка полученная из QComboBox (id и name_plan)
+        :return image_data - BLOB формат картинки или None если картинка в базе не найдена
+        """
+        if self.db_path != '' and self.db_name != '':
+            path_str = f'{self.db_path}/{self.db_name}'.replace("/", "//")
+
+            with sql.connect(path_str) as connection:
+
+                cursor = connection.cursor()
+                cursor.execute("SELECT * FROM objects")
+                plan_in_db = cursor.fetchall()
+                for row in plan_in_db:
+                    if str(f'{row[0]}, {row[3]}') == text:
+                        image_data = row[2]
+                        return image_data
+                return
+
+
+
+
