@@ -3,9 +3,26 @@ import os
 import sys
 from pathlib import Path
 import random
+from shapely.geometry import Point, LineString, Polygon
 
 from data_base import class_db
 
+
+class MoveItem(QtWidgets.QGraphicsItem):
+    def __init__(self, thickness=10):
+        super().__init__()
+        self.tag = None
+        self.thickness = thickness
+
+    def boundingRect(self):
+        # print('boundingRect')
+        return QtCore.QRectF(-(self.thickness), -(self.thickness), self.thickness, self.thickness);
+
+    def paint(self, painter, option, widget):  # рисуем новый квадрат со стороной 10
+        # print('paint')
+        painter.setPen(QtCore.Qt.red)
+        painter.setBrush(QtCore.Qt.red)
+        painter.drawRect(-5, -5, 5, 5)
 
 
 class Painter(QtWidgets.QMainWindow):
@@ -61,6 +78,18 @@ class Painter(QtWidgets.QMainWindow):
         # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
         # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        # Глобальные переменные в программе
+        # а) Список для запоминания координат для определения масштаба
+        # по следующему алгоритму:
+        # при каждом нажатии на ген.план запоминает координаты клика (х,у)
+        # затем при len(self.data_scale) == 4, запрашивает у пользователя
+        # QInputDialog число, чему этом отрезок равен в метрах и вычисляется масштаб
+        # self.data_scale становится [].
+        self.data_scale = []
+
+        # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+        # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         # Главное окно
         self.setGeometry(500, 500, 950, 750)
         self.setWindowTitle('Safety_risk')
@@ -88,7 +117,7 @@ class Painter(QtWidgets.QMainWindow):
         self.pixmap = QtGui.QPixmap()
         self.scene.addPixmap(self.pixmap)
         # создаем обработчик клика мыши по сцене
-        # self.scene.mousePressEvent = self.m_press_event
+        self.scene.mousePressEvent = self.scene_press_event
         # создаем вид который визуализирует сцену
         self.view = QtWidgets.QGraphicsView(self.scene, self)
         self.area.setWidget(self.view)
@@ -107,6 +136,8 @@ class Painter(QtWidgets.QMainWindow):
         tab_draw = QtWidgets.QWidget()
         # 2.3. Ситуационные планы
         tab_report = QtWidgets.QWidget()
+        # 2.4. Настройки
+        tab_settings = QtWidgets.QWidget()
         # добавляем к п.2.1. на главную вкладку
         tabs.addTab(tab_main, "")
         tabs.setTabIcon(0, project_ico)
@@ -118,10 +149,15 @@ class Painter(QtWidgets.QMainWindow):
         tabs.setTabToolTip(1, "Зоны поражения")
         tab_draw.layout = QtWidgets.QFormLayout(self)
         # добавляем к п.2.3. на вкладку ситуационных планов
-        tabs.addTab(tab_report, "")  # 3. Ситуационные планы
+        tabs.addTab(tab_report, "")  # 3. Отчет
         tabs.setTabIcon(2, word_ico)
         tabs.setTabToolTip(2, "Отчет")
         tab_report.layout = QtWidgets.QFormLayout(self)
+        # добавляем к п.2.4. на вкладку ситуационных планов
+        tabs.addTab(tab_settings, "")  # 3. Ситуационные планы
+        tabs.setTabIcon(3, settings_ico)
+        tabs.setTabToolTip(3, "Настройки")
+        tab_settings.layout = QtWidgets.QFormLayout(self)
         # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
         # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -139,15 +175,15 @@ class Painter(QtWidgets.QMainWindow):
         GB_scale.setLayout(layout_scale)
 
         # 2.1.2. Рамка №2. Главной вкладки. Действия (масштаб, расстояние, площадь)  (то что будет в рамке 2)
-        self.type_act = QtWidgets.QComboBox() # тип действия
+        self.type_act = QtWidgets.QComboBox()  # тип действия
         self.type_act.addItems(["Масштаб", "Расстояние", "Площадь"])
         self.type_act.setItemIcon(0, scale_ico)
         self.type_act.setItemIcon(1, dist_ico)
         self.type_act.setItemIcon(2, area_ico)
         # self.type_act.activated[str].connect(self.select_type_act)
-        self.result_type_act = QtWidgets.QLabel() # для вывода результата применения type_act + draw_type_act
+        self.result_type_act = QtWidgets.QLabel()  # для вывода результата применения type_act + draw_type_act
         self.draw_type_act = QtWidgets.QPushButton("Применить")
-        # self.draw_type_act.clicked.connect(self.change_draw_type_act)
+        self.draw_type_act.clicked.connect(self.change_draw_type_act)
         self.draw_type_act.setCheckable(True)
         self.draw_type_act.setChecked(False)
 
@@ -170,7 +206,6 @@ class Painter(QtWidgets.QMainWindow):
         self.data_base_info_connect.setText('Нет подключения к базе данных...')
         self.data_base_info_connect.setFont(QtGui.QFont("Times", 10, QtGui.QFont.Bold))
         self.data_base_info_connect.setStyleSheet('color: red')
-
 
         # Упаковываем все в QGroupBox
         # Рамка №2
@@ -282,7 +317,7 @@ class Painter(QtWidgets.QMainWindow):
 
         # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         # 2.3.1. Рамка №1. Вкладка отчетов. Организация  (то что будет в рамке 1)
-        self.organization = QtWidgets.QComboBox() # тип организации
+        self.organization = QtWidgets.QComboBox()  # тип организации
         self.organization.addItems(["--Выбрать организацию--"])
         # # self.type_act.activated[str].connect(self.select_type_act)
         self.organization_add = QtWidgets.QPushButton("Добавить")
@@ -309,7 +344,7 @@ class Painter(QtWidgets.QMainWindow):
         GB_org.setLayout(layout_org)
 
         # 2.3.2. Рамка №2. Вкладка отчетов. Тип документа  (то что будет в рамке 2)
-        self.type_doc = QtWidgets.QComboBox() # тип документа
+        self.type_doc = QtWidgets.QComboBox()  # тип документа
         self.type_doc.addItems(["ДПБ", "ПМ ГОЧС"])
         self.type_doc.setItemIcon(0, word_ico)
         self.type_doc.setItemIcon(1, word_ico)
@@ -330,7 +365,7 @@ class Painter(QtWidgets.QMainWindow):
         GB_doc.setLayout(layout_doc)
 
         # 2.3.3. Рамка №3. Вкладка отчетов. Тип плана  (то что будет в рамке 3)
-        self.type_plan = QtWidgets.QComboBox() # тип плана
+        self.type_plan = QtWidgets.QComboBox()  # тип плана
         self.type_plan.addItems(["Взрыв", "Пожар", "Вспышка", "Риск"])
         self.type_plan.setItemIcon(0, explosion_ico)
         self.type_plan.setItemIcon(1, fire_ico)
@@ -352,13 +387,34 @@ class Painter(QtWidgets.QMainWindow):
         layout_get_plan.addRow("", hbox_get_plan)
         GB_get_plan.setLayout(layout_get_plan)
 
-
         # Собираем рамки №№ 1-3
         tab_report.layout.addWidget(GB_org)
         tab_report.layout.addWidget(GB_doc)
         tab_report.layout.addWidget(GB_get_plan)
         # Размещаем на табе рамки №№ 1-2
         tab_report.setLayout(tab_report.layout)
+        # # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+        # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        # 2.4.1. Рамка №1. Толщина линий объектов   (то что будет в рамке 1)
+        self.thickness_line = QtWidgets.QDoubleSpinBox()
+        self.thickness_line.setRange(1, 10)
+        self.thickness_line.setSingleStep(1)
+        self.thickness_line.setValue(2)
+        #
+        # # Упаковываем все в QGroupBox
+        # # Рамка №1
+        layout_set = QtWidgets.QFormLayout(self)
+        GB_set = QtWidgets.QGroupBox('Толщина линий объектов')
+        GB_set.setStyleSheet("QGroupBox { font-weight : bold; }")
+        layout_set.addRow("", self.thickness_line)
+        GB_set.setLayout(layout_set)
+
+        # Собираем рамки №№ 1
+        tab_settings.layout.addWidget(GB_set)
+
+        # Размещаем на табе рамки №№ 1
+        tab_settings.setLayout(tab_settings.layout)
         # # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
         # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -400,10 +456,10 @@ class Painter(QtWidgets.QMainWindow):
         self.example_obj.clicked.connect(self.add_example_obj)
 
         self.draw_obj = QtWidgets.QPushButton("Координаты")
-        self.draw_obj.setStyleSheet ("text-align: left;")
+        self.draw_obj.setStyleSheet("text-align: left;")
         self.draw_obj.setToolTip('Указать координаты выбранного в таблице объекта')
         self.draw_obj.setIcon(object_ico)
-        # self.draw_obj.clicked.connect(self.change_draw_type_act)
+        self.draw_obj.clicked.connect(self.change_draw_obj)
         self.draw_obj.setCheckable(True)
         self.draw_obj.setChecked(False)
 
@@ -562,8 +618,9 @@ class Painter(QtWidgets.QMainWindow):
             self.show()
 
     # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     # Группа функций работы с таблицей self.table_data
+    # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
     def table_data_view(self):
         """
         Оформление таблицы для введения данных self.table_data
@@ -703,10 +760,11 @@ class Painter(QtWidgets.QMainWindow):
     def add_example_obj(self):
 
         data_list = [
-            [f'Е-{random.randint(1,20)}', 'Емкость', 'Наземная', 'Сталь', 'ДНС-2', 'Хранение нефти',
-             '0', '0', '0,8', '10', f'{random.randrange(100, 500, 100)}', '0.8 ', f'{random.randrange(100, 500, 25)}', '1', ],
+            [f'Е-{random.randint(1, 20)}', 'Емкость', 'Наземная', 'Сталь', 'ДНС-2', 'Хранение нефти',
+             '0', '0', '0,8', '10', f'{random.randrange(100, 500, 100)}', '0.8 ', f'{random.randrange(100, 500, 25)}',
+             '1', ],
             ['Нефтепровод от т.10 до УПСВ', 'Нефтепровод', 'Поздемная', 'Сталь В20', 'Ивинское м.н.', 'Транспорт нефти',
-             '0,985', f'{random.choice([89,114,159,219])}', '1.25', '10', '0', '0 ', '0', '0', ]
+             '0,985', f'{random.choice([89, 114, 159, 219])}', '1.25', '10', '0', '0 ', '0', '0', ]
         ]
         # Добавить данные
         count_row = self.table_data.rowCount()  # посчитаем количество строк
@@ -721,11 +779,13 @@ class Painter(QtWidgets.QMainWindow):
                 self.table_data.setItem(count_row, count_col, TableWidgetItem)
                 count_col += 1  # + 1 к столбцу
             count_row += 1  # +1 к строке (новая строка если len(data_list) > 1)
+
     # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-    # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     # Группа функций для работы с базой данных
+    # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
     def db_create(self):
         self.db_name, self.db_path = class_db.Data_base(self.db_name, self.db_path).db_create()
         self.connect_info(self.db_name, self.db_path)
@@ -734,9 +794,9 @@ class Painter(QtWidgets.QMainWindow):
         self.db_name, self.db_path = class_db.Data_base(self.db_name, self.db_path).db_connect()
         self.connect_info(self.db_name, self.db_path)
         class_db.Data_base(self.db_name, self.db_path).plan_list_update(self.plan_list)
-    #     TODO Поставить функцию очиски ген.плана
+        self.del_all_item() # очистить ген.планы от item
 
-    def connect_info(self, name:str, path:str):
+    def connect_info(self, name: str, path: str):
         """
         Проверка наличия данных о подключения БД
         Путь и имя базы данных не равны пустым строкам
@@ -762,6 +822,104 @@ class Painter(QtWidgets.QMainWindow):
             self.scene.addPixmap(self.pixmap)
             self.scene.setSceneRect(QtCore.QRectF(self.pixmap.rect()))
 
+    # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+    # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    # Функции работы со сценой
+    # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+    def scene_press_event(self, event):
+        # Проверим наличие ген.плана
+        if self.plan_list.currentText() != '--Нет ген.планов--':
+            # Отожмем кнопку отрисовки координатов объектов
+            self.draw_obj.setChecked(False)
+            # Проверим нажатие кнопки draw_type_act,
+            # что мы хотим определить
+            # - масштаб
+            # - измерить растояние
+            # - определить площадь:
+            if self.draw_type_act.isChecked():
+                # если масштаб
+                if self.type_act.currentIndex() == 0:
+                    print('draw scale')
+                    self.data_scale.append(str(event.scenePos().x()))  # замеряем координаты клика
+                    self.data_scale.append(str(event.scenePos().y()))  # и запсываем в data_scale
+                    self.draw_all_item(self.data_scale)
+                    if len(self.data_scale) == 4:  # как только длина data_scale == 4
+                        num_int, ok = QtWidgets.QInputDialog.getInt(self, "Масштаб", "Сколько метров:")
+                        if ok and num_int > 0:
+                            x_a = float(self.data_scale[0])  # по координатам двух точек
+                            y_a = float(self.data_scale[1])  # вычисляем расстояние в пикселях
+                            x_b = float(self.data_scale[2])
+                            y_b = float(self.data_scale[3])
+
+                            length = LineString([(x_a, y_a), (x_b, y_b)]).length
+                            self.data_scale.clear()  # очищаем data_scale
+                            self.result_type_act.setText(f"В отрезке {num_int} м: {round(length, 2)} пикселей")
+                            self.scale_plan.setText(f"{float(length) / num_int:.3f}")
+                            self.draw_type_act.setChecked(False)
+                            self.del_all_item()
+                        elif ok and num_int <= 0:
+                            self.draw_type_act.setChecked(False)
+                            self.del_all_item()
+
+                    elif len(self.data_scale) > 4:
+                        self.draw_type_act.setChecked(False)
+                        self.del_all_item()
+
+                # если длина
+                elif self.type_act.currentIndex() == 1:
+                    print('draw lenght')
+                elif self.type_act.currentIndex() == 2:
+                    print('draw square')
+
+    def del_all_item(self):
+        """
+        Удаляет все Item с картинки
+        """
+        # Находим все items на scene и переберем их
+        for item in self.scene.items():  # удалить все линии точки и линии
+            # Имя item
+            name_item = str(item)
+
+            if name_item.find('QGraphicsLineItem') != -1:
+                self.scene.removeItem(item)
+            elif name_item.find('MoveItem') != -1:
+                self.scene.removeItem(item)
+
+    def draw_all_item(self, coordinate):
+        """
+        Рисует все Item на картинке
+        """
+        if coordinate == []:
+            return
+        i = 0
+        k = 0
+        while i < len(coordinate):
+            name_rings = MoveItem()
+            # TODO убрать *3 сделать внятную переменную
+            name_rings.setPos(float(coordinate[i]), float(coordinate[i + 1]))
+            self.scene.addItem(name_rings)
+            i += 2
+        while k < len(coordinate) - 2:
+            line = QtWidgets.QGraphicsLineItem(float(coordinate[k]), float(coordinate[k + 1]),
+                                               float(coordinate[k + 2]), float(coordinate[k + 3]))
+            line.setPen(QtGui.QPen(QtCore.Qt.blue, self.thickness_line.value()))
+            self.scene.addItem(line)
+            k -= 2
+            k += 4
+
+    # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    #  Прочие функции
+    # 1. Нельзя одновременно рисовать объект
+    # и измерять, например масштаб
+    def change_draw_type_act(self):
+        if self.draw_obj.isChecked():
+            self.draw_obj.setChecked(False)
+
+    def change_draw_obj(self):
+        if self.draw_type_act.isChecked():
+            self.draw_type_act.setChecked(False)
     # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 if __name__ == '__main__':
