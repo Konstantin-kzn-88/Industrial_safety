@@ -12,6 +12,7 @@ class MoveItem(QtWidgets.QGraphicsItem):
     def __init__(self, thickness=10):
         super().__init__()
         self.tag = None
+        
         self.thickness = thickness
 
     def boundingRect(self):
