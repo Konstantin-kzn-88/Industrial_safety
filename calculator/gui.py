@@ -9,22 +9,21 @@ from data_base import class_db
 
 
 class MoveItem(QtWidgets.QGraphicsItem):
-    def __init__(self, thickness=10):
+    def __init__(self, thickness):
         super().__init__()
         self.tag = None
-        
         self.thickness = thickness
 
     def boundingRect(self):
         # print('boundingRect')
-        return QtCore.QRectF(-(self.thickness), -(self.thickness), self.thickness, self.thickness);
+        print(self.thickness)
+        return QtCore.QRectF(-(self.thickness), -(self.thickness), self.thickness, self.thickness)
 
     def paint(self, painter, option, widget):  # рисуем новый квадрат со стороной 10
         # print('paint')
         painter.setPen(QtCore.Qt.red)
         painter.setBrush(QtCore.Qt.red)
-        painter.drawRect(-5, -5, 5, 5)
-
+        painter.drawRect(-(self.thickness), -(self.thickness), self.thickness, self.thickness)
 
 class Painter(QtWidgets.QMainWindow):
 
@@ -83,10 +82,11 @@ class Painter(QtWidgets.QMainWindow):
         # а) Список для запоминания координат для определения масштаба
         # по следующему алгоритму:
         # при каждом нажатии на ген.план запоминает координаты клика (х,у)
-        # затем при len(self.data_scale) == 4, запрашивает у пользователя
+        # затем при len(self.data_draw_point) == 4, запрашивает у пользователя
         # QInputDialog число, чему этом отрезок равен в метрах и вычисляется масштаб
-        # self.data_scale становится [].
-        self.data_scale = []
+        # self.data_draw_point становится [].
+        
+        self.data_draw_point = []
 
         # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
@@ -181,7 +181,7 @@ class Painter(QtWidgets.QMainWindow):
         self.type_act.setItemIcon(0, scale_ico)
         self.type_act.setItemIcon(1, dist_ico)
         self.type_act.setItemIcon(2, area_ico)
-        # self.type_act.activated[str].connect(self.select_type_act)
+        self.type_act.activated[str].connect(self.select_type_act)
         self.result_type_act = QtWidgets.QLabel()  # для вывода результата применения type_act + draw_type_act
         self.draw_type_act = QtWidgets.QPushButton("Применить")
         self.draw_type_act.clicked.connect(self.change_draw_type_act)
@@ -402,6 +402,7 @@ class Painter(QtWidgets.QMainWindow):
         self.thickness_line.setRange(1, 10)
         self.thickness_line.setSingleStep(1)
         self.thickness_line.setValue(2)
+
         #
         # # Упаковываем все в QGroupBox
         # # Рамка №1
@@ -843,34 +844,66 @@ class Painter(QtWidgets.QMainWindow):
                 # если масштаб
                 if self.type_act.currentIndex() == 0:
                     print('draw scale')
-                    self.data_scale.append(str(event.scenePos().x()))  # замеряем координаты клика
-                    self.data_scale.append(str(event.scenePos().y()))  # и запсываем в data_scale
-                    self.draw_all_item(self.data_scale)
-                    if len(self.data_scale) == 4:  # как только длина data_scale == 4
+                    self.data_draw_point.append(str(event.scenePos().x()))  # замеряем координаты клика
+                    self.data_draw_point.append(str(event.scenePos().y()))  # и запсываем в data_draw_point
+                    self.draw_all_item(self.data_draw_point)
+                    if len(self.data_draw_point) == 4:  # как только длина data_draw_point == 4
                         num_int, ok = QtWidgets.QInputDialog.getInt(self, "Масштаб", "Сколько метров:")
                         if ok and num_int > 0:
-                            x_a = float(self.data_scale[0])  # по координатам двух точек
-                            y_a = float(self.data_scale[1])  # вычисляем расстояние в пикселях
-                            x_b = float(self.data_scale[2])
-                            y_b = float(self.data_scale[3])
+                            x_a = float(self.data_draw_point[0])  # по координатам двух точек
+                            y_a = float(self.data_draw_point[1])  # вычисляем расстояние в пикселях
+                            x_b = float(self.data_draw_point[2])
+                            y_b = float(self.data_draw_point[3])
 
                             length = LineString([(x_a, y_a), (x_b, y_b)]).length
-                            self.data_scale.clear()  # очищаем data_scale
+                            self.data_draw_point.clear()  # очищаем data_draw_point
                             self.result_type_act.setText(f"В отрезке {num_int} м: {round(length, 2)} пикселей")
                             self.scale_plan.setText(f"{float(length) / num_int:.3f}")
                             self.draw_type_act.setChecked(False)
                             self.del_all_item()
                         elif ok and num_int <= 0:
+                            self.data_draw_point.clear()  # очищаем data_draw_point
                             self.draw_type_act.setChecked(False)
                             self.del_all_item()
+                            self.result_type_act.clear()
+                            self.scale_plan.clear()
 
-                    elif len(self.data_scale) > 4:
+                    elif len(self.data_draw_point) > 4:
+                        self.data_draw_point.clear()  # очищаем data_draw_point
                         self.draw_type_act.setChecked(False)
                         self.del_all_item()
 
                 # если длина
                 elif self.type_act.currentIndex() == 1:
                     print('draw lenght')
+                    self.del_all_item()  # удалим все Item
+                    if self.scale_plan.text() == "":  # проверим есть ли масштаб
+                        msg = QtWidgets.QMessageBox(self)
+                        msg.setIcon(QtWidgets.QMessageBox.Warning)
+                        msg.setWindowTitle("Информация")
+                        msg.setText("Не установлен масштаб")
+                        msg.exec()
+                        self.draw_type_act.setChecked(False)
+                        return
+                    self.data_draw_point.append(str(event.scenePos().x()))  #
+                    self.data_draw_point.append(str(event.scenePos().y()))
+                    self.draw_all_item(self.data_draw_point)
+
+                    copy_ = self.data_draw_point.copy()
+                    if len(copy_) > 2:
+                        i = 0
+                        b_end = []
+                        while i < len(copy_):
+                            tuple_b = (float(copy_[i]), float(copy_[i + 1]))
+                            b_end.append(tuple_b)
+                            i += 2
+                            if i == len(copy_):
+                                break
+                        length = LineString(b_end).length  # shapely
+                        real_lenght = float(length) / float(self.scale_plan.displayText())
+                        real_lenght = round(real_lenght, 2)
+                        self.result_type_act.setText(f'Длина линии {real_lenght}, м')
+                        
                 elif self.type_act.currentIndex() == 2:
                     print('draw square')
 
@@ -897,8 +930,8 @@ class Painter(QtWidgets.QMainWindow):
         i = 0
         k = 0
         while i < len(coordinate):
-            name_rings = MoveItem()
-            # TODO убрать *3 сделать внятную переменную
+            thickness_marker = int(self.thickness_line.value() * 5) # сторона маркера должна быть в 4 раза больше
+            name_rings = MoveItem(thickness_marker)
             name_rings.setPos(float(coordinate[i]), float(coordinate[i + 1]))
             self.scene.addItem(name_rings)
             i += 2
@@ -915,12 +948,22 @@ class Painter(QtWidgets.QMainWindow):
     # 1. Нельзя одновременно рисовать объект
     # и измерять, например масштаб
     def change_draw_type_act(self):
+        self.data_draw_point.clear()  # очистим координаты
+        self.del_all_item()
         if self.draw_obj.isChecked():
             self.draw_obj.setChecked(False)
 
     def change_draw_obj(self):
+        self.data_draw_point.clear()  # очистим координаты
+        self.del_all_item()
         if self.draw_type_act.isChecked():
             self.draw_type_act.setChecked(False)
+
+    # 2. При переключении действия очистить список координат и
+    # удалить все item (точки и линии на плане)
+    def select_type_act(self, text):
+        self.data_draw_point.clear()  # очистим координаты
+        self.del_all_item()
     # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 if __name__ == '__main__':
