@@ -16,7 +16,6 @@ class MoveItem(QtWidgets.QGraphicsItem):
 
     def boundingRect(self):
         # print('boundingRect')
-        print(self.thickness)
         return QtCore.QRectF(-(self.thickness), -(self.thickness), self.thickness, self.thickness)
 
     def paint(self, painter, option, widget):  # рисуем новый квадрат со стороной 10
@@ -24,6 +23,7 @@ class MoveItem(QtWidgets.QGraphicsItem):
         painter.setPen(QtCore.Qt.red)
         painter.setBrush(QtCore.Qt.red)
         painter.drawRect(-(self.thickness), -(self.thickness), self.thickness, self.thickness)
+
 
 class Painter(QtWidgets.QMainWindow):
 
@@ -85,8 +85,12 @@ class Painter(QtWidgets.QMainWindow):
         # затем при len(self.data_draw_point) == 4, запрашивает у пользователя
         # QInputDialog число, чему этом отрезок равен в метрах и вычисляется масштаб
         # self.data_draw_point становится [].
-        
+
         self.data_draw_point = []
+
+        # б. Переменная отвечающая за индекс строки в self.table_data
+
+        self.row_ind_in_data_grid = None
 
         # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
@@ -435,6 +439,7 @@ class Painter(QtWidgets.QMainWindow):
 
         self.table_data = QtWidgets.QTableWidget(0, 32)
         self.table_data_view()  # фукция отрисовки заголовков таблицы
+        self.table_data.clicked[QtCore.QModelIndex].connect(self.get_index_in_table)
         # кнопки управления
         layout_control = QtWidgets.QFormLayout(self)
         GB_control = QtWidgets.QGroupBox('Действия объекта')
@@ -754,6 +759,7 @@ class Painter(QtWidgets.QMainWindow):
     def add_in_table(self):
         count_row = self.table_data.rowCount()  # посчитаем количество строк
         self.table_data.insertRow(count_row)
+        self.del_all_item()
 
     def del_in_table(self):
         index = self.table_data.currentIndex()
@@ -796,7 +802,7 @@ class Painter(QtWidgets.QMainWindow):
         self.db_name, self.db_path = class_db.Data_base(self.db_name, self.db_path).db_connect()
         self.connect_info(self.db_name, self.db_path)
         class_db.Data_base(self.db_name, self.db_path).plan_list_update(self.plan_list)
-        self.del_all_item() # очистить ген.планы от item
+        self.del_all_item()  # очистить ген.планы от item
 
     def connect_info(self, name: str, path: str):
         """
@@ -833,14 +839,15 @@ class Painter(QtWidgets.QMainWindow):
     def scene_press_event(self, event):
         # Проверим наличие ген.плана
         if self.plan_list.currentText() != '--Нет ген.планов--':
-            # Отожмем кнопку отрисовки координатов объектов
-            self.draw_obj.setChecked(False)
+
             # Проверим нажатие кнопки draw_type_act,
             # что мы хотим определить
             # - масштаб
             # - измерить растояние
             # - определить площадь:
             if self.draw_type_act.isChecked():
+                # Отожмем кнопку отрисовки координатов объектов
+                self.draw_obj.setChecked(False)
                 # если масштаб
                 if self.type_act.currentIndex() == 0:
                     print('draw scale')
@@ -862,6 +869,12 @@ class Painter(QtWidgets.QMainWindow):
                             self.draw_type_act.setChecked(False)
                             self.del_all_item()
                         elif ok and num_int <= 0:
+                            self.data_draw_point.clear()  # очищаем data_draw_point
+                            self.draw_type_act.setChecked(False)
+                            self.del_all_item()
+                            self.result_type_act.clear()
+                            self.scale_plan.clear()
+                        elif not ok:
                             self.data_draw_point.clear()  # очищаем data_draw_point
                             self.draw_type_act.setChecked(False)
                             self.del_all_item()
@@ -892,20 +905,89 @@ class Painter(QtWidgets.QMainWindow):
                     copy_ = self.data_draw_point.copy()
                     if len(copy_) > 2:
                         i = 0
-                        b_end = []
+                        get_tuple = []
                         while i < len(copy_):
                             tuple_b = (float(copy_[i]), float(copy_[i + 1]))
-                            b_end.append(tuple_b)
+                            get_tuple.append(tuple_b)
                             i += 2
                             if i == len(copy_):
                                 break
-                        length = LineString(b_end).length  # shapely
+                        length = LineString(get_tuple).length  # shapely
                         real_lenght = float(length) / float(self.scale_plan.displayText())
                         real_lenght = round(real_lenght, 2)
                         self.result_type_act.setText(f'Длина линии {real_lenght}, м')
-                        
+                #  если площадь
                 elif self.type_act.currentIndex() == 2:
                     print('draw square')
+                    self.del_all_item()  # удалим все Item
+                    if self.scale_plan.text() == "":  # проверим есть ли масштаб
+                        msg = QtWidgets.QMessageBox(self)
+                        msg.setIcon(QtWidgets.QMessageBox.Warning)
+                        msg.setWindowTitle("Информация")
+                        msg.setText("Не установлен масштаб")
+                        self.draw_type_act.setChecked(False)
+                        msg.exec()
+                        return
+                    self.data_draw_point.append(str(event.scenePos().x()))  #
+                    self.data_draw_point.append(str(event.scenePos().y()))
+
+                    self.draw_all_item(self.data_draw_point)
+
+                    copy_ = self.data_draw_point.copy()
+                    if len(copy_) > 4:
+                        i = 0
+                        get_tuple = []
+                        while i < len(copy_):
+                            tuple_b = (float(copy_[i]), float(copy_[i + 1]))
+                            get_tuple.append(tuple_b)
+                            i += 2
+                            if i == len(copy_):
+                                break
+                        area = Polygon(get_tuple).area  # shapely
+                        real_area = float(area) / pow(float(self.scale_plan.displayText()), 2)
+                        real_area = round(real_area, 2)
+                        self.result_type_act.setText(f'Площадь {real_area}, м2')
+
+            # Если нажата кнопка "Координаты"
+            elif self.draw_obj.isChecked():
+                print('here')
+                # Отожмем кнопку отрисовки масштаба
+                self.draw_type_act.setChecked(False)
+                # Если выбрана сторока, то запишем координаты
+                if self.row_ind_in_data_grid is not None:
+                    print('write')
+                    # если в крайней колонке пусто,то запишем координаты
+                    if self.table_data.item(self.row_ind_in_data_grid,
+                                             self.table_data.columnCount() - 1) is None:
+
+                        self.data_draw_point.clear()
+
+                        self.data_draw_point.append(str(event.scenePos().x()))  # замеряем координаты клика
+                        self.data_draw_point.append(str(event.scenePos().y()))  # и запсываем в data_draw_point
+
+                        widget_item_for_table = QtWidgets.QTableWidgetItem(str(self.data_draw_point))
+                        self.table_data.setItem(self.row_ind_in_data_grid,
+                                                self.table_data.columnCount() - 1,
+                                                widget_item_for_table)
+                        self.draw_all_item(self.data_draw_point)
+                        self.data_draw_point.clear()
+                    # если не пусто то к списку из ячейки будем добавлять координаты
+                    else:
+                        self.data_draw_point.clear()
+
+                        self.data_draw_point.extend(eval(self.table_data.item(self.row_ind_in_data_grid,
+                                                                               self.table_data.columnCount() - 1).text()))
+                        self.data_draw_point.append(str(event.scenePos().x()))  # замеряем координаты клика
+                        self.data_draw_point.append(str(event.scenePos().y()))  # и запсываем в data_draw_point
+
+                        widget_item_for_table = QtWidgets.QTableWidgetItem(str(self.data_draw_point))
+                        self.table_data.setItem(self.row_ind_in_data_grid,
+                                                self.table_data.columnCount() - 1,
+                                                widget_item_for_table)
+                        self.draw_all_item(self.data_draw_point)
+                        self.data_draw_point.clear()
+                else:
+                    self.draw_obj.setChecked(False)
 
     def del_all_item(self):
         """
@@ -930,7 +1012,7 @@ class Painter(QtWidgets.QMainWindow):
         i = 0
         k = 0
         while i < len(coordinate):
-            thickness_marker = int(self.thickness_line.value() * 5) # сторона маркера должна быть в 4 раза больше
+            thickness_marker = int(self.thickness_line.value() * 5)  # сторона маркера должна быть в 4 раза больше
             name_rings = MoveItem(thickness_marker)
             name_rings.setPos(float(coordinate[i]), float(coordinate[i + 1]))
             self.scene.addItem(name_rings)
@@ -955,16 +1037,41 @@ class Painter(QtWidgets.QMainWindow):
 
     def change_draw_obj(self):
         self.data_draw_point.clear()  # очистим координаты
-        self.del_all_item()
+
         if self.draw_type_act.isChecked():
             self.draw_type_act.setChecked(False)
+        # Если в таблице сторок нет, то запретить запоминать координаты
+        if self.row_ind_in_data_grid == None:
+            self.draw_obj.setChecked(False)
 
     # 2. При переключении действия очистить список координат и
     # удалить все item (точки и линии на плане)
     def select_type_act(self, text):
         self.data_draw_point.clear()  # очистим координаты
         self.del_all_item()
+
+    def get_index_in_table(self, index):
+
+        self.draw_type_act.setChecked(False)  # исключить измерение масштаба и пр.
+        self.draw_obj.setChecked(False)  # исключить дорисовку предыдущего объекта.
+        self.del_all_item()  # очистим координаты
+        self.row_ind_in_data_grid = index.row()  # возьмем индек строки
+        # Если ячейка крайнего столбца не пуста
+        if self.table_data.item(self.row_ind_in_data_grid,
+                                self.table_data.columnCount() - 1) is not None:
+            # очистим список координат для отрисовки
+            self.data_draw_point.clear()
+            # считаем кооординаты
+            self.data_draw_point.extend(eval(self.table_data.item(self.row_ind_in_data_grid,
+                                                                  self.table_data.columnCount() - 1).text()))
+            # отрисуем все точки
+            self.draw_all_item(self.data_draw_point)
+            # очистим список координат для отрисовки
+            self.data_draw_point.clear()
+
+
     # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
