@@ -29,9 +29,6 @@ class Painter(QtWidgets.QMainWindow):
 
     def __init__(self, parent=None) -> None:
         super().__init__()
-        self.db_name = ''
-        self.db_path = ''
-
         # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         # Иконки
         path_ico = str(Path(os.getcwd()).parents[0])
@@ -89,8 +86,11 @@ class Painter(QtWidgets.QMainWindow):
         self.data_draw_point = []
 
         # б. Переменная отвечающая за индекс строки в self.table_data
-
         self.row_ind_in_data_grid = None
+
+        # в. Переменные отвечающие за подключение БД
+        self.db_name = ''
+        self.db_path = ''
 
         # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
@@ -480,10 +480,10 @@ class Painter(QtWidgets.QMainWindow):
         self.del_all_coordinate.setIcon(dbl_minus_ico)
         self.del_all_coordinate.clicked.connect(self.delete_all_coordinates)
 
-        self.save_table_in_db = QtWidgets.QPushButton("Сохранить объекты")
-        self.save_table_in_db.setToolTip('Сохранить объекты в базу данных')
-        self.save_table_in_db.setIcon(save_ico)
-        # self.del_last_coordinate.clicked.connect(self.change_draw_obj)
+        self.save_table = QtWidgets.QPushButton("Сохранить объекты")
+        self.save_table.setToolTip('Сохранить объекты в базу данных')
+        self.save_table.setIcon(save_ico)
+        self.save_table.clicked.connect(self.save_table_in_db)
 
         layout_control.addRow("", self.add_row)
         layout_control.addRow("", self.del_row)
@@ -493,7 +493,7 @@ class Painter(QtWidgets.QMainWindow):
         hbox_coordinate.addWidget(self.del_last_coordinate)
         hbox_coordinate.addWidget(self.del_all_coordinate)
         layout_control.addRow("", hbox_coordinate)
-        layout_control.addRow("", self.save_table_in_db)
+        layout_control.addRow("", self.save_table)
         GB_control.setLayout(layout_control)
 
         data_grid.addWidget(self.table_data, 0, 0, 1, 1)
@@ -746,13 +746,15 @@ class Painter(QtWidgets.QMainWindow):
 
         data_list = [
             [f'Е-{random.randint(1, 20)}', 'Емкость', 'Наземная', 'Сталь', 'ДНС-2', 'Хранение нефти',
-             '0', '0', '0,8', '10', f'{random.randrange(100, 500, 100)}', '0.8 ', f'{random.randrange(100, 500, 25)}', '1',
-             '5', '0.1', '850', '3.25', '210', '65', '-28', '430', '3', '3', '46000', '7','2', '0.6',
-             '1','3','0.33',],
-            [f'Нефтепровод от т.{random.randint(1, 20)} до УПСВ', 'Нефтепровод', 'Поздемная', 'Сталь В20', 'Ивинское м.н.', 'Транспорт нефти',
+             '0', '0', '0,8', '10', f'{random.randrange(100, 500, 100)}', '0.8 ', f'{random.randrange(100, 500, 25)}',
+             '1',
+             '5', '0.1', '850', '3.25', '210', '65', '-28', '430', '3', '3', '46000', '7', '2', '0.6',
+             '1', '3', '0.33', ],
+            [f'Нефтепровод от т.{random.randint(1, 20)} до УПСВ', 'Нефтепровод', 'Поздемная', 'Сталь В20',
+             'Ивинское м.н.', 'Транспорт нефти',
              '0,985', f'{random.choice([89, 114, 159, 219])}', '1.25', '10', '0', '0 ', '0', '0',
-             '5', '0.1', '850', '3.25', '210', '65', '-28', '430', '3', '4','46000', '7','2', '0.6',
-             '1','3','0.33',]
+             '5', '0.1', '850', '3.25', '210', '65', '-28', '430', '3', '4', '46000', '7', '2', '0.6',
+             '1', '3', '0.33', ]
         ]
         # Добавить данные
         count_row = self.table_data.rowCount()  # посчитаем количество строк
@@ -806,6 +808,7 @@ class Painter(QtWidgets.QMainWindow):
                 self.table_data.setItem(self.row_ind_in_data_grid,
                                         self.table_data.columnCount() - 1,
                                         widget_item_for_table)
+
     # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -840,13 +843,90 @@ class Painter(QtWidgets.QMainWindow):
         class_db.Data_base(self.db_name, self.db_path).plan_list_update(self.plan_list)
 
     def plan_list_select(self, text):
-        image_data = class_db.Data_base(self.db_name, self.db_path).get_plan_in_db(text)
+
+        self.scale_plan.setText('')
+        self.result_type_act.setText('')
+
+        data, image_data = class_db.Data_base(self.db_name, self.db_path).get_plan_in_db(text)
+        # 1. Ген.план
         if image_data is not None:
             self.scene.clear()
             qimg = QtGui.QImage.fromData(image_data)
             self.pixmap = QtGui.QPixmap.fromImage(qimg)
             self.scene.addPixmap(self.pixmap)
             self.scene.setSceneRect(QtCore.QRectF(self.pixmap.rect()))
+
+        # 2. Данные для таблицы
+        # 2.1. Удалить данные из таблицы
+        self.table_data.setRowCount(0)
+        if len(data) != 0:
+            # 3.1. Установить масштаб
+            data = eval(data)
+            self.scale_plan.setText(data.pop())  # крайний элемент списка всегда масштаб
+            # 3.2. Заполнить таблицу
+            for obj in data:
+                count_row = self.table_data.rowCount()  # посчитаем количество строк
+                self.table_data.insertRow(count_row)
+                col = 0
+                for item in obj:
+                    # Запишем новые координаты после удаления в таблицу
+                    widget_item_for_table = QtWidgets.QTableWidgetItem(item)
+                    self.table_data.setItem(count_row, col,
+                                            widget_item_for_table)
+                    col += 1
+
+    def save_table_in_db(self):
+        """
+        Функция сохранения информации в базу данных из таблицы данных
+        """
+        # Проверки перед сохранением
+        # 1. Есть ли база данных
+        if self.db_name == '' and self.db_path == '':
+            msg = QtWidgets.QMessageBox(self)
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+            msg.setWindowTitle("Информация")
+            msg.setText("Нет подключения к базе данных!")
+            msg.exec()
+            return
+        # 2. Есть ли генплан
+        if self.plan_list.currentText() == '--Нет ген.планов--':
+            msg = QtWidgets.QMessageBox(self)
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+            msg.setWindowTitle("Информация")
+            msg.setText("Нет ген.плана!")
+            msg.exec()
+            return
+        # 3. Есть ли масштаб
+        if self.scale_plan.text() == '':
+            msg = QtWidgets.QMessageBox(self)
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+            msg.setWindowTitle("Информация")
+            msg.setText("Не указан масштаб!")
+            msg.exec()
+            return
+        # 4. Есть ли объекты в таблице
+        if self.table_data.rowCount() == 0:
+            msg = QtWidgets.QMessageBox(self)
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+            msg.setWindowTitle("Информация")
+            msg.setText("Нет объектов для сохранения!")
+            msg.exec()
+            return
+        # 5. Есть ли пустые ячейки в таблице данных
+        for i in range(self.table_data.rowCount()):
+            for j in range(self.table_data.columnCount()):
+                if self.table_data.item(i, j) is None:
+                    msg = QtWidgets.QMessageBox(self)
+                    msg.setIcon(QtWidgets.QMessageBox.Warning)
+                    msg.setWindowTitle("Информация")
+                    msg.setText("Не все данные таблицы заполнены!")
+                    msg.exec()
+                    return
+
+        # Проверки пройдены, можно запоминать данные:
+        class_db.Data_base(self.db_name, self.db_path).save_data_in_db(self.plan_list.currentText(),
+                                                                       self.scale_plan.text(),
+                                                                       self.table_data)
 
     # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 

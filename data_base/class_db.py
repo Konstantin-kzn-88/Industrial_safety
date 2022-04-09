@@ -4,7 +4,6 @@ import os
 from pathlib import Path
 
 
-
 class Data_base(QtWidgets.QWidget):
     def __init__(self, db_name: str, db_path: str):
         super().__init__()
@@ -99,7 +98,6 @@ class Data_base(QtWidgets.QWidget):
                 msg.exec()
                 return
 
-
             # Подключение к базе данных
             path_str = f'{self.db_path}/{self.db_name}'.replace("/", "//")
 
@@ -164,12 +162,11 @@ class Data_base(QtWidgets.QWidget):
                 else:
                     plan_list.addItems(plan_item)
 
-
     def get_plan_in_db(self, text: str):
         """
         Функция получения картинки из базы данных
         :param text - строка полученная из QComboBox (id и name_plan)
-        :return image_data - BLOB формат картинки или None если картинка в базе не найдена
+        :return image_data - list данные и BLOB формат картинки
         """
         if self.db_path != '' and self.db_name != '':
             path_str = f'{self.db_path}/{self.db_name}'.replace("/", "//")
@@ -181,10 +178,46 @@ class Data_base(QtWidgets.QWidget):
                 plan_in_db = cursor.fetchall()
                 for row in plan_in_db:
                     if str(f'{row[0]}, {row[3]}') == text:
-                        image_data = row[2]
-                        return image_data
-                return
+                        data, image_data = row[1], row[2]
+                        return (data, image_data)
 
+    def save_data_in_db(self, name_plan: str, scale_plan: str, table_widget):
+        """
+        Функция сохранения данных таблицы в базу данных
+        :param - name_plan - наименование плана для поиска в базе данных
+        :param - scale_plan - масштаб плана
+        :param - table_widget - QTableWidget
+        """
 
+        if self.db_path != '' and self.db_name != '':
+            # 1. Считаем данные из таблицы
+            data_list = []
+            count_row = 0  # начинаем с 0 строки
+            for _ in range(0, table_widget.rowCount()):  # посчитаем строки
+                append_list = []  # заведем пустой список для объекта
+                count_col = 0  # колонка с индесом 0
+                for _ in range(0, table_widget.columnCount()):  # для каждого столбца строки
 
+                    if count_col != table_widget.columnCount() - 1:
+                        var = table_widget.item(count_row, count_col).text().replace(',', '.')
+                    else:
+                        var = table_widget.item(count_row, count_col).text()
+                    append_list.append(var)  # добавим в словарь текст ячейки
+                    count_col += 1  # + 1 к столбцу
+                data_list.append(append_list)  # добавим объект
+                count_row += 1  # +1 к строке (новая строка если len(data_list) > 1)
+            # добавим масштаб
+            data_list.append(scale_plan)
 
+            # 2. Запишем все в БД
+            path_str = f'{self.db_path}/{self.db_name}'.replace("/", "//")
+            with sql.connect(path_str) as connection:
+
+                cursor = connection.cursor()
+                cursor.execute("SELECT * FROM objects")
+                plan_in_db = cursor.fetchall()
+
+                for row in plan_in_db:
+                    if str(f'{row[0]}, {row[3]}') == name_plan:
+                        # SQL запрос на вставку
+                        cursor.execute('UPDATE objects SET data = ?  where id = ?', (str(data_list), str(row[0])))
