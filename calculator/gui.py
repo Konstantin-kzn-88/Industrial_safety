@@ -470,10 +470,30 @@ class Painter(QtWidgets.QMainWindow):
         self.draw_obj.setCheckable(True)
         self.draw_obj.setChecked(False)
 
+        self.del_last_coordinate = QtWidgets.QPushButton("")
+        self.del_last_coordinate.setToolTip('Удалить последнюю координату')
+        self.del_last_coordinate.setIcon(minus_ico)
+        self.del_last_coordinate.clicked.connect(self.delete_last_coordinate)
+
+        self.del_all_coordinate = QtWidgets.QPushButton("")
+        self.del_all_coordinate.setToolTip('Удалить все координаты')
+        self.del_all_coordinate.setIcon(dbl_minus_ico)
+        self.del_all_coordinate.clicked.connect(self.delete_all_coordinates)
+
+        self.save_table_in_db = QtWidgets.QPushButton("Сохранить объекты")
+        self.save_table_in_db.setToolTip('Сохранить объекты в базу данных')
+        self.save_table_in_db.setIcon(save_ico)
+        # self.del_last_coordinate.clicked.connect(self.change_draw_obj)
+
         layout_control.addRow("", self.add_row)
         layout_control.addRow("", self.del_row)
         layout_control.addRow("", self.example_obj)
         layout_control.addRow("", self.draw_obj)
+        hbox_coordinate = QtWidgets.QHBoxLayout()
+        hbox_coordinate.addWidget(self.del_last_coordinate)
+        hbox_coordinate.addWidget(self.del_all_coordinate)
+        layout_control.addRow("", hbox_coordinate)
+        layout_control.addRow("", self.save_table_in_db)
         GB_control.setLayout(layout_control)
 
         data_grid.addWidget(self.table_data, 0, 0, 1, 1)
@@ -549,40 +569,6 @@ class Painter(QtWidgets.QMainWindow):
         hand_act.setStatusTip('Рука')
         # hand_act.triggered.connect(self.plan_hand)
 
-        # # Редактировать объект
-        del_end_point = QtWidgets.QAction(minus_ico, 'Удалить последнюю точку', self)
-        del_end_point.setShortcut('Ctrl+D')
-        del_end_point.setStatusTip('Удалить последнюю точку')
-        # del_end_point.triggered.connect(self.delete_end_point)
-
-        del_all_point = QtWidgets.QAction(dbl_minus_ico, 'Удалить все точки', self)
-        del_all_point.setShortcut('Ctrl+A')
-        del_all_point.setStatusTip('Удалить все точки')
-        # del_all_point.triggered.connect(self.delete_all_point)
-
-        save_obj = QtWidgets.QAction(save_ico, 'Сохранить', self)
-        save_obj.setShortcut('Ctrl+W')
-        save_obj.setStatusTip('Сохранить объект')
-        # save_obj.triggered.connect(self.save_object)
-
-        del_obj = QtWidgets.QAction(del_ico, 'Удалить', self)
-        del_obj.setShortcut('Ctrl+R')
-        del_obj.setStatusTip('Удалить объект')
-        # del_obj.triggered.connect(self.on_del_object)
-
-        # Рисование объекта
-        draw_all = QtWidgets.QAction(self.main_ico, 'Все объекты', self)
-        draw_all.setStatusTip('Рисовать все объекты')
-        # draw_all.triggered.connect(self.draw_all_object)
-
-        draw_one = QtWidgets.QAction(object_ico, 'Один объект', self)
-        draw_one.setStatusTip('Рисовать один объект')
-        # draw_one.triggered.connect(self.draw_one_object)
-
-        draw_risk = QtWidgets.QAction(risk_ico, 'Риск', self)
-        draw_risk.setStatusTip('Рисовать риск')
-        # draw_risk.triggered.connect(self.draw_risk_object)
-
         # Справка
         help_show = QtWidgets.QAction(question_ico, 'Справка', self)
         help_show.setShortcut('F1')
@@ -605,15 +591,6 @@ class Painter(QtWidgets.QMainWindow):
         view_menu.addAction(scale_plus)
         view_menu.addAction(scale_min)
         view_menu.addAction(hand_act)
-        edit_menu = menubar.addMenu('Объект')
-        edit_menu.addAction(del_end_point)
-        edit_menu.addAction(del_all_point)
-        edit_menu.addAction(save_obj)
-        edit_menu.addAction(del_obj)
-        draw_menu = menubar.addMenu('Рисование')
-        draw_menu.addAction(draw_all)
-        draw_menu.addAction(draw_one)
-        draw_menu.addAction(draw_risk)
         help_menu = menubar.addMenu('Справка')
         help_menu.addAction(help_show)
         help_menu.addAction(about_prog)
@@ -769,10 +746,13 @@ class Painter(QtWidgets.QMainWindow):
 
         data_list = [
             [f'Е-{random.randint(1, 20)}', 'Емкость', 'Наземная', 'Сталь', 'ДНС-2', 'Хранение нефти',
-             '0', '0', '0,8', '10', f'{random.randrange(100, 500, 100)}', '0.8 ', f'{random.randrange(100, 500, 25)}',
-             '1', ],
-            ['Нефтепровод от т.10 до УПСВ', 'Нефтепровод', 'Поздемная', 'Сталь В20', 'Ивинское м.н.', 'Транспорт нефти',
-             '0,985', f'{random.choice([89, 114, 159, 219])}', '1.25', '10', '0', '0 ', '0', '0', ]
+             '0', '0', '0,8', '10', f'{random.randrange(100, 500, 100)}', '0.8 ', f'{random.randrange(100, 500, 25)}', '1',
+             '5', '0.1', '850', '3.25', '210', '65', '-28', '430', '3', '3', '46000', '7','2', '0.6',
+             '1','3','0.33',],
+            [f'Нефтепровод от т.{random.randint(1, 20)} до УПСВ', 'Нефтепровод', 'Поздемная', 'Сталь В20', 'Ивинское м.н.', 'Транспорт нефти',
+             '0,985', f'{random.choice([89, 114, 159, 219])}', '1.25', '10', '0', '0 ', '0', '0',
+             '5', '0.1', '850', '3.25', '210', '65', '-28', '430', '3', '4','46000', '7','2', '0.6',
+             '1','3','0.33',]
         ]
         # Добавить данные
         count_row = self.table_data.rowCount()  # посчитаем количество строк
@@ -788,6 +768,44 @@ class Painter(QtWidgets.QMainWindow):
                 count_col += 1  # + 1 к столбцу
             count_row += 1  # +1 к строке (новая строка если len(data_list) > 1)
 
+    def delete_last_coordinate(self):
+        # Удалить все линии и точки с ген.плана
+        self.del_all_item()
+        if self.row_ind_in_data_grid is not None:
+            # Если ячейка крайнего столбца не пуста
+            if self.table_data.item(self.row_ind_in_data_grid,
+                                    self.table_data.columnCount() - 1) is not None:
+                # очистим список координат для отрисовки
+                self.data_draw_point.clear()
+                # считаем кооординаты
+                self.data_draw_point.extend(eval(self.table_data.item(self.row_ind_in_data_grid,
+                                                                      self.table_data.columnCount() - 1).text()))
+                # Удалим последнюю точку (х,у)
+                self.data_draw_point = self.data_draw_point[:-2]
+                # отрисуем все точки
+                self.draw_all_item(self.data_draw_point)
+                # Запишем новые координаты после удаления в таблицу
+                widget_item_for_table = QtWidgets.QTableWidgetItem(str(self.data_draw_point))
+                self.table_data.setItem(self.row_ind_in_data_grid,
+                                        self.table_data.columnCount() - 1,
+                                        widget_item_for_table)
+                # очистим список координат для отрисовки
+                self.data_draw_point.clear()
+
+    def delete_all_coordinates(self):
+        # Удалить все линии и точки с ген.плана
+        self.del_all_item()
+        if self.row_ind_in_data_grid is not None:
+            # Если ячейка крайнего столбца не пуста
+            if self.table_data.item(self.row_ind_in_data_grid,
+                                    self.table_data.columnCount() - 1) is not None:
+                # очистим список координат для отрисовки
+                self.data_draw_point.clear()
+                # Запишем пустые координаты после удаления в таблицу
+                widget_item_for_table = QtWidgets.QTableWidgetItem(str([]))
+                self.table_data.setItem(self.row_ind_in_data_grid,
+                                        self.table_data.columnCount() - 1,
+                                        widget_item_for_table)
     # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -958,7 +976,7 @@ class Painter(QtWidgets.QMainWindow):
                     print('write')
                     # если в крайней колонке пусто,то запишем координаты
                     if self.table_data.item(self.row_ind_in_data_grid,
-                                             self.table_data.columnCount() - 1) is None:
+                                            self.table_data.columnCount() - 1) is None:
 
                         self.data_draw_point.clear()
 
@@ -976,7 +994,7 @@ class Painter(QtWidgets.QMainWindow):
                         self.data_draw_point.clear()
 
                         self.data_draw_point.extend(eval(self.table_data.item(self.row_ind_in_data_grid,
-                                                                               self.table_data.columnCount() - 1).text()))
+                                                                              self.table_data.columnCount() - 1).text()))
                         self.data_draw_point.append(str(event.scenePos().x()))  # замеряем координаты клика
                         self.data_draw_point.append(str(event.scenePos().y()))  # и запсываем в data_draw_point
 
@@ -1068,7 +1086,6 @@ class Painter(QtWidgets.QMainWindow):
             self.draw_all_item(self.data_draw_point)
             # очистим список координат для отрисовки
             self.data_draw_point.clear()
-
 
     # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
