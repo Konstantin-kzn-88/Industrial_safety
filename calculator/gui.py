@@ -274,10 +274,16 @@ class Painter(QtWidgets.QMainWindow):
         self.data_excel.setPlaceholderText("Данные из Excel")
         self.data_excel.setToolTip("Данные из Excel")
         self.data_excel.setReadOnly(True)
+
         self.get_data_btn = QtWidgets.QPushButton("Загрузить")
         self.get_data_btn.setIcon(excel_ico)
         self.get_data_btn.setToolTip("Загрузить выделенный диапазон")
         self.get_data_btn.clicked.connect(self.get_data_excel)
+
+        self.draw_from_excel = QtWidgets.QPushButton("Рисовать")
+        self.draw_from_excel.setIcon(paint_ico)
+        self.draw_from_excel.setToolTip("Отрисовка зон из Excel")
+        self.draw_from_excel.clicked.connect(self.draw_from_data_excel)
 
         # 2.2.3. Рамка №3. Владки зон поражения. (то что будет в рамке 3)
         self.opacity = QtWidgets.QDoubleSpinBox()
@@ -309,7 +315,10 @@ class Painter(QtWidgets.QMainWindow):
         GB_xl = QtWidgets.QGroupBox('Данные из Excel')
         GB_xl.setStyleSheet("QGroupBox { font-weight : bold; }")
         layout_xl.addRow("", self.data_excel)
-        layout_xl.addRow("", self.get_data_btn)
+        hbox_xl_draw = QtWidgets.QHBoxLayout()
+        hbox_xl_draw.addWidget(self.get_data_btn)
+        hbox_xl_draw.addWidget(self.draw_from_excel)
+        layout_xl.addRow("", hbox_xl_draw)
         GB_xl.setLayout(layout_xl)
         # Рамка №3
         layout_opacity = QtWidgets.QFormLayout(self)
@@ -1088,6 +1097,97 @@ class Painter(QtWidgets.QMainWindow):
             k -= 2
             k += 4
 
+    def draw_from_data_excel(self):
+        self.is_action_valid()
+        # 1 Получить данные о масштабе
+        scale_plan = float(self.scale_plan.text())
+        # 2 Получить координаты и типы объектов
+        # Типы объектов
+        type_obj = []
+        for row in range(0, self.table_data.rowCount()):  # получим типы объектов
+            type_obj.append(int(self.table_data.item(row, 13).text()))
+        # Координаты объектов
+        coordinate_obj = []
+        for row in range(0, self.table_data.rowCount()):  # пполучим координаты объектов
+            coordinate_obj.append(eval(self.table_data.item(row,
+                                                            self.table_data.columnCount() - 1).text()))
+        # Данные из экселя
+        if self.data_excel.text() == '':
+            return
+        else:
+            data_excel = eval(self.data_excel.text())
+        # 3. Нарисовать
+        # 3.1. определим все цвета зон
+        color_zone_arr = self.get_color_for_zone()
+
+        # 3.2. Отрисовка зон
+        # На основе исходной картинки создадим QImage и QPixmap
+        _, image_data = class_db.Data_base(self.db_name, self.db_path).get_plan_in_db(self.plan_list.currentText())
+        qimg = QtGui.QImage.fromData(image_data)
+        pixmap = QtGui.QPixmap.fromImage(qimg)
+        # создадим соразмерный pixmap_zone и сделаем его прозрачным
+        pixmap_zone = QtGui.QPixmap(pixmap.width(), pixmap.height())
+        pixmap_zone.fill(QtGui.QColor(0, 0, 0, 0))
+        # Создадим QPainter
+        qp = QtGui.QPainter(pixmap_zone)
+
+        # Начнем рисование
+        qp.begin(pixmap_zone)
+
+        for zone_index in range(-1, -7, -1):
+            i = 0
+            for obj in type_obj:
+
+                # # начинаем рисовать с последнего цвета
+                color = color_zone_arr[zone_index]
+                zone = float(data_excel[i][zone_index]) * scale_plan * 2  # т.к. на вход радиус, а нужен диаметр
+
+                # зона может быть 0 тогда ничего рисовать не надо
+                if zone == 0:
+                    continue
+                # определим ручку и кисточку
+                pen = QtGui.QPen(QtGui.QColor(color[0], color[1], color[2], color[3]), zone, QtCore.Qt.SolidLine)
+                brush = QtGui.QBrush(QtGui.QColor(color[0], color[1], color[2], color[3]))
+                # со сглаживаниями
+                pen.setJoinStyle(QtCore.Qt.RoundJoin)
+                # закругленный концы
+                pen.setCapStyle(QtCore.Qt.RoundCap)
+                qp.setPen(pen)
+                qp.setBrush(brush)
+                
+                obj_coord = self.get_polygon(coordinate_obj[i])
+
+                i += 1
+
+                if len(obj_coord) > 2:  # координаты можно преобразовать в полигон
+                    if obj == 0:
+                        # линейн. получим полигон
+
+                        qp.drawPolyline(obj_coord)
+                    else:
+                        # стац. об. получим полигон
+
+                        qp.drawPolyline(obj_coord)
+                        qp.drawPolygon(obj_coord, QtCore.Qt.OddEvenFill)
+                else:  # не получается полигон, значит точка
+                    pen_point = QtGui.QPen(QtGui.QColor(color[0], color[1], color[2], color[3]), 1, QtCore.Qt.SolidLine)
+                    qp.setPen(pen_point)
+                    point = QtCore.QPoint(int(float(obj_coord[0])), int(float(obj_coord[1])))
+                    qp.drawEllipse(point, zone / 2, zone / 2)  # т.к. нужен радиус
+
+        # Завершить рисование
+        qp.end()
+        # Положим одну картинку на другую
+        painter = QtGui.QPainter(pixmap)
+        painter.begin(pixmap)
+        painter.setOpacity(self.opacity.value())
+        painter.drawPixmap(0, 0, pixmap_zone)
+        painter.end()
+        # Разместим на сцене pixmap с pixmap_zone
+        self.scene.addPixmap(pixmap)
+        self.scene.setSceneRect(QtCore.QRectF(pixmap.rect()))
+
+
     # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     #  Прочие функции
     # 1. Нельзя одновременно рисовать объект
@@ -1160,17 +1260,34 @@ class Painter(QtWidgets.QMainWindow):
             cellRange = wb.app.selection
             vals = cellRange.value
             if self.table_data.rowCount() != len(vals):
-                print("строк больше чем объектов")
                 self.data_excel.setText("")
+                msg = QtWidgets.QMessageBox(self)
+                msg.setIcon(QtWidgets.QMessageBox.Warning)
+                msg.setWindowTitle("Информация")
+                msg.setText("Строк в Excel больше чем объектов!")
+                msg.exec()
+                return
             elif len(vals[0]) != 6:
-                print("столбцов больше 6")
                 self.data_excel.setText("")
+                msg = QtWidgets.QMessageBox(self)
+                msg.setIcon(QtWidgets.QMessageBox.Warning)
+                msg.setWindowTitle("Информация")
+                msg.setText("Столбцов в Excel больше чем зон поражения!")
+                msg.exec()
+                return
             else:
                 self.data_excel.setText(str(vals))
         except:
-            print("Ошибка при считывании данных в экселе")
             self.data_excel.setText("")
+            msg = QtWidgets.QMessageBox(self)
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+            msg.setWindowTitle("Информация")
+            msg.setText("Ошибка при считывании данных в Excel!")
+            msg.exec()
+            return
 
+    # 5. Проверка наличия базы, генплана, масштаба, объектов и
+    # их заполненности
     def  is_action_valid(self):
         """
         Функция проверки наличия всех данных для корректной работы
@@ -1218,6 +1335,37 @@ class Painter(QtWidgets.QMainWindow):
                     msg.exec()
                     return
 
+    # 6. Получить цвета зон поражающих факторов
+    def get_color_for_zone(self) -> list:
+        # по кнопкам определим зоны для рисования
+        color_zone_arr = []
+        color = self.color_zone1_btn.palette().button().color().getRgb()
+        color_zone_arr.append(color)
+        color = self.color_zone2_btn.palette().button().color().getRgb()
+        color_zone_arr.append(color)
+        color = self.color_zone3_btn.palette().button().color().getRgb()
+        color_zone_arr.append(color)
+        color = self.color_zone4_btn.palette().button().color().getRgb()
+        color_zone_arr.append(color)
+        color = self.color_zone5_btn.palette().button().color().getRgb()
+        color_zone_arr.append(color)
+        color = self.color_zone6_btn.palette().button().color().getRgb()
+        color_zone_arr.append(color)
+
+        return color_zone_arr
+
+    # 7. На основе координат создает по QPoint QPolygon
+    def get_polygon(self, coordinate):
+        "На основе координат создает по QPoint QPolygon"
+        i = 0
+        points = []
+        while i < len(coordinate):
+            point = QtCore.QPoint(int(float(coordinate[i])), int(float(coordinate[i + 1])))
+            points.append(point)
+            i += 2
+        polygon = QtGui.QPolygon(points)
+
+        return polygon
     # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 
