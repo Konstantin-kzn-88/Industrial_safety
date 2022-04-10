@@ -8,7 +8,10 @@ import win32com.client
 
 from data_base import class_db
 
-EXCEL = win32com.client.Dispatch("Excel.Application")
+# EXCEL = win32com.client.Dispatch("Excel.Application")
+
+import xlwings as xw
+
 I18N_QT_PATH = str(os.path.join(os.path.abspath('.'), 'i18n'))
 
 class MoveItem(QtWidgets.QGraphicsItem):
@@ -272,9 +275,9 @@ class Painter(QtWidgets.QMainWindow):
         self.data_excel.setToolTip("Данные из Excel")
         self.data_excel.setReadOnly(True)
         self.get_data_btn = QtWidgets.QPushButton("Загрузить")
-        # self.get_data_btn.setIcon(excel_ico)
+        self.get_data_btn.setIcon(excel_ico)
         self.get_data_btn.setToolTip("Загрузить выделенный диапазон")
-        # self.get_data_btn.clicked.connect(self.get_data_excel)
+        self.get_data_btn.clicked.connect(self.get_data_excel)
 
         # 2.2.3. Рамка №3. Владки зон поражения. (то что будет в рамке 3)
         self.opacity = QtWidgets.QDoubleSpinBox()
@@ -883,48 +886,7 @@ class Painter(QtWidgets.QMainWindow):
         Функция сохранения информации в базу данных из таблицы данных
         """
         # Проверки перед сохранением
-        # 1. Есть ли база данных
-        if self.db_name == '' and self.db_path == '':
-            msg = QtWidgets.QMessageBox(self)
-            msg.setIcon(QtWidgets.QMessageBox.Warning)
-            msg.setWindowTitle("Информация")
-            msg.setText("Нет подключения к базе данных!")
-            msg.exec()
-            return
-        # 2. Есть ли генплан
-        if self.plan_list.currentText() == '--Нет ген.планов--':
-            msg = QtWidgets.QMessageBox(self)
-            msg.setIcon(QtWidgets.QMessageBox.Warning)
-            msg.setWindowTitle("Информация")
-            msg.setText("Нет ген.плана!")
-            msg.exec()
-            return
-        # 3. Есть ли масштаб
-        if self.scale_plan.text() == '':
-            msg = QtWidgets.QMessageBox(self)
-            msg.setIcon(QtWidgets.QMessageBox.Warning)
-            msg.setWindowTitle("Информация")
-            msg.setText("Не указан масштаб!")
-            msg.exec()
-            return
-        # 4. Есть ли объекты в таблице
-        if self.table_data.rowCount() == 0:
-            msg = QtWidgets.QMessageBox(self)
-            msg.setIcon(QtWidgets.QMessageBox.Warning)
-            msg.setWindowTitle("Информация")
-            msg.setText("Нет объектов для сохранения!")
-            msg.exec()
-            return
-        # 5. Есть ли пустые ячейки в таблице данных
-        for i in range(self.table_data.rowCount()):
-            for j in range(self.table_data.columnCount()):
-                if self.table_data.item(i, j) is None:
-                    msg = QtWidgets.QMessageBox(self)
-                    msg.setIcon(QtWidgets.QMessageBox.Warning)
-                    msg.setWindowTitle("Информация")
-                    msg.setText("Не все данные таблицы заполнены!")
-                    msg.exec()
-                    return
+        self.is_action_valid()  # проверки
 
         # Проверки пройдены, можно запоминать данные:
         class_db.Data_base(self.db_name, self.db_path).save_data_in_db(self.plan_list.currentText(),
@@ -1183,6 +1145,78 @@ class Painter(QtWidgets.QMainWindow):
         btn = self.sender()
         # Изменить цвет этой кнопке
         btn.setStyleSheet(f'background: rgb({red},{green},{blue});')
+
+    # 4. Получение данных из Excel
+    def get_data_excel(self):
+        """
+        Получение данных из файла excel.
+        Количество столбцов не более 6, т.к. зон всего 6
+        Количество строк равно равно количеству объектов
+        """
+        self.is_action_valid() # проверки
+
+        try:
+            wb = xw.books.active
+            cellRange = wb.app.selection
+            vals = cellRange.value
+            if self.table_data.rowCount() != len(vals):
+                print("строк больше чем объектов")
+                self.data_excel.setText("")
+            elif len(vals[0]) != 6:
+                print("столбцов больше 6")
+                self.data_excel.setText("")
+            else:
+                self.data_excel.setText(str(vals))
+        except:
+            print("Ошибка при считывании данных в экселе")
+            self.data_excel.setText("")
+
+    def  is_action_valid(self):
+        """
+        Функция проверки наличия всех данных для корректной работы
+        """
+        # 1. Есть ли база данных
+        if self.db_name == '' and self.db_path == '':
+            msg = QtWidgets.QMessageBox(self)
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+            msg.setWindowTitle("Информация")
+            msg.setText("Нет подключения к базе данных!")
+            msg.exec()
+            return
+        # 2. Есть ли генплан
+        if self.plan_list.currentText() == '--Нет ген.планов--':
+            msg = QtWidgets.QMessageBox(self)
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+            msg.setWindowTitle("Информация")
+            msg.setText("Нет ген.плана!")
+            msg.exec()
+            return
+        # 3. Есть ли масштаб
+        if self.scale_plan.text() == '':
+            msg = QtWidgets.QMessageBox(self)
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+            msg.setWindowTitle("Информация")
+            msg.setText("Не указан масштаб!")
+            msg.exec()
+            return
+        # 4. Есть ли объекты в таблице
+        if self.table_data.rowCount() == 0:
+            msg = QtWidgets.QMessageBox(self)
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+            msg.setWindowTitle("Информация")
+            msg.setText("Нет объектов для сохранения!")
+            msg.exec()
+            return
+        # 5. Есть ли пустые ячейки в таблице данных
+        for i in range(self.table_data.rowCount()):
+            for j in range(self.table_data.columnCount()):
+                if self.table_data.item(i, j) is None:
+                    msg = QtWidgets.QMessageBox(self)
+                    msg.setIcon(QtWidgets.QMessageBox.Warning)
+                    msg.setWindowTitle("Информация")
+                    msg.setText("Не все данные таблицы заполнены!")
+                    msg.exec()
+                    return
 
     # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
