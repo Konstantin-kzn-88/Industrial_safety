@@ -4,9 +4,12 @@ import sys
 from pathlib import Path
 import random
 from shapely.geometry import Point, LineString, Polygon
+import win32com.client
 
 from data_base import class_db
 
+EXCEL = win32com.client.Dispatch("Excel.Application")
+I18N_QT_PATH = str(os.path.join(os.path.abspath('.'), 'i18n'))
 
 class MoveItem(QtWidgets.QGraphicsItem):
     def __init__(self, thickness):
@@ -236,32 +239,32 @@ class Painter(QtWidgets.QMainWindow):
         self.color_zone1_btn.setIcon(color_ico)
         self.color_zone1_btn.setToolTip("Цвет зоны 1")
         self.color_zone1_btn.setStyleSheet("background-color: red")
-        # self.color_zone1_btn.clicked.connect(self.select_color)
+        self.color_zone1_btn.clicked.connect(self.select_color)
         self.color_zone2_btn = QtWidgets.QPushButton("Зона 2")
         self.color_zone2_btn.setIcon(color_ico)
         self.color_zone2_btn.setToolTip("Цвет зоны 2")
         self.color_zone2_btn.setStyleSheet("background-color: blue")
-        # self.color_zone2_btn.clicked.connect(self.select_color)
+        self.color_zone2_btn.clicked.connect(self.select_color)
         self.color_zone3_btn = QtWidgets.QPushButton("Зона 3")
         self.color_zone3_btn.setIcon(color_ico)
         self.color_zone3_btn.setToolTip("Цвет зоны 3")
         self.color_zone3_btn.setStyleSheet("background-color: orange")
-        # self.color_zone3_btn.clicked.connect(self.select_color)
+        self.color_zone3_btn.clicked.connect(self.select_color)
         self.color_zone4_btn = QtWidgets.QPushButton("Зона 4")
         self.color_zone4_btn.setIcon(color_ico)
         self.color_zone4_btn.setToolTip("Цвет зоны 4")
         self.color_zone4_btn.setStyleSheet("background-color: green")
-        # self.color_zone4_btn.clicked.connect(self.select_color)
+        self.color_zone4_btn.clicked.connect(self.select_color)
         self.color_zone5_btn = QtWidgets.QPushButton("Зона 5")
         self.color_zone5_btn.setIcon(color_ico)
         self.color_zone5_btn.setToolTip("Цвет зоны 5")
         self.color_zone5_btn.setStyleSheet("background-color: magenta")
-        # self.color_zone5_btn.clicked.connect(self.select_color)
+        self.color_zone5_btn.clicked.connect(self.select_color)
         self.color_zone6_btn = QtWidgets.QPushButton("Зона 6")
         self.color_zone6_btn.setIcon(color_ico)
         self.color_zone6_btn.setToolTip("Цвет зоны 6")
         self.color_zone6_btn.setStyleSheet("background-color: yellow")
-        # self.color_zone6_btn.clicked.connect(self.select_color)
+        self.color_zone6_btn.clicked.connect(self.select_color)
 
         # 2.2.2. Рамка №2. Владки зон поражения. (то что будет в рамке 2)
         self.data_excel = QtWidgets.QLineEdit()
@@ -1167,11 +1170,32 @@ class Painter(QtWidgets.QMainWindow):
             # очистим список координат для отрисовки
             self.data_draw_point.clear()
 
+    # 3. Выбор цвета для кнопок
+    def select_color(self):
+        # Определение цветов зон действия поражающих факторов
+        get_color = QtWidgets.QColorDialog
+        color = get_color.getColor(parent=self)
+        color_rgb = color.getRgb()
+        red = color_rgb[0]
+        green = color_rgb[1]
+        blue = color_rgb[2]
+        # Какая кнопка послала сигнал?
+        btn = self.sender()
+        # Изменить цвет этой кнопке
+        btn.setStyleSheet(f'background: rgb({red},{green},{blue});')
+
     # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     app.setStyle(QtWidgets.QStyleFactory.create('Fusion'))
+    locale = 'ru_RU'
+    qt_translator = QtCore.QTranslator(app)
+    qt_translator.load('{}/qtbase_{}.qm'.format(I18N_QT_PATH, locale))
+    app_translator = QtCore.QTranslator(app)
+    app_translator.load('{}/{}.qm'.format(I18N_QT_PATH, locale))
+    app.installTranslator(qt_translator)
+    app.installTranslator(app_translator)
     ex = Painter()
     app.exec_()
