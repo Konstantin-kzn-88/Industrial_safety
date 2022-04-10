@@ -1154,7 +1154,7 @@ class Painter(QtWidgets.QMainWindow):
                 pen.setCapStyle(QtCore.Qt.RoundCap)
                 qp.setPen(pen)
                 qp.setBrush(brush)
-                
+
                 obj_coord = self.get_polygon(coordinate_obj[i])
 
                 i += 1
