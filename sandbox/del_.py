@@ -1,10 +1,6 @@
-from tkinter import *
+import itertools
 
-root = Tk()
-root.title("Python")
-root.geometry("300x250")
+i = itertools.count(start=0, step=1)
 
-btn = Button(text="Hello")
-btn.pack()
-
-root.mainloop()
+for _ in range(0,10):
+    print(i)

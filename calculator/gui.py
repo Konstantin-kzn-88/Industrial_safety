@@ -1,18 +1,17 @@
+import itertools
+
 from PySide2 import QtWidgets, QtGui, QtCore
 import os
 import sys
 from pathlib import Path
 import random
-from shapely.geometry import Point, LineString, Polygon
-import win32com.client
+from shapely.geometry import LineString, Polygon
+import xlwings as xw
 
 from data_base import class_db
 
-# EXCEL = win32com.client.Dispatch("Excel.Application")
-
-import xlwings as xw
-
 I18N_QT_PATH = str(os.path.join(os.path.abspath('.'), 'i18n'))
+
 
 class MoveItem(QtWidgets.QGraphicsItem):
     def __init__(self, thickness):
@@ -40,7 +39,6 @@ class Painter(QtWidgets.QMainWindow):
         path_ico = str(Path(os.getcwd()).parents[0])
 
         self.main_ico = QtGui.QIcon(path_ico + '/ico/comp.png')
-        tree_ico = QtGui.QIcon(path_ico + '/ico/tree.png')
 
         paint_ico = QtGui.QIcon(path_ico + '/ico/painter.png')
         book_ico = QtGui.QIcon(path_ico + '/ico/book.png')
@@ -283,7 +281,8 @@ class Painter(QtWidgets.QMainWindow):
         self.draw_from_excel = QtWidgets.QPushButton("Рисовать")
         self.draw_from_excel.setIcon(paint_ico)
         self.draw_from_excel.setToolTip("Отрисовка зон из Excel")
-        self.draw_from_excel.clicked.connect(self.draw_from_data_excel)
+        self.draw_from_excel.clicked.connect(lambda: self.draw_from_data([] if self.data_excel.text() == ''
+                                                                         else eval(self.data_excel.text())))
 
         # 2.2.3. Рамка №3. Владки зон поражения. (то что будет в рамке 3)
         self.opacity = QtWidgets.QDoubleSpinBox()
@@ -1097,27 +1096,34 @@ class Painter(QtWidgets.QMainWindow):
             k -= 2
             k += 4
 
-    def draw_from_data_excel(self):
+
+    def draw_from_data(self, data: list):
+        '''
+        Функция отрисовки на ген плане зон поражения.
+        :param data список вида [[1,2,3,4,5,6],[1,2,3,4,5,6]..n]
+                    количество списков = количетву отрисовываемых объектов.
+        '''
+
+        # 1. Проверки
+        # 1.1. Проверки на заполненность данных
         self.is_action_valid()
-        # 1 Получить данные о масштабе
+        # 1.2. Список данных должен быть не пустой
+        if len(data) == 0:
+            return
+
+        # 2. Получить данные
+        # 2.1. О масштабе
         scale_plan = float(self.scale_plan.text())
-        # 2 Получить координаты и типы объектов
-        # Типы объектов
+        # 2.2. Получить координаты и типы объектов
         type_obj = []
+        coordinate_obj = []
         for row in range(0, self.table_data.rowCount()):  # получим типы объектов
             type_obj.append(int(self.table_data.item(row, 13).text()))
-        # Координаты объектов
-        coordinate_obj = []
-        for row in range(0, self.table_data.rowCount()):  # пполучим координаты объектов
             coordinate_obj.append(eval(self.table_data.item(row,
                                                             self.table_data.columnCount() - 1).text()))
-        # Данные из экселя
-        if self.data_excel.text() == '':
-            return
-        else:
-            data_excel = eval(self.data_excel.text())
+
         # 3. Нарисовать
-        # 3.1. определим все цвета зон
+        # 3.1. Определим все цвета зон покнопкам
         color_zone_arr = self.get_color_for_zone()
 
         # 3.2. Отрисовка зон
@@ -1130,18 +1136,15 @@ class Painter(QtWidgets.QMainWindow):
         pixmap_zone.fill(QtGui.QColor(0, 0, 0, 0))
         # Создадим QPainter
         qp = QtGui.QPainter(pixmap_zone)
-
         # Начнем рисование
         qp.begin(pixmap_zone)
 
         for zone_index in range(-1, -7, -1):
-            i = 0
+            i = 0 # итератор для объектов
             for obj in type_obj:
-
                 # # начинаем рисовать с последнего цвета
                 color = color_zone_arr[zone_index]
-                zone = float(data_excel[i][zone_index]) * scale_plan * 2  # т.к. на вход радиус, а нужен диаметр
-
+                zone = float(data[i][zone_index]) * scale_plan * 2  # т.к. на вход радиус, а нужен диаметр
                 # зона может быть 0 тогда ничего рисовать не надо
                 if zone == 0:
                     continue
@@ -1154,19 +1157,14 @@ class Painter(QtWidgets.QMainWindow):
                 pen.setCapStyle(QtCore.Qt.RoundCap)
                 qp.setPen(pen)
                 qp.setBrush(brush)
-
                 obj_coord = self.get_polygon(coordinate_obj[i])
-
-                i += 1
 
                 if len(obj_coord) > 2:  # координаты можно преобразовать в полигон
                     if obj == 0:
                         # линейн. получим полигон
-
                         qp.drawPolyline(obj_coord)
                     else:
                         # стац. об. получим полигон
-
                         qp.drawPolyline(obj_coord)
                         qp.drawPolygon(obj_coord, QtCore.Qt.OddEvenFill)
                 else:  # не получается полигон, значит точка
@@ -1174,6 +1172,8 @@ class Painter(QtWidgets.QMainWindow):
                     qp.setPen(pen_point)
                     point = QtCore.QPoint(int(float(obj_coord[0])), int(float(obj_coord[1])))
                     qp.drawEllipse(point, zone / 2, zone / 2)  # т.к. нужен радиус
+
+                i += 1 # следующий объект
 
         # Завершить рисование
         qp.end()
@@ -1186,7 +1186,6 @@ class Painter(QtWidgets.QMainWindow):
         # Разместим на сцене pixmap с pixmap_zone
         self.scene.addPixmap(pixmap)
         self.scene.setSceneRect(QtCore.QRectF(pixmap.rect()))
-
 
     # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     #  Прочие функции
@@ -1253,7 +1252,7 @@ class Painter(QtWidgets.QMainWindow):
         Количество столбцов не более 6, т.к. зон всего 6
         Количество строк равно равно количеству объектов
         """
-        self.is_action_valid() # проверки
+        self.is_action_valid()  # проверки
 
         try:
             wb = xw.books.active
@@ -1288,7 +1287,7 @@ class Painter(QtWidgets.QMainWindow):
 
     # 5. Проверка наличия базы, генплана, масштаба, объектов и
     # их заполненности
-    def  is_action_valid(self):
+    def is_action_valid(self):
         """
         Функция проверки наличия всех данных для корректной работы
         """
