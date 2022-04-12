@@ -13,7 +13,7 @@ from data_base import class_db
 I18N_QT_PATH = str(os.path.join(os.path.abspath('.'), 'i18n'))
 
 
-class MoveItem(QtWidgets.QGraphicsItem):
+class Object_point(QtWidgets.QGraphicsItem):
     def __init__(self, thickness):
         super().__init__()
         self.tag = None
@@ -1084,7 +1084,7 @@ class Painter(QtWidgets.QMainWindow):
         k = 0
         while i < len(coordinate):
             thickness_marker = int(self.thickness_line.value() * 5)  # сторона маркера должна быть в 4 раза больше
-            name_rings = MoveItem(thickness_marker)
+            name_rings = Object_point(thickness_marker)
             name_rings.setPos(float(coordinate[i]), float(coordinate[i + 1]))
             self.scene.addItem(name_rings)
             i += 2

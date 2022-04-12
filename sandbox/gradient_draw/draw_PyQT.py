@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow
 import sys
-from PyQt5.QtGui import QPen,QPainter, QPolygon, QRadialGradient, QBrush, QColor
+from PyQt5.QtGui import QPen,QPainter, QPolygon, QRadialGradient , QBrush, QColor
 from PyQt5.QtCore import QPoint, Qt
 
 
@@ -20,10 +20,12 @@ class Window(QMainWindow):
     def paintEvent(self, event):
         painter = QPainter(self)
         gradient = QRadialGradient(50, 50, 50, 50, 50)
-        gradient.setColorAt(0, QColor.fromRgbF(100, 125, 0, 0.5))
-        gradient.setColorAt(1, QColor.fromRgbF(0, 255, 0, 0.5))
+        # gradient.setAngle(90)
+        gradient.setColorAt(0, QColor(0, 0, 255))
+        gradient.setColorAt(1, QColor(0, 255, 0))
+        # gradient.setColorAt(1, QColor(255, 0, 0))
         brush = QBrush(gradient)
-        pen = QPen(brush, 50, Qt.SolidLine)
+        pen = QPen(brush, 50)
         pen.setJoinStyle(Qt.RoundJoin)
         pen.setCapStyle(Qt.RoundCap)
         painter.setPen(pen)
