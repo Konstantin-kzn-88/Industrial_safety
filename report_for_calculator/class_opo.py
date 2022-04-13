@@ -5,7 +5,7 @@ from datetime import date
 from docxtpl import DocxTemplate, InlineImage
 from pathlib import Path
 from docx.shared import Mm
-import numbers
+
 # Мои импортированные классы
 from evaporation import class_evaporation_liguid
 from event_tree import class_event_tree
@@ -42,6 +42,7 @@ class Device:
         self.temperature = float(char_set["temperature"])
         self.volume = float(char_set["volume"])
         self.completion = float(char_set["completion"])
+        self.spill_square = float(char_set["spill_square"])
         self.spreading = float(char_set["spreading"])
         self.type = int(char_set["type"])
         self.place = float(char_set["place"])
@@ -90,7 +91,7 @@ class Device:
         # 1.1. Объем, масса, площадь, количество испарившегося вещества
         self.volume_sub = self.emergency_volume()  # аварийный объем, м3
         self.mass_sub = self.volume_sub * self.density  # аварийная масса выброса, кг
-        self.square_sub = self.volume_sub * self.spreading  # аварийная плащодь пролива, м2
+        self.square_sub = (self.volume_sub * self.spreading) if self.spill_square == 0 else self.spill_square  # аварийная плащодь пролива, м2
         self.evaporated_sub = class_evaporation_liguid.Evapor_liqud().evapor_liguid(self.molecular_weight,
                                                                                     self.steam_pressure,
                                                                                     self.square_sub,
@@ -1014,6 +1015,7 @@ if __name__ == '__main__':
         'temperature': 30,  # град.С
         'volume': 100,  # м3
         'completion': 0.8,  # - (степень заполнения)
+        'spill_square': 400,  # м2 обвалование
         'spreading': 20,  # м^-1
         'type': 1,  # тип оборудования
         'place': 0.1,  # коэф.участия во взрыве
@@ -1059,6 +1061,7 @@ if __name__ == '__main__':
         'volume': 0,  # м3
         'completion': 1,  # - (степень заполнения)
         'spreading': 20,  # м^-1
+        'spill_square': 0,  # м2 обвалование
         'type': 0,  # тип оборудования
         'place': 0.1,  # коэф.участия во взрыве
         'death_person': 1,

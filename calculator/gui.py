@@ -1,4 +1,4 @@
-import itertools
+import math
 
 from PySide2 import QtWidgets, QtGui, QtCore
 import os
@@ -9,8 +9,16 @@ from shapely.geometry import LineString, Polygon
 import xlwings as xw
 
 from data_base import class_db
+# calc
+from evaporation import class_evaporation_liguid
+from tvs_explosion import class_tvs_explosion
+from strait_fire import class_strait_fire
+from lower_concentration import class_lower_concentration
 
 I18N_QT_PATH = str(os.path.join(os.path.abspath('.'), 'i18n'))
+TIME_EVAPORATED = 3600
+MASS_BURNOUT_RATE = 0.06
+WIND_VELOCITY = 1
 
 
 class Object_point(QtWidgets.QGraphicsItem):
@@ -50,6 +58,7 @@ class Painter(QtWidgets.QMainWindow):
         explosion_ico = QtGui.QIcon(path_ico + '/ico/explosion.png')
         flash_ico = QtGui.QIcon(path_ico + '/ico/flash.png')
         show_ico = QtGui.QIcon(path_ico + '/ico/planshow.png')
+        cloud_ico = QtGui.QIcon(path_ico + '/ico/cloud.png')
 
         db_ico = QtGui.QIcon(path_ico + '/ico/data_base.png')
         ok_ico = QtGui.QIcon(path_ico + '/ico/ok.png')
@@ -384,16 +393,17 @@ class Painter(QtWidgets.QMainWindow):
         GB_doc.setLayout(layout_doc)
 
         # 2.3.3. Рамка №3. Вкладка отчетов. Тип плана  (то что будет в рамке 3)
-        self.type_plan = QtWidgets.QComboBox()  # тип плана
-        self.type_plan.addItems(["Взрыв", "Пожар", "Вспышка", "Риск"])
-        self.type_plan.setItemIcon(0, explosion_ico)
-        self.type_plan.setItemIcon(1, fire_ico)
-        self.type_plan.setItemIcon(2, flash_ico)
-        self.type_plan.setItemIcon(3, risk_ico)
+        self.plan_report_type = QtWidgets.QComboBox()  # тип плана
+        self.plan_report_type.addItems(["Взрыв", "Пожар", "Вспышка", "НКПР", "Риск"])
+        self.plan_report_type.setItemIcon(0, explosion_ico)
+        self.plan_report_type.setItemIcon(1, fire_ico)
+        self.plan_report_type.setItemIcon(2, flash_ico)
+        self.plan_report_type.setItemIcon(3, cloud_ico)
+        self.plan_report_type.setItemIcon(4, risk_ico)
         # # self.type_act.activated[str].connect(self.select_type_act)
-        plan_report = QtWidgets.QPushButton("Нарисовать")
-        plan_report.setIcon(show_ico)
-        # # self.draw_type_act.clicked.connect(self.change_draw_type_act)
+        self.plan_report = QtWidgets.QPushButton("Нарисовать")
+        self.plan_report.setIcon(show_ico)
+        self.plan_report.clicked.connect(self.plan_report_draw)
 
         # Упаковываем все в QGroupBox
         # Рамка №2
@@ -401,8 +411,8 @@ class Painter(QtWidgets.QMainWindow):
         GB_get_plan = QtWidgets.QGroupBox('Ситуационный план')
         GB_get_plan.setStyleSheet("QGroupBox { font-weight : bold; }")
         hbox_get_plan = QtWidgets.QHBoxLayout()
-        hbox_get_plan.addWidget(self.type_plan)
-        hbox_get_plan.addWidget(plan_report)
+        hbox_get_plan.addWidget(self.plan_report_type)
+        hbox_get_plan.addWidget(self.plan_report)
         layout_get_plan.addRow("", hbox_get_plan)
         GB_get_plan.setLayout(layout_get_plan)
 
@@ -451,7 +461,7 @@ class Painter(QtWidgets.QMainWindow):
         data_grid.setColumnStretch(0, 15)
         data_grid.setColumnStretch(1, 1)
 
-        self.table_data = QtWidgets.QTableWidget(0, 32)
+        self.table_data = QtWidgets.QTableWidget(0, 33)
         self.table_data_view()  # фукция отрисовки заголовков таблицы
         self.table_data.clicked[QtCore.QModelIndex].connect(self.get_index_in_table)
         # кнопки управления
@@ -661,7 +671,7 @@ class Painter(QtWidgets.QMainWindow):
         header_list_sub = ['fp, 1/м', 'z, -', 'po ж.ф., кг/м3',
                            'po г.ф., кг/м3', 'М, кг/кмоль', 'Pn, кПа',
                            'Твсп, гр.С', 'Ткип, гр.С', 'Класс в-ва', 'Вид пространства',
-                           'Qсг, кДж/кг', 'sigma, -', 'Энергозапас, -', 'S, млн.руб/т']
+                           'Qсг, кДж/кг', 'sigma, -', 'Энергозапас, -', 'S, млн.руб/т', 'НКПР, об.%']
 
         for header in header_list_sub:
             item = QtWidgets.QTableWidgetItem(header)
@@ -762,12 +772,12 @@ class Painter(QtWidgets.QMainWindow):
             [f'Е-{random.randint(1, 20)}', 'Емкость', 'Наземная', 'Сталь', 'ДНС-2', 'Хранение нефти',
              '0', '0', '0,8', '10', f'{random.randrange(100, 500, 100)}', '0.8 ', f'{random.randrange(100, 500, 25)}',
              '1',
-             '5', '0.1', '850', '3.25', '210', '65', '-28', '430', '3', '3', '46000', '7', '2', '0.6',
+             '5', '0.1', '850', '3.25', '210', '65', '-28', '430', '3', '3', '46000', '7', '2', '0.6', '2.9',
              '1', '3', '0.33', ],
             [f'Нефтепровод от т.{random.randint(1, 20)} до УПСВ', 'Нефтепровод', 'Поздемная', 'Сталь В20',
              'Ивинское м.н.', 'Транспорт нефти',
              '0,985', f'{random.choice([89, 114, 159, 219])}', '1.25', '10', '0', '0 ', '0', '0',
-             '5', '0.1', '850', '3.25', '210', '65', '-28', '430', '3', '4', '46000', '7', '2', '0.6',
+             '5', '0.1', '850', '3.25', '210', '65', '-28', '430', '3', '4', '46000', '7', '2', '0.6', '2.9',
              '1', '3', '0.33', ]
         ]
         # Добавить данные
@@ -1068,10 +1078,11 @@ class Painter(QtWidgets.QMainWindow):
         for item in self.scene.items():  # удалить все линии точки и линии
             # Имя item
             name_item = str(item)
+            # print(name_item)
 
             if name_item.find('QGraphicsLineItem') != -1:
                 self.scene.removeItem(item)
-            elif name_item.find('MoveItem') != -1:
+            elif name_item.find('point') != -1:
                 self.scene.removeItem(item)
 
     def draw_all_item(self, coordinate):
@@ -1096,6 +1107,100 @@ class Painter(QtWidgets.QMainWindow):
             k -= 2
             k += 4
 
+    def plan_report_draw(self):
+        print('plan draw')
+        # Проверки
+        self.is_action_valid()
+        # 1. Получить что нужно рисовать?
+        plan_report_index = self.plan_report_type.currentIndex()
+        # Получить объекты
+        # 2. Считаем данные из таблицы
+        data_list = self.get_data_in_table()
+        # 4. создадим оборудование
+        print(data_list)
+        result = []
+
+        for obj in data_list:
+            # a) Посчитаем объем
+            length = float(obj[6])
+            diameter = float(obj[7])
+            volume_char = float(obj[10])  # характеристика емкость, объем, м3
+            completion = float(obj[11])
+            spill_square = float(obj[12])
+            spreading = float(obj[14])
+            class_substance = int(obj[22])
+            view_space = int(obj[23])
+            place = float(obj[15])
+            heat_of_combustion = float(obj[24])
+            sigma = int(obj[25])
+            energy_level = int(obj[26])
+            boiling_temperature = float(obj[21])
+            lower_concentration = float(obj[28])
+            print(length, spreading)
+            density = 850
+            molecular_weight = 210
+            steam_pressure = 65
+
+
+
+            # а. Расчитаем аварийный объем и массу
+            volume_sub = 0  # аварийный объем
+            # Если трубопровод, то есть длина не равно 0
+            if length != 0:
+                volume_sub = math.pi * math.pow(diameter / 2000, 2) * (length * 1000)
+            # Если емкость, то есть объем не равен 0
+            if volume_char != 0:
+                volume_sub = volume_char * completion
+
+            mass_sub = volume_sub * density  # аварийная масса выброса, кг
+
+            # б. Определим площадь пролива
+            square_sub = (volume_sub * spreading) if spill_square == 0 else spill_square
+            # в. Количество испарившегося вещества
+            evaporated_sub = class_evaporation_liguid.Evapor_liqud().evapor_liguid(molecular_weight,
+                                                                                   steam_pressure,
+                                                                                   square_sub,
+                                                                                   mass_sub,
+                                                                                   TIME_EVAPORATED)  # количество исп. вещества, кг
+
+            # г. Расчет зон действия поражающих факторов
+            if plan_report_index == 0:
+                explosion_radius = class_tvs_explosion.Explosion().explosion_class_zone(class_substance,
+                                                                                        view_space,
+                                                                                        evaporated_sub * place,
+                                                                                        heat_of_combustion,
+                                                                                        sigma,
+                                                                                        energy_level
+                                                                                        )
+                print(explosion_radius)
+                result.append(explosion_radius)
+
+            if plan_report_index == 1:
+                fire_radius = class_strait_fire.Strait_fire().termal_class_zone(square_sub,
+                                                                                MASS_BURNOUT_RATE,
+                                                                                molecular_weight,
+                                                                                boiling_temperature,
+                                                                                WIND_VELOCITY
+                                                                                )
+                print(fire_radius)
+                result.append(fire_radius + ([0] * 2))  # что бы зо было 6 шт.
+
+            if plan_report_index in (2, 3):
+                lclp_radius = class_lower_concentration.LCLP().culculation_R_LCLP(evaporated_sub,
+                                                                                  molecular_weight,
+                                                                                  boiling_temperature,
+                                                                                  lower_concentration
+                                                                                  )
+                print(lclp_radius)
+                if plan_report_index == 2:
+                    lclp_radius.pop(0)
+                    result.append(lclp_radius + ([0] * 5))  # что бы зо было 6 шт.
+                if plan_report_index == 3:
+                    lclp_radius.pop(1)
+                    result.append(lclp_radius + ([0] * 5))  # что бы зо было 6 шт.
+
+        print("result ", result)
+        self.draw_from_data(result)
 
     def draw_from_data(self, data: list):
         '''
@@ -1104,7 +1209,7 @@ class Painter(QtWidgets.QMainWindow):
                     количество списков = количетву отрисовываемых объектов .
 
         '''
-
+        print(data)
         # 1. Проверки
         # 1.1. Проверки на заполненность данных
         self.is_action_valid()
@@ -1141,7 +1246,7 @@ class Painter(QtWidgets.QMainWindow):
         qp.begin(pixmap_zone)
 
         for zone_index in range(-1, -7, -1):
-            i = 0 # итератор для объектов
+            i = 0  # итератор для объектов
             for obj in type_obj:
                 # # начинаем рисовать с последнего цвета
                 color = color_zone_arr[zone_index]
@@ -1174,7 +1279,7 @@ class Painter(QtWidgets.QMainWindow):
                     point = QtCore.QPoint(int(float(obj_coord[0])), int(float(obj_coord[1])))
                     qp.drawEllipse(point, zone / 2, zone / 2)  # т.к. нужен радиус
 
-                i += 1 # следующий объект
+                i += 1  # следующий объект
 
         # Завершить рисование
         qp.end()
@@ -1334,6 +1439,25 @@ class Painter(QtWidgets.QMainWindow):
                     msg.setText("Не все данные таблицы заполнены!")
                     msg.exec()
                     return
+        # 6. Правильно ли заполнены объемы емкостей / трубопроводов
+        data_list = self.get_data_in_table()
+        for obj in data_list:
+            lenght = float(obj[6])
+            volume = float(obj[10])
+            if lenght == 0 and volume == 0:
+                msg = QtWidgets.QMessageBox(self)
+                msg.setIcon(QtWidgets.QMessageBox.Warning)
+                msg.setWindowTitle("Информация")
+                msg.setText(f"Объект{obj[0]}: нулевая длина и нулевой объем.")
+                msg.exec()
+                return
+            if lenght != 0 and volume != 0:
+                msg = QtWidgets.QMessageBox(self)
+                msg.setIcon(QtWidgets.QMessageBox.Warning)
+                msg.setWindowTitle("Информация")
+                msg.setText(f"Объект{obj[0]}: заполнены характеристики длина и объем.")
+                msg.exec()
+                return
 
     # 6. Получить цвета зон поражающих факторов
     def get_color_for_zone(self) -> list:
@@ -1366,6 +1490,24 @@ class Painter(QtWidgets.QMainWindow):
         polygon = QtGui.QPolygon(points)
 
         return polygon
+
+    def get_data_in_table(self):
+        data_list = []
+        count_row = 0  # начинаем с 0 строки
+        for _ in range(0, self.table_data.rowCount()):  # посчитаем строки
+            append_list = []  # заведем пустой список для объекта
+            count_col = 0  # колонка с индесом 0
+            for _ in range(0, self.table_data.columnCount()):  # для каждого столбца строки
+
+                if count_col != self.table_data.columnCount() - 1:
+                    var = self.table_data.item(count_row, count_col).text().replace(',', '.')
+                else:
+                    var = self.table_data.item(count_row, count_col).text()
+                append_list.append(var)  # добавим в словарь текст ячейки
+                count_col += 1  # + 1 к столбцу
+            data_list.append(append_list)  # добавим объект
+            count_row += 1  # +1 к строке (новая строка если len(data_list) > 1)
+        return data_list
     # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 

@@ -30,4 +30,4 @@ class LCLP:
         R_LCLP = round(7.8 * ((mass_SAM / (vapour_density * LCLP)) ** 0.33), 2)
         R_f = round((R_LCLP * 1.2), 2)
 
-        return (R_LCLP, R_f)
+        return [R_LCLP, R_f]
