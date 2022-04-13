@@ -1136,12 +1136,10 @@ class Painter(QtWidgets.QMainWindow):
             energy_level = int(obj[26])
             boiling_temperature = float(obj[21])
             lower_concentration = float(obj[28])
-            print(length, spreading)
-            density = 850
-            molecular_weight = 210
-            steam_pressure = 65
-
-
+            density = float(obj[16])
+            molecular_weight = float(obj[18])
+            steam_pressure = float(obj[19])
+            type = float(obj[13])
 
             # а. Расчитаем аварийный объем и массу
             volume_sub = 0  # аварийный объем
@@ -1183,6 +1181,12 @@ class Painter(QtWidgets.QMainWindow):
                                                                                 WIND_VELOCITY
                                                                                 )
                 print(fire_radius)
+                # Если объект стационарный, то нужно рисовать от края пролива
+                # для этого вычтем радиус пролива
+                if type != 0:
+                    r_eff = math.sqrt(4 * square_sub / math.pi) /2
+                    fire_radius = [i - r_eff for i in fire_radius]
+
                 result.append(fire_radius + ([0] * 2))  # что бы зо было 6 шт.
 
             if plan_report_index in (2, 3):
@@ -1226,7 +1230,7 @@ class Painter(QtWidgets.QMainWindow):
         for row in range(0, self.table_data.rowCount()):  # получим типы объектов
             type_obj.append(int(self.table_data.item(row, 13).text()))
             coordinate_obj.append(eval(self.table_data.item(row,
-                                                            self.table_data.columnCount() - 1).text()))
+                                                                self.table_data.columnCount() - 1).text()))
 
         # 3. Нарисовать
         # 3.1. Определим все цвета зон покнопкам
