@@ -6,6 +6,8 @@ Image.MAX_IMAGE_PIXELS = None
 import numpy as np
 import time
 
+from geometry import class_geometry
+
 start_time = time.time()
 # цвета для отображения результата
 red = (255, 0, 0, 70)
@@ -48,16 +50,20 @@ probit_all = [probit_point_1, probit_point_2, probit_point_3, probit_point_4,
 
 # for line_obj
 probit_line = [power, [i for i in range(100)]]
-coord_line = LineString([(70, 70), (30, 400)])
+# coord_line = LineString([(70, 70), (30, 400)])
+coord_line = [70,70,30,400]
 
 probit_line_2 = [power, [i for i in range(100)]]
-coord_line_2 = LineString([(100, 100), (100, 400)])
+# coord_line_2 = LineString([(100, 100), (100, 400)])
+coord_line_2 = [100,100,100,400]
 
 probit_line_3 = [power, [i for i in range(100)]]
-coord_line_3 = LineString([(450, 10), (450, 10)])
+# coord_line_3 = LineString([(450, 10), (450, 10)])
+coord_line_3 = [450, 10,450, 10]
 
 probit_line_4 = [[0.99, 0.7, 0.3, 0.2, 0.1], [1, 2, 3, 4, 5]]
-coord_line_4 = LineString([(0, 100), (300, 0)])
+# coord_line_4 = LineString([(0, 100), (300, 0)])
+coord_line_4 = [0, 100,300, 0]
 
 probit_line_all = [probit_line, probit_line_2, probit_line_3, probit_line_4]
 coord_line_all = [coord_line, coord_line_2, coord_line_3, coord_line_4]
@@ -74,7 +80,8 @@ def calc_el_zeors_array_for_point(width, height, coord, probit):
         for y in range(height):
             # определим расстояние от перебираемой точки картинки до
             # заданной точки coord
-            dist = round(Point(x, y).distance(Point(coord[0], coord[1])))
+            dist = class_geometry.Geometry().distance_point_to_point([coord[0], coord[1]], [x,y])
+            # dist = round(Point(x, y).distance(Point(coord[0], coord[1])))
             # крайний случай, когда перебираемая точка и заданная точка coord равны
             # тогда воздействие максимально
             if dist == 0:
@@ -93,7 +100,8 @@ def calc_el_zeors_array_for_point(width, height, coord, probit):
 def calc_el_zeors_array_for_line(width, height, coord_line, probit_line):
     for x in range(width):
         for y in range(height):
-            dist = round(Point(x, y).distance(coord_line))
+            # dist = round(Point(x, y).distance(coord_line))
+            dist = class_geometry.Geometry().distance_point_to_segment(object_=coord_line, point_=[x, y])
             if dist == 0:
                 zeors_array[x, y] = zeors_array[x, y] + probit_line[0][0]
                 # color_px(x, y)

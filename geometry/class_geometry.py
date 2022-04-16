@@ -8,14 +8,14 @@ import math
 class Pos_point:
     """
     Вспомогательный класс для функции intersection_segmets
-    класса Distance
+    класса Geometry
     """
     def __init__(self, x, y):
         self.x = x
         self.y = y
 
 
-class Distance:
+class Geometry:
 
     def distance_point_to_point(self, object_, point_) -> int:
         """
@@ -163,7 +163,7 @@ if __name__ == "__main__":
 
     # # 1. Расстояние от точки до точки
     # # 1.1. Расчет
-    # calc = Distance().distance_point_to_point(object_=[1, 1], point_=[3, 3])
+    # calc = Geometry().distance_point_to_point(object_=[1, 1], point_=[3, 3])
     # print(f'Расстояние до точки расчет. {calc}')
     # # 1.2. Shapely
     # point_1 = Point(1, 1)
@@ -173,7 +173,7 @@ if __name__ == "__main__":
     #
     # # 2. Расстояние от точки до отрезка
     # # 2.1. Расчет
-    # calc = Distance().distance_point_to_segment(object_=[1, 1, 20, 10], point_=[10, 50])
+    # calc = Geometry().distance_point_to_segment(object_=[1, 1, 20, 10], point_=[10, 50])
     # print(f'Расстояние до отрезка расчет. {calc}')
     # # 2.2. Shapely
     # point_3 = Point(10, 50)
@@ -184,7 +184,7 @@ if __name__ == "__main__":
     #
     # # 3. Расстояние от точки до ломанной линии состоящей из непрерывных отрезков
     # # 3.1. Расчет
-    # calc = Distance().distanse_point_to_line(object_=[1, 1, 20, 10, 40, 30], point_=[10, 50])
+    # calc = Geometry().distanse_point_to_line(object_=[1, 1, 20, 10, 40, 30], point_=[10, 50])
     # print(f'Расстояние до линии расчет. {calc}')
     # # 3.2. Shapely
     # point_4 = Point(10, 50)
@@ -193,10 +193,10 @@ if __name__ == "__main__":
     # print(f'Расстояние до линии shapely {dist_2}')
     # print('*' * 20)
     #
-    # calc = Distance().point_in_polygon(object_=[3, 3, 6, 3, 6, 6, 4, 9, 3, 6], point_=[1, 9])
+    # calc = Geometry().point_in_polygon(object_=[3, 3, 6, 3, 6, 6, 4, 9, 3, 6], point_=[1, 9])
     # print(f'Точка лежит в многоугольнике? Ответ: {calc}')
     #
-    # calc = Distance().intersection_segmets(point_=[1, 1], segment=[6, 3, 6, 6], point_end=[8, 4])
+    # calc = Geometry().intersection_segmets(point_=[1, 1], segment=[6, 3, 6, 6], point_end=[8, 4])
     # print(f'Пересекаются отрезки (point_, point_end) и (segment)? Ответ: {calc}')
 
 
