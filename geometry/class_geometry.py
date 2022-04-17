@@ -180,6 +180,24 @@ class Geometry:
 
         return square
 
+    def length_line(self,object_:list) -> float:
+        """
+        Функция вычисления длины произвольной линии
+        состоящей из отрезков.
+
+        Пример:
+        length_line([5,1,5,1,8,8,13,-10,-34,10])
+
+        :return: length сумму длин всех отрезков
+        """
+
+        all_length_line = []
+        for i in range(0, len(object_) - 2, 2):
+            distance = self.distance_point_to_point([object_[i], object_[i + 1]], [object_[i + 2], object_[i + 3]])
+            all_length_line.append(distance)
+        length = round(sum(all_length_line), 2)
+        return length
+
 
 if __name__ == "__main__":
     ...
@@ -225,3 +243,8 @@ if __name__ == "__main__":
 
     # calc = Geometry().square_polygon([5,1,5,1,8,8,13,-10,-34,10])
     # print(f'Площадь многоугольника в усл.ед.: {calc}')
+
+    # print('*' * 20)
+
+    calc = Geometry().length_line([5,1,5,1,8,8,13,-10,-34,10])
+    print(f'Длина ломанной линии.: {calc}')
