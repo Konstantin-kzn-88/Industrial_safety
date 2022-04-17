@@ -1,5 +1,6 @@
 import math
 
+
 # Зависимости для сравнения
 # from shapely.geometry import Point
 # from shapely.geometry import LineString
@@ -10,6 +11,7 @@ class Pos_point:
     Вспомогательный класс для функции intersection_segmets
     класса Geometry
     """
+
     def __init__(self, x, y):
         self.x = x
         self.y = y
@@ -17,7 +19,7 @@ class Pos_point:
 
 class Geometry:
 
-    def distance_point_to_point(self, object_, point_) -> int:
+    def distance_point_to_point(self, object_: list, point_: list) -> float:
         """
         Вычисление расстояния между 2 точками
 
@@ -31,11 +33,10 @@ class Geometry:
         x1 = object_[0]
         y1 = object_[1]
 
-        distance = round(
-            math.sqrt(pow(x1 - x, 2) + pow(y1 - y, 2)))
+        distance = round(math.sqrt(pow(x1 - x, 2) + pow(y1 - y, 2)))
         return distance
 
-    def distance_point_to_segment(self, object_, point_) -> int:
+    def distance_point_to_segment(self, object_, point_) -> float:
         """
         Функция расстояния от точки до отрезка
 
@@ -66,9 +67,9 @@ class Geometry:
         else:
             # если это не так, то вернуть минимальное расстояние до конечной точки отрезка
             distance = min(math.sqrt((ax - cx) ** 2 + (ay - cy) ** 2), math.sqrt((bx - cx) ** 2 + (by - cy) ** 2))
-            return int(distance)
+            return round(distance, 2)
 
-    def distanse_point_to_line(self, object_: list, point_: list) -> int:
+    def distanse_point_to_line(self, object_: list, point_: list) -> float:
         """
         Функция определения расстояния минимального от точки до линии состоящей
         из отрезков (линия непрерывна).
@@ -85,7 +86,7 @@ class Geometry:
             distance = self.distance_point_to_segment(segment, point_)
             all_distance.append(distance)
 
-        return int(min(all_distance))
+        return round(min(all_distance), 2)
 
     def point_in_polygon(self, object_: list, point_: list) -> bool:
         """
@@ -118,7 +119,7 @@ class Geometry:
         # 4. Определим для каждого луча, пересекает ли он грани
         result = []
         for i in range(0, len(x_ray)):
-            for j in range(0, len(object_) - 2, 2): # перебор граней
+            for j in range(0, len(object_) - 2, 2):  # перебор граней
                 segment = [object_[j], object_[j + 1], object_[j + 2], object_[j + 3]]
                 result.append(self.intersection_segmets(point_, segment, [x_ray[i], y_ray[i]]))
 
@@ -156,6 +157,28 @@ class Geometry:
             return ccw(A, C, D) != ccw(B, C, D) and ccw(A, B, C) != ccw(A, B, D)
 
         return intersect(a, b, c, d)
+
+    def square_polygon(self, object_: list) -> int:
+        """
+        Функция вычисления площади произвольного многоугольника по
+        координатам вершин.
+        https://ru.wikipedia.org/wiki/%D0%A4%D0%BE%D1%80%D0%BC%D1%83%D0%BB%D0%B0_%D0%BF%D0%BB%D0%BE%D1%89%D0%B0%D0%B4%D0%B8_%D0%93%D0%B0%D1%83%D1%81%D1%81%D0%B0
+
+        Пример:
+        square_polygon([5,1,5,1,8,8,13,-10,-34,10])
+
+        :return: square (площадь в условных единицах)
+        """
+        sum_for_x = object_[0::2]
+        sum_for_y = object_[3::2] + object_[1:2]
+        sub_for_x = object_[2::2] + object_[0:1]
+        sub_for_y = object_[1::2]
+
+        sum_ = sum([x * y for x, y in zip(sum_for_x, sum_for_y)])
+        sub_ = sum([x * y for x, y in zip(sub_for_x, sub_for_y)]) * (-1)
+        square = int((1 / 2) * abs((sum_ + sub_)))
+
+        return square
 
 
 if __name__ == "__main__":
@@ -198,5 +221,7 @@ if __name__ == "__main__":
     #
     # calc = Geometry().intersection_segmets(point_=[1, 1], segment=[6, 3, 6, 6], point_end=[8, 4])
     # print(f'Пересекаются отрезки (point_, point_end) и (segment)? Ответ: {calc}')
+    # print('*' * 20)
 
-
+    # calc = Geometry().square_polygon([5,1,5,1,8,8,13,-10,-34,10])
+    # print(f'Площадь многоугольника в усл.ед.: {calc}')
