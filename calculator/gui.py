@@ -1,4 +1,5 @@
 import math
+import time
 
 from PySide2 import QtWidgets, QtGui, QtCore
 import os
@@ -560,7 +561,7 @@ class Painter(QtWidgets.QMainWindow):
         plan_menu.addAction(plan_replace)
         plan_save = QtWidgets.QAction(save_ico, 'Coхранить', self)
         plan_save.setStatusTip('Сохранить текущее изображение плана объекта как файл')
-        # plan_save.triggered.connect(self.plan_save)
+        plan_save.triggered.connect(self.plan_save)
         plan_menu.addAction(plan_save)
         plan_clear = QtWidgets.QAction(clear_ico, 'Очистить', self)
         plan_clear.setStatusTip('Очистить план объекта')
@@ -865,6 +866,21 @@ class Painter(QtWidgets.QMainWindow):
     def plan_add_func(self):
         class_db.Data_base(self.db_name, self.db_path).plan_add()
         class_db.Data_base(self.db_name, self.db_path).plan_list_update(self.plan_list)
+
+    def plan_save(self):
+        """
+        Сохранение текущего вида ген.плана
+        """
+        text = str(int(time.time()))
+        # self.del_all_item()
+        self.scene.clearSelection()
+        self.scene.setSceneRect(self.scene.itemsBoundingRect())
+        image = QtGui.QImage(self.scene.sceneRect().size().toSize(), QtGui.QImage.Format_ARGB32)
+        image.fill(QtCore.Qt.transparent)
+        painter = QtGui.QPainter(image)
+        self.scene.render(painter)
+        image.save((f"{self.db_path}/{text}.jpg"), "JPG")
+        painter.end()
 
     def plan_list_select(self, text):
 
