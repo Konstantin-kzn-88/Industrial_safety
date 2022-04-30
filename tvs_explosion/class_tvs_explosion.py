@@ -166,7 +166,7 @@ class Explosion:
             impulse_arr.append(impulse)
             probit_arr.append(probit)
             probability_arr.append(probability)
-            radius += 0.5
+            radius += 1
 
         result = [radius_arr, delta_p_arr, impulse_arr, probit_arr, probability_arr]
 
@@ -253,9 +253,9 @@ if __name__ == '__main__':
     sigma = 7
     energy_level = 2
 
-    ev_class.explosion_plot(class_substance, view_space,
+    print(ev_class.explosion_array(class_substance, view_space,
                             mass, heat_of_combustion, sigma,
-                            energy_level)
+                            energy_level))
 
     # ev_class = Explosion()
     # class_substance = 4

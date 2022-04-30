@@ -111,7 +111,7 @@ class Strait_fire:
                                                        t_boiling, wind_velocity, radius), 2)
             q_term_arr.append(q_term)
             radius_arr.append(radius)
-            radius += 0.5
+            radius += 1
         # расчитаем пробит функцию и вероятность поражения
         D_eff = (4 * S_spill / 3.14) ** (1 / 2)
         # Определим расстояние на котором интенсивность = 4 кВт/м2
@@ -208,7 +208,7 @@ class Strait_fire:
 
 if __name__ == '__main__':
     ev_class = Strait_fire()
-    S_spill = 2000
+    S_spill = 10
     m_sg = 0.06
     mol_mass = 95
     t_boiling = 68
