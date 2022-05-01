@@ -1356,7 +1356,7 @@ class Painter(QtWidgets.QMainWindow):
                     zeors_array[i, j] = zeors_array[x, y]
 
 
-        # достаем картинку из БД
+        # достаем картинку из Б Д
         _, image_data = class_db.Data_base(self.db_name, self.db_path).get_plan_in_db(self.plan_list.currentText())
 
         # На основе исходной картинки создадим QImage и QPixmap
