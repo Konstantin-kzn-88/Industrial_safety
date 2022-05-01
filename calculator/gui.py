@@ -17,6 +17,8 @@ from evaporation import class_evaporation_liguid
 from tvs_explosion import class_tvs_explosion
 from strait_fire import class_strait_fire
 from lower_concentration import class_lower_concentration
+from event_tree import class_event_tree
+from probability import class_probability
 # geom
 from geometry import class_geometry
 
@@ -1322,7 +1324,6 @@ class Painter(QtWidgets.QMainWindow):
         self.scene.addPixmap(pixmap)
         self.scene.setSceneRect(QtCore.QRectF(pixmap.rect()))
 
-
     def get_polyline_shapely(self, coordinate):
 
         i = 0
@@ -1352,9 +1353,8 @@ class Painter(QtWidgets.QMainWindow):
 
         def fast_calc(x, y, sharpness):
             for i in range(x - sharpness, x):
-                for j in range(y-sharpness, y):
+                for j in range(y - sharpness, y):
                     zeors_array[i, j] = zeors_array[x, y]
-
 
         # достаем картинку из Б Д
         _, image_data = class_db.Data_base(self.db_name, self.db_path).get_plan_in_db(self.plan_list.currentText())
@@ -1373,6 +1373,8 @@ class Painter(QtWidgets.QMainWindow):
         # получим пробиты и расстояния
         expl_all_probit = []
         strait_all_probit = []
+        flash_all_probit = []
+        scenarios_all = []
         for obj in data_list:
             # a) Посчитаем объем
             length = float(obj[6])
@@ -1392,7 +1394,8 @@ class Painter(QtWidgets.QMainWindow):
             density = float(obj[16])
             molecular_weight = float(obj[18])
             steam_pressure = float(obj[19])
-            type = float(obj[13])
+            type = int(obj[13])
+            flash_temperature = float(obj[20])
 
             # а. Расчитаем аварийный объем и массу
             volume_sub = 0  # аварийный объем
@@ -1413,7 +1416,7 @@ class Painter(QtWidgets.QMainWindow):
                                                                                    square_sub,
                                                                                    mass_sub,
                                                                                    TIME_EVAPORATED)  # количество исп. вещества, кг
-
+            # Взрыв
             temp = class_tvs_explosion.Explosion().explosion_array(class_substance,
                                                                    view_space,
                                                                    evaporated_sub * place,
@@ -1421,9 +1424,10 @@ class Painter(QtWidgets.QMainWindow):
                                                                    sigma,
                                                                    energy_level
                                                                    )
+
             expl_probit = [temp[0], temp[-1]]  # нужны только радиусы и вероятности поражения
             expl_all_probit.append(expl_probit)
-
+            # Пожар пролива
             temp = class_strait_fire.Strait_fire().termal_radiation_array(square_sub,
                                                                           MASS_BURNOUT_RATE,
                                                                           molecular_weight,
@@ -1432,6 +1436,24 @@ class Painter(QtWidgets.QMainWindow):
                                                                           )
             strait_probit = [temp[0], temp[-1]]  # нужны только радиусы и вероятности поражения
             strait_all_probit.append(strait_probit)
+
+            temp = class_lower_concentration.LCLP().culculation_R_LCLP(evaporated_sub,
+                                                                       molecular_weight,
+                                                                       boiling_temperature,
+                                                                       lower_concentration
+                                                                       )[-1]
+            probit = [1 for _ in range(int(temp))]
+            radius = [i for i in range(len(probit))]
+            flash_probit = [radius, probit]
+            flash_all_probit.append(flash_probit)
+
+            # 1.2.  Сценарии аварии при полном разрушении
+            probability = class_probability.Probability().probability_rosteh(type, length)
+            temp = class_event_tree.Event_tree().event_tree_inflammable(flash_temperature,
+                                                                                  0, probability[0])
+
+            scenarios_full = [float(i) for i in temp]
+            scenarios_all.append(scenarios_full)
 
         # для каждой координаты
         for x in range(sharpness, width, sharpness):
@@ -1460,21 +1482,34 @@ class Painter(QtWidgets.QMainWindow):
                     # 2. Возьмем пробит-массив по индексу
                     expl_raduis = expl_all_probit[ind][0]
                     strait_raduis = strait_all_probit[ind][0]
+                    flash_raduis = flash_all_probit[ind][0]
                     # 3. Определим есть ли в нем расстояние
                     # 3.1 Взрыв
                     if distance in expl_raduis:
-                        zeors_array[x, y] = zeors_array[x, y] + expl_all_probit[ind][1][expl_raduis.index(distance)]
+                        zeors_array[x, y] = zeors_array[x, y] + expl_all_probit[ind][1][expl_raduis.index(distance)] * \
+                                            scenarios_all[ind][0]
                         fast_calc(x, y, sharpness)
                     elif distance == 0:
-                        zeors_array[x, y] = zeors_array[x, y] + max(expl_all_probit[ind][1])
+                        zeors_array[x, y] = zeors_array[x, y] + max(expl_all_probit[ind][1]) * scenarios_all[ind][0]
                         fast_calc(x, y, sharpness)
                     # 3.2 Пожар
                     if distance in strait_raduis:
                         # если есть дисктанция в радиусах взрыва объекта
-                        zeors_array[x, y] = zeors_array[x, y] + strait_all_probit[ind][1][strait_raduis.index(distance)]
+                        zeors_array[x, y] = zeors_array[x, y] + strait_all_probit[ind][1][
+                            strait_raduis.index(distance)] * scenarios_all[ind][1]
                         fast_calc(x, y, sharpness)
                     elif distance == 0:
-                        zeors_array[x, y] = zeors_array[x, y] + max(strait_all_probit[ind][1])
+                        zeors_array[x, y] = zeors_array[x, y] + max(strait_all_probit[ind][1]) * scenarios_all[ind][1]
+                        fast_calc(x, y, sharpness)
+
+                    # 3.3 Вспышка
+                    if distance in flash_raduis:
+                        # если есть дисктанция в радиусах взрыва объекта
+                        zeors_array[x, y] = zeors_array[x, y] + flash_all_probit[ind][1][flash_raduis.index(distance)] * \
+                                            scenarios_all[ind][2]
+                        fast_calc(x, y, sharpness)
+                    elif distance == 0:
+                        zeors_array[x, y] = zeors_array[x, y] + max(flash_all_probit[ind][1]) * scenarios_all[ind][2]
                         fast_calc(x, y, sharpness)
 
         print('draw')
