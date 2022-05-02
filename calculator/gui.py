@@ -6,10 +6,10 @@ import os
 import sys
 from pathlib import Path
 import random
-from shapely.geometry import Point, LineString, Polygon
+from shapely.geometry import LineString, Polygon
 import xlwings as xw
 import numpy as np
-
+# db
 from data_base import class_db
 # data
 from draw_for_calculator import class_data_draw
@@ -375,10 +375,9 @@ class Painter(QtWidgets.QMainWindow):
         self.type_doc.addItems(["ДПБ", "ПМ ГОЧС"])
         self.type_doc.setItemIcon(0, word_ico)
         self.type_doc.setItemIcon(1, word_ico)
-        # # self.type_act.activated[str].connect(self.select_type_act)
-        doc_report = QtWidgets.QPushButton("Сохранить")
-        doc_report.setIcon(download_ico)
-        # # self.draw_type_act.clicked.connect(self.change_draw_type_act)
+        self.doc_report = QtWidgets.QPushButton("Сохранить")
+        self.doc_report.setIcon(download_ico)
+        self.doc_report.clicked.connect(self.report_word)
 
         # Упаковываем все в QGroupBox
         # Рамка №2
@@ -387,7 +386,7 @@ class Painter(QtWidgets.QMainWindow):
         GB_doc.setStyleSheet("QGroupBox { font-weight : bold; }")
         hbox_doc = QtWidgets.QHBoxLayout()
         hbox_doc.addWidget(self.type_doc)
-        hbox_doc.addWidget(doc_report)
+        hbox_doc.addWidget(self.doc_report)
         layout_doc.addRow("", hbox_doc)
         GB_doc.setLayout(layout_doc)
 
@@ -430,6 +429,12 @@ class Painter(QtWidgets.QMainWindow):
         self.thickness_line.setSingleStep(1)
         self.thickness_line.setValue(2)
 
+        # 2.4.2. Рамка №2. Подробность расчета риска   (то что будет в рамке 2)
+        self.sharpness = QtWidgets.QDoubleSpinBox()
+        self.sharpness.setRange(1, 10)
+        self.sharpness.setSingleStep(1)
+        self.sharpness.setValue(5)
+
         #
         # # Упаковываем все в QGroupBox
         # # Рамка №1
@@ -439,8 +444,16 @@ class Painter(QtWidgets.QMainWindow):
         layout_set.addRow("", self.thickness_line)
         GB_set.setLayout(layout_set)
 
+        # # Рамка №2
+        layout_sharpness = QtWidgets.QFormLayout(self)
+        GB_sharpness = QtWidgets.QGroupBox('Сетка расчета риска')
+        GB_sharpness.setStyleSheet("QGroupBox { font-weight : bold; }")
+        layout_sharpness.addRow("", self.sharpness)
+        GB_sharpness.setLayout(layout_sharpness)
+
         # Собираем рамки №№ 1
         tab_settings.layout.addWidget(GB_set)
+        tab_settings.layout.addWidget(GB_sharpness)
 
         # Размещаем на табе рамки №№ 1
         tab_settings.setLayout(tab_settings.layout)
@@ -1232,38 +1245,9 @@ class Painter(QtWidgets.QMainWindow):
         self.scene.addPixmap(pixmap)
         self.scene.setSceneRect(QtCore.QRectF(pixmap.rect()))
 
-    def draw_risk(self, data_list, sharpness=3):
+    def draw_risk(self, data_list):
         """Рисование риска"""
-
-        def fast_calc(x, y, sharpness):
-            for i in range(x - sharpness, x):
-                for j in range(y - sharpness, y):
-                    zeors_array[i, j] = zeors_array[x, y]
-
-        def get_polyline_shapely(coordinate):
-
-            i = 0
-            points = []
-            while i < len(coordinate):
-                point = (int(float(coordinate[i])), int(float(coordinate[i + 1])))
-                points.append(point)
-                i += 2
-            polyline = LineString(points)
-
-            return polyline
-
-        def get_polygon_shapely(coordinate):
-
-            i = 0
-            points = []
-            while i < len(coordinate):
-                point = (int(float(coordinate[i])), int(float(coordinate[i + 1])))
-                points.append(point)
-                i += 2
-            polygon = Polygon(points)
-
-            return polygon
-
+        self.is_action_valid()
         # достаем картинку из БД
         _, image_data = class_db.Data_base(self.db_name, self.db_path).get_plan_in_db(self.plan_list.currentText())
 
@@ -1282,7 +1266,9 @@ class Painter(QtWidgets.QMainWindow):
         expl_all_probit, strait_all_probit, flash_all_probit, scenarios_all = class_data_draw.Data_draw().data_for_risk(
             data_list)
 
+
         # Рассчитаем тепловую карту
+        sharpness = int(self.sharpness.value())
         calc_array = class_data_draw.Data_draw().calc_heat_map(sharpness, zeors_array, data_list, width, height,
                                                                float(self.scale_plan.text()), expl_all_probit,
                                                                strait_all_probit, flash_all_probit, scenarios_all)
@@ -1300,6 +1286,43 @@ class Painter(QtWidgets.QMainWindow):
         self.scene.addPixmap(pixmap)
         self.scene.setSceneRect(QtCore.QRectF(pixmap.rect()))
 
+    # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+    # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    # Функции отчетов
+    # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    def report_word(self):
+        # 1. Получить количество ген.планов в базе данных
+        plan_count = self.plan_list.count()
+        print(plan_count)
+
+        for i in range(plan_count):
+            # Выбрать ген.план
+            self.plan_list.setCurrentIndex(i)
+            # Установить ген.план
+            self.plan_list_select(text = self.plan_list.currentText())
+            # отрисовка зон
+            for j in range(5):
+                # Установить тип аварии (взрыв, пожар...риск)
+                self.plan_report_type.setCurrentIndex(j)
+                # Нарисовать
+                if self.scale_plan.text() == '':
+                    continue
+                data_table = self.get_data_in_table()
+                if '' in data_table:
+                    continue
+                self.plan_report_draw()
+                # Сохранить
+                self.plan_save()
+                time.sleep(2) # что бы успел сохранить рисунок
+
+
+
+
+
+
+
+    # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     #  Прочие функции
     # 1. Нельзя одновременно рисовать объект
