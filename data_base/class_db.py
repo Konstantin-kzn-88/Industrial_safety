@@ -1,4 +1,5 @@
 from PySide2 import QtWidgets, QtGui, QtCore
+from PySide2.QtSql import QSqlDatabase, QSqlTableModel
 import sqlite3 as sql
 import os
 from pathlib import Path
@@ -14,6 +15,11 @@ class Data_base(QtWidgets.QWidget):
         main_ico = QtGui.QIcon(path_ico + '/ico/comp.png')
         self.setWindowIcon(main_ico)
 
+        self.secondWin = None
+
+    # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    # Расчетная база данных
+    # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     def db_create(self) -> tuple:
         """
         Создание новой БД
@@ -180,6 +186,7 @@ class Data_base(QtWidgets.QWidget):
                     if str(f'{row[0]}, {row[3]}') == text:
                         data, image_data = row[1], row[2]
                         return (data, image_data)
+                return (None, None)
 
     def save_data_in_db(self, name_plan: str, scale_plan: str, table_widget):
         """
@@ -221,3 +228,60 @@ class Data_base(QtWidgets.QWidget):
                     if str(f'{row[0]}, {row[3]}') == name_plan:
                         # SQL запрос на вставку
                         cursor.execute('UPDATE objects SET data = ?  where id = ?', (str(data_list), str(row[0])))
+
+    # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    # Локальная база организаций
+    # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+    def get_organizations(self):
+        if self.db_path != '' and self.db_name != '':
+            path_str = f'{self.db_path}/{self.db_name}'.replace("/", "//")
+
+            with sql.connect(path_str) as connection:
+
+                result = []
+
+                cursor = connection.cursor()
+                cursor.execute("SELECT Name_org, Oil_field FROM organization")
+                org_in_db = cursor.fetchall()
+                for row in org_in_db:
+                    result.append(str(row))
+
+                if len(result) == 0:
+                    return ["--Организаций нет--"]
+                else:
+                    result.sort()
+                    return result
+
+    def del_organization(self, text: str):
+
+        dlg = QtWidgets.QMessageBox(self)
+        dlg.setIcon(QtWidgets.QMessageBox.Question)
+        dlg.setWindowTitle("Удалить...")
+        dlg.setText("Удалить запись организации?")
+        dlg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+        button = dlg.exec()
+
+        if button == QtWidgets.QMessageBox.Yes:
+
+            if self.db_path != '' and self.db_name != '':
+                path_str = f'{self.db_path}/{self.db_name}'.replace("/", "//")
+
+                with sql.connect(path_str) as connection:
+                    cursor = connection.cursor()
+                    cursor.execute("SELECT Name_org, Oil_field FROM organization")
+                    org_in_db = cursor.fetchall()
+                    for row in org_in_db:
+                        if str(row) == text:
+                            sql_query = 'DELETE FROM organization WHERE Name_org=? AND Oil_field=?'
+                            cursor.execute(sql_query, (str(row[0]), str(row[1],)))
+                            return
+
+                    msg = QtWidgets.QMessageBox(self)
+                    msg.setIcon(QtWidgets.QMessageBox.Warning)
+                    msg.setWindowTitle("Информация")
+                    msg.setText("Запись из базы данных не удалена!")
+                    msg.exec()
+                    return
+

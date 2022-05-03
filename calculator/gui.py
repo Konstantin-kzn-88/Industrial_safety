@@ -1,11 +1,12 @@
 import math
 import time
 
-from PySide2 import QtWidgets, QtGui, QtCore
+from PySide2 import QtWidgets, QtGui, QtCore, QtSql
 import os
 import sys
 from pathlib import Path
 import random
+
 from shapely.geometry import LineString, Polygon
 import xlwings as xw
 import numpy as np
@@ -18,7 +19,53 @@ I18N_QT_PATH = str(os.path.join(os.path.abspath('.'), 'i18n'))
 TIME_EVAPORATED = 3600
 MASS_BURNOUT_RATE = 0.06
 WIND_VELOCITY = 1
+PATH_LOCAL_BASE = Path.cwd()
+LOCAL_BASE = QtSql.QSqlDatabase("QSQLITE")
+LOCAL_BASE.setDatabaseName("local_base.db")
+LOCAL_BASE.open()
 
+
+class Edit_table_org(QtWidgets.QWidget):
+    """
+    Форма редактирования таблицы с организациями
+    из базы данных local_base.db
+    """
+    def __init__(self):
+        super().__init__()
+        path_ico = str(Path(os.getcwd()).parents[0])
+        self.main_ico = QtGui.QIcon(path_ico + '/ico/comp.png')
+        self.setWindowTitle('База данных организаций')
+        self.setWindowIcon(self.main_ico)
+
+        layout = QtWidgets.QVBoxLayout()
+        self.table = QtWidgets.QTableView()
+        self.model = QtSql.QSqlTableModel(db=LOCAL_BASE)
+        self.table.setModel(self.model)
+        self.model.setTable("organization")
+        self.model.setHeaderData(0, QtCore.Qt.Horizontal, "id")
+        self.model.setHeaderData(1, QtCore.Qt.Horizontal, "Наименование")
+        self.model.setHeaderData(2, QtCore.Qt.Horizontal, "Наим.полн.")
+        self.model.setHeaderData(3, QtCore.Qt.Horizontal, "Руководитель")
+        self.model.setHeaderData(4, QtCore.Qt.Horizontal, "Ф.И.О.")
+        self.model.setHeaderData(5, QtCore.Qt.Horizontal, "Техн.рук-ль")
+        self.model.setHeaderData(6, QtCore.Qt.Horizontal, "Ф.И.О.")
+        self.model.setHeaderData(7, QtCore.Qt.Horizontal, "Адрес полн.")
+        self.model.setHeaderData(8, QtCore.Qt.Horizontal, "Адрес сокр.")
+        self.model.setHeaderData(9, QtCore.Qt.Horizontal, "Месторождение")
+        self.model.setHeaderData(10, QtCore.Qt.Horizontal, "Юр.адрес")
+        self.model.setHeaderData(11, QtCore.Qt.Horizontal, "Тел.")
+        self.model.setHeaderData(12, QtCore.Qt.Horizontal, "Почта")
+        self.model.setHeaderData(13, QtCore.Qt.Horizontal, "Объект")
+        self.model.setHeaderData(14, QtCore.Qt.Horizontal, "Ср.смена")
+        self.model.setHeaderData(15, QtCore.Qt.Horizontal, "Макс.смена")
+        self.model.setHeaderData(16, QtCore.Qt.Horizontal, "Лицензия")
+        self.model.setHeaderData(17, QtCore.Qt.Horizontal, "Дата выдачи")
+        self.model.setHeaderData(18, QtCore.Qt.Horizontal, "ОТ и ПБ")
+
+        self.model.select()
+        layout.addWidget(self.table)
+        self.setLayout(layout)
+        self.showMaximized()
 
 class Object_point(QtWidgets.QGraphicsItem):
     def __init__(self, thickness):
@@ -103,6 +150,8 @@ class Painter(QtWidgets.QMainWindow):
         # в. Переменные отвечающие за подключение БД
         self.db_name = ''
         self.db_path = ''
+
+
 
         # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
@@ -345,18 +394,15 @@ class Painter(QtWidgets.QMainWindow):
         # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         # 2.3.1. Рамка №1. Вкладка отчетов. Организация  (то что будет в рамке 1)
         self.organization = QtWidgets.QComboBox()  # тип организации
-        self.organization.addItems(["--Выбрать организацию--"])
+        self.organization.addItems(class_db.Data_base('local_base.db', str(PATH_LOCAL_BASE)).get_organizations())
         # # self.type_act.activated[str].connect(self.select_type_act)
-        self.organization_add = QtWidgets.QPushButton("Добавить")
-        self.organization_add.setIcon(plus_ico)
-        # # self.draw_type_act.clicked.connect(self.change_draw_type_act)
         self.organization_edit = QtWidgets.QPushButton("Редактировать")
         self.organization_edit.setIcon(pen_ico)
-        # # self.draw_type_act.clicked.connect(self.change_draw_type_act)
+        self.organization_edit.clicked.connect(self.edit_organization)
         self.organization_del = QtWidgets.QPushButton("Удалить")
         self.organization_del.setIcon(minus_ico)
-        # # self.draw_type_act.clicked.connect(self.change_draw_type_act)
-        #
+        self.organization_del.clicked.connect(self.delete_organization)
+
         # # Упаковываем все в QGroupBox
         # # Рамка №1
         layout_org = QtWidgets.QFormLayout(self)
@@ -364,7 +410,6 @@ class Painter(QtWidgets.QMainWindow):
         GB_org.setStyleSheet("QGroupBox { font-weight : bold; }")
         layout_org.addRow("", self.organization)
         hbox_org = QtWidgets.QHBoxLayout()
-        hbox_org.addWidget(self.organization_add)
         hbox_org.addWidget(self.organization_edit)
         hbox_org.addWidget(self.organization_del)
         layout_org.addRow("", hbox_org)
@@ -873,6 +918,20 @@ class Painter(QtWidgets.QMainWindow):
             self.data_base_info_connect.setText('Нет подключения к базе данных...')
             self.data_base_info_connect.setStyleSheet('color: red')
 
+    # Функции локальной базы данных
+    def delete_organization(self):
+        # Текущая организиция
+        current_org = self.organization.currentText()
+        class_db.Data_base('local_base.db', str(PATH_LOCAL_BASE)).del_organization(current_org)
+        # Очистить и заполнить организации заново
+        self.organization.clear()
+        self.organization.addItems(class_db.Data_base('local_base.db', str(PATH_LOCAL_BASE)).get_organizations())
+
+    def edit_organization(self):
+        self.edition = Edit_table_org()
+        self.edition.show()
+
+
     # Функции работы с ген.планом
     def plan_add_func(self):
         class_db.Data_base(self.db_name, self.db_path).plan_add()
@@ -1317,11 +1376,6 @@ class Painter(QtWidgets.QMainWindow):
                 time.sleep(2) # что бы успел сохранить рисунок
 
 
-
-
-
-
-
     # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     #  Прочие функции
@@ -1539,6 +1593,8 @@ class Painter(QtWidgets.QMainWindow):
             count_row += 1  # +1 к строке (новая строка если len(data_list) > 1)
         return data_list
     # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
 
 
 if __name__ == '__main__':
