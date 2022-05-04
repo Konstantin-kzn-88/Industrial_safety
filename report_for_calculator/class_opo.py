@@ -1,4 +1,5 @@
 import math
+import time
 from typing import Union
 import os
 from datetime import date
@@ -356,7 +357,7 @@ class Dangerous_object:
     def append_device(self, device: Union[Device]) -> None:
         self.list_device.append(device)
 
-    def create_rpz(self):
+    def create_rpz(self, path: str, data: tuple):
         def equipment():
             # Оборудование
             pozitions = [i.name for i in self.list_device]
@@ -935,7 +936,6 @@ class Dangerous_object:
         if len(self.list_device) == 0:
             return
         path_template = Path(__file__).parents[1]
-        print(path_template)
         doc = DocxTemplate(f'{path_template}\\report_for_calculator\\templates\\temp_rpz.docx')
         equp_table = equipment()
         mass_sub_table = mass_in_equipment()
@@ -958,10 +958,10 @@ class Dangerous_object:
         create_fn()
 
 
-        context = {'company_name': self.name,
+        context = {'company_name': data[1],
                    'project_name': self.project,
                    'project_shifr': self.number,
-                   'tom_shifr': self.code,
+                   'tom_shifr': "12.1.2",
                    'year': date.today().year,
                    'water_cut': self.list_device[-1].water_cut,
                    'sulfur': self.list_device[-1].sulfur,
@@ -997,142 +997,62 @@ class Dangerous_object:
 
                    }
         doc.render(context)
-        path_save = os.environ['USERPROFILE']
-        doc.save(f'{path_save}\\Desktop\\generated_rpz.docx')
+        text = str(int(time.time()))
+        doc.save(f'{path}\\{text}_rpz.docx')
+        # ДПБ
+        doc = DocxTemplate(f'{path_template}\\report_for_calculator\\templates\\temp_dpb.docx')
+        context = {'company_name': data[1],
+                   'company_name_full': data[2],
+                   'project_name': self.project,
+                   'project_shifr': self.number,
+                   'tom_shifr_1': "12.1.1",
+                   'year': date.today().year,
+                   'manager': data[3],
+                   'name_manager': data[4],
+                   'assistant': data[5],
+                   'name_assistant': data[6],
+                   'address_object_full': data[7],
+                   'address_object': data[8],
+                   'juridical': data[10],
+                   'telephone': data[11],
+                   'email': data[12],
+                   'near': data[13],
+                   'middle': data[14],
+                   'largest': data[15],
+                   'licence': data[16],
+                   'licence_date': data[17],
+                   'ot_pb': data[18],
+                   'project_description': self.description,
+                   'equp_table': equp_table,
+                   'mass_sub_table': mass_sub_table,
+                   'sum_sub': sum([round(i.mass_sub / 1000, 2) for i in self.list_device]),
+                   'automation': self.automation,
+                   'mass_crash_table': mass_crash_table,
+                   'mass_crash_table_part': mass_crash_table_part,
+                   'most_possible': most_possible,
+                   'most_dangerous': most_dangerous,
+                   'C2_table_factor': C2_table_factor,
+                   'C2_table_factor_part': C2_table_factor_part,
+                   'C1_table_factor': C1_table_factor,
+                   'C1_table_factor_part': C1_table_factor_part,
+                   'C3_table_factor': C3_table_factor,
+                   'C3_table_factor_part': C3_table_factor_part,
+                   'damage_table': damage_table,
+                   'damage_table_part': damage_table_part,
+                   'risk_table': risk_table,
+                   'risk_table_part': risk_table_part,
+                   'result_table': result_table,
+                   'fn': InlineImage(doc, f'{path_template}\\report_for_calculator\\templates\\fn.jpg', width=Mm(160)),
+                   'fg': InlineImage(doc, f'{path_template}\\report_for_calculator\\templates\\fg.jpg', width=Mm(160)),
+
+                   }
+        doc.render(context)
+        text = str(int(time.time()))
+        doc.save(f'{path}\\{text}_dbp.docx')
+
+
+
 
 
 if __name__ == '__main__':
-    # 1. Создадим новые объекты
-    container_dict = {
-        'name': 'Е-3',
-        'name_full': 'Емкость',
-        'located': 'УПСВН',
-        'material': 'Ст3',
-        'ground': 'Надземное',
-        'target': 'Хранение нефти',
-        'length': 0,  # км
-        'diameter': 0,  # мм
-        'pressure': 0.28,  # кПа
-        'temperature': 30,  # град.С
-        'volume': 100,  # м3
-        'completion': 0.8,  # - (степень заполнения)
-        'spill_square': 400,  # м2 обвалование
-        'spreading': 20,  # м^-1
-        'type': 1,  # тип оборудования
-        'place': 0.1,  # коэф.участия во взрыве
-        'death_person': 2,
-        'injured_person': 2,
-        'time_person': 0.33,
-        'density': 750,  # кг/м3
-        'density_gas': 2,  # кг/м3
-        'water_cut': 20,  # %
-        'sulfur': 34,  # %
-        'resins': 2,  # % смолы
-        'asphalt': 3,  # % асфальтены
-        'paraffin': 4,  # %
-        'viscosity': 220,  # МПа*с
-        'hydrogen_sulfide': 32,  # % сероводород
-        'molecular_weight': 210,  # кг/кмоль
-        'steam_pressure': 28,  # кПа
-        'flash_temperature': -28,  # град.С
-        'boiling_temperature': -20,  # град.С
-        'class_substance': 3,  # класс вещества по детонационной ячейки
-        'view_space': 4,  # класс окрущающего пространства
-        'heat_of_combustion': 46000,  # кДж/кг
-        'sigma': 7,  # -
-        'energy_level': 1,  # -
-        'lower_concentration': 1.8,
-        'cost_sub': 0.06,
-
-    }
-
-    print(len(container_dict))
-
-    tube_dict = {
-        'name': 'Нефтепровод от К-12 до т.3.',
-        'name_full': 'Нефтепровод',
-        'located': 'Зимнее м.н.',
-        'material': 'В20',
-        'ground': 'Подземное',
-        'target': 'Транспорт нефти',
-        'length': 0.88,  # км
-        'diameter': 114,  # мм
-        'pressure': 0.38,  # кПа
-        'temperature': 10,  # град.С
-        'volume': 0,  # м3
-        'completion': 1,  # - (степень заполнения)
-        'spreading': 20,  # м^-1
-        'spill_square': 0,  # м2 обвалование
-        'type': 0,  # тип оборудования
-        'place': 0.1,  # коэф.участия во взрыве
-        'death_person': 1,
-        'injured_person': 1,
-        'time_person': 0.13,
-        'density': 850,  # кг/м3
-        'density_gas': 2,  # кг/м3
-        'water_cut': 20,  # %
-        'sulfur': 34,  # %
-        'resins': 2,  # % смолы
-        'asphalt': 3,  # % асфальтены
-        'paraffin': 4,  # %
-        'viscosity': 220,  # МПа*с
-        'hydrogen_sulfide': 32,  # % сероводород
-        'molecular_weight': 210,  # кг/кмоль
-        'steam_pressure': 28,  # кПа
-        'flash_temperature': -28,  # град.С
-        'boiling_temperature': -20,  # град.С
-        'class_substance': 3,  # класс вещества по детонационной ячейки
-        'view_space': 4,  # класс окрущающего пространства
-        'heat_of_combustion': 46000,  # кДж/кг
-        'sigma': 7,  # -
-        'energy_level': 1,  # -
-        'lower_concentration': 1.8,
-        'cost_sub': 0.06,
-
-    }
-
-    test_container = Device(container_dict)
-    test_tube = Device(tube_dict)
-    # print(test_container.volume_sub)
-    # print(test_container.mass_sub)
-    # print(test_container.square_sub)
-    # print(test_container.evaporated_sub)
-    # print(test_container.probability)
-    # print(test_container.scenarios_full)
-    # print(test_container.explosion_radius)
-    # print(test_container.fire_radius)
-    # print(test_container.lclp_radius)
-    # print(test_container.explosion_damage)
-    # print(test_container.strait_damage)
-    # print(test_container.lclp_damage)
-    # print(test_container.elimination_damage)
-    # print(test_container.explosion_risk)
-    # print(test_container.strait_risk)
-    # print(test_container.lslp_risk)
-    # print(test_container.elimination_risk)
-    # print(20 * '-')
-    # print(20 * '-')
-    # print(test_container.volume_sub_part)
-    # print(test_container.mass_sub_part)
-    # print(test_container.square_sub_part)
-    # print(test_container.evaporated_sub_part)
-    # print(test_container.probability_part)
-    # print(test_container.scenarios_part)
-    # print(test_container.explosion_radius_part)
-    # print(test_container.fire_radius_part)
-    # print(test_container.lclp_radius_part)
-    # print(test_container.explosion_damage_part)
-    # print(test_container.strait_damage_part)
-    # print(test_container.lclp_damage_part)
-    # print(test_container.elimination_damage_part)
-    # print(test_container.explosion_risk_part)
-    # print(test_container.strait_risk_part)
-    # print(test_container.lslp_risk_part)
-    # print(test_container.elimination_risk_part)
-    # print(test_container.group_risk)
-    # print(test_container.individual_risk)
-    # 2. Создадим новый ОПО
-    test_obj = Dangerous_object()
-    test_obj.append_device(test_container)
-    test_obj.append_device(test_tube)
-    test_obj.create_rpz()
+    ...

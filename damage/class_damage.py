@@ -9,7 +9,7 @@
 from prettytable import PrettyTable
 import math
 
-CONST = 0.05 # часть ущерба
+CONST = 0.02 # часть ущерба
 
 class     Damage:
 

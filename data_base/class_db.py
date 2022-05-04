@@ -275,7 +275,7 @@ class Data_base(QtWidgets.QWidget):
                     for row in org_in_db:
                         if str(row) == text:
                             sql_query = 'DELETE FROM organization WHERE Name_org=? AND Oil_field=?'
-                            cursor.execute(sql_query, (str(row[0]), str(row[1],)))
+                            cursor.execute(sql_query, (str(row[0]), str(row[1], )))
                             return
 
                     msg = QtWidgets.QMessageBox(self)
@@ -285,3 +285,25 @@ class Data_base(QtWidgets.QWidget):
                     msg.exec()
                     return
 
+    def get_info_about_organizations(self, text: str):
+        if self.db_path != '' and self.db_name != '':
+            path_str = f'{self.db_path}/{self.db_name}'.replace("/", "//")
+
+            with sql.connect(path_str) as connection:
+
+                result = []
+
+                cursor = connection.cursor()
+                cursor.execute("SELECT * FROM organization")
+                org_in_db = cursor.fetchall()
+
+                for row in org_in_db:
+
+                    if str(f'({row[1]}, {row[9]})') == text.replace("'",""):
+                        result.append(str(row))
+
+                if len(result) == 0:
+                    return None
+                else:
+                    result.sort()
+                    return result
