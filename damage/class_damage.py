@@ -9,6 +9,8 @@
 from prettytable import PrettyTable
 import math
 
+CONST = 0.05 # часть ущерба
+
 class     Damage:
 
     def direct_damage(self, volume = 0, diametr =114,  #полный ущерб
@@ -28,24 +30,24 @@ class     Damage:
         - damage of equipment, millions of rubles
         """
         if diametr == 0 and lenght == 0:                #если расчитываем стац.объект
-            new_obj = 0.0036 * volume + 0.6061          #стоимость нового объекта, млн
-                                                        #данные апроксимировал с http://rezervuarstroy.ru/page/prajs-listy.html
+            new_obj = (0.0036 * volume + 0.6061)          #стоимость нового объекта, млн
+                                                        #данные апроксимировал с коэф.0.2 с http://rezervuarstroy.ru/page/prajs-listy.html
             sub_loss = cost_sub * volume * part_sub     #стомость вещества с потерей доли
                                                         #(т.к. бывают разные сценарии (пожар, взрыв, шар и пр.)
-            dis_obj = new_obj * 0.6                     #примерно 60% на демонтаж объекта
+            dis_obj = new_obj * 0.2                     #примерно 20% на демонтаж объекта
 
             direct_damage = new_obj + sub_loss + dis_obj#строительство + потеря вещества + демонтаж
 
         elif volume == 0:                                 #если расчитываем линейный объект
             new_obj = \
-                (0.0195*diametr + 1.0519)*lenght/1000   #стоимость нового объекта, млн
-                                                        #данные апроксимировал с http://www.ozti.org/upload/iblock/637/COSTS.pdf
+                ((0.0195*diametr + 1.0519)*lenght/1000)   #стоимость нового объекта, млн
+                                                              #данные апроксимировал с коэф.0.2 с http://www.ozti.org/upload/iblock/637/COSTS.pdf
             volume_lin = \
                 math.pi*math.pow(diametr/2000,2)*lenght
 
             sub_loss = cost_sub * volume_lin * part_sub #стомость вещества с потерей доли
                                                         #(т.к. бывают разные сценарии (пожар, взрыв, шар и пр.)
-            dis_obj = new_obj * 0.6                     #примерно 60% на демонтаж объекта
+            dis_obj = new_obj * 0.2                     #примерно 20% на демонтаж объекта
 
             direct_damage = new_obj + sub_loss + dis_obj #строительство + потеря вещества + демонтаж
         else:
@@ -237,13 +239,13 @@ class     Damage:
         # __________________________________________________________________
         new_man = round(death_person*(30000*(3200/170000)/(52*5)),2)
 
-        sum_damage = round(direct_damage + liquidation_failures + se_damage +
+        sum_damage = round(round(direct_damage * CONST,2) + liquidation_failures + se_damage +
                            consequential_damage +
                            damage_air + damage_air_fire + damage_earth +
                            ecological_damage +
                            new_man,2)
 
-        damage_array = [direct_damage, liquidation_failures, se_damage, consequential_damage,
+        damage_array = [round(direct_damage * CONST,2), liquidation_failures, se_damage, consequential_damage,
                         damage_air, damage_air_fire, damage_earth, ecological_damage,
                         new_man,sum_damage]
 

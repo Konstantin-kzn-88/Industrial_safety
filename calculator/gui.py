@@ -14,6 +14,7 @@ import numpy as np
 from data_base import class_db
 # data
 from draw_for_calculator import class_data_draw
+from report_for_calculator import class_opo
 
 I18N_QT_PATH = str(os.path.join(os.path.abspath('.'), 'i18n'))
 TIME_EVAPORATED = 3600
@@ -23,6 +24,7 @@ PATH_LOCAL_BASE = Path.cwd()
 LOCAL_BASE = QtSql.QSqlDatabase("QSQLITE")
 LOCAL_BASE.setDatabaseName("local_base.db")
 LOCAL_BASE.open()
+FRACTIONS_OIL = (20, 34, 2, 3, 4, 220, 32)
 
 
 class Edit_table_org(QtWidgets.QWidget):
@@ -118,10 +120,6 @@ class Painter(QtWidgets.QMainWindow):
         area_ico = QtGui.QIcon(path_ico + '/ico/area.png')
         object_ico = QtGui.QIcon(path_ico + '/ico/object.png')
         settings_ico = QtGui.QIcon(path_ico + '/ico/settings.png')
-        draw_ico = QtGui.QIcon(path_ico + '/ico/draw.png')
-        state_ico = QtGui.QIcon(path_ico + '/ico/state.png')
-        tube_ico = QtGui.QIcon(path_ico + '/ico/tube.png')
-        tree_ico = QtGui.QIcon(path_ico + '/ico/tree.png')
         exit_ico = QtGui.QIcon(path_ico + '/ico/exit.png')
         info_ico = QtGui.QIcon(path_ico + '/ico/info.png')
         color_ico = QtGui.QIcon(path_ico + '/ico/color_select.png')
@@ -1374,6 +1372,72 @@ class Painter(QtWidgets.QMainWindow):
                 # Сохранить
                 self.plan_save()
                 time.sleep(2) # что бы успел сохранить рисунок
+
+        #  Заполнение шаблона
+        dangerous_object = class_opo.Dangerous_object()
+        for i in range(plan_count):
+            # Выбрать ген.план
+            self.plan_list.setCurrentIndex(i)
+            # Установить ген.план
+            self.plan_list_select(text = self.plan_list.currentText())
+            # если не заполнена таблица и масштаб, то для плана ничего заполнять не надо
+            data_table = self.get_data_in_table()
+            if '' in data_table:
+                continue
+            if self.scale_plan.text() == '':
+                continue
+
+            for obj in data_table:
+                obj_dict = {
+                    'name': str(obj[0]),
+                    'name_full': str(obj[1]),
+                    'located': str(obj[2]),
+                    'material': str(obj[3]),
+                    'ground': str(obj[4]),
+                    'target': str(obj[5]),
+                    'length': float(obj[6]),  # км
+                    'diameter': float(obj[7]),  # мм
+                    'pressure': float(obj[8]),  # кПа
+                    'temperature': float(obj[9]),  # град.С
+                    'volume': float(obj[10]),  # м3
+                    'completion': float(obj[11]),  # - (степень заполнения)
+                    'spill_square': float(obj[12]),  # м2 обвалование
+                    'type': float(obj[13]),  # тип оборудования
+                    'spreading': float(obj[14]),  # м^-1
+                    'place': float(obj[15]),  # коэф.участия во взрыве
+                    'density': float(obj[16]),  # кг/м3
+                    'density_gas': float(obj[17]),  # кг/м3
+                    'molecular_weight': float(obj[18]),  # кг/кмоль
+                    'steam_pressure': float(obj[19]),  # кПа
+                    'flash_temperature': float(obj[20]),  # град.С
+                    'boiling_temperature': float(obj[21]),  # град.С
+                    'class_substance': float(obj[22]),  # класс вещества по детонационной ячейки
+                    'view_space': float(obj[23]),  # класс окрущающего пространства
+                    'heat_of_combustion': float(obj[24]),  # кДж/кг
+                    'sigma': float(obj[25]),  # -
+                    'energy_level': float(obj[26]),  # -
+                    'cost_sub': float(obj[27]),
+                    'lower_concentration': float(obj[28]),
+                    'death_person': float(obj[29]),
+                    'injured_person': float(obj[30]),
+                    'time_person': float(obj[31]),
+
+                    'water_cut': FRACTIONS_OIL[0],  # %
+                    'sulfur': FRACTIONS_OIL[1],  # %
+                    'resins': FRACTIONS_OIL[2],  # % смолы
+                    'asphalt': FRACTIONS_OIL[3],  # % асфальтены
+                    'paraffin': FRACTIONS_OIL[4],  # %
+                    'viscosity': FRACTIONS_OIL[5],  # МПа*с
+                    'hydrogen_sulfide': FRACTIONS_OIL[6],  # % сероводород
+
+                }
+
+
+                dangerous_object.append_device(class_opo.Device(obj_dict))
+
+        if len(dangerous_object.list_device) != 0:
+            dangerous_object.create_rpz()
+
 
 
     # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>

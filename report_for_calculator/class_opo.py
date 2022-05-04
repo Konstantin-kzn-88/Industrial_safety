@@ -905,7 +905,7 @@ class Dangerous_object:
             return result_table
 
         def create_fn():
-            path = f'{path_template}\\templates'
+            path = f'{path_template}\\report_for_calculator\\templates'
             fn = class_FN_FG.FN_FG_chart(path)
             people = []
             probability = []
@@ -917,7 +917,7 @@ class Dangerous_object:
             fn.fn_chart([probability, people])
 
         def create_fg():
-            path = f'{path_template}\\templates'
+            path = f'{path_template}\\report_for_calculator\\templates'
             fg = class_FN_FG.FN_FG_chart(path)
             money = []
             probability = []
@@ -934,8 +934,9 @@ class Dangerous_object:
 
         if len(self.list_device) == 0:
             return
-        path_template = Path(os.getcwd())
-        doc = DocxTemplate(f'{path_template}\\templates\\temp_rpz.docx')
+        path_template = Path(__file__).parents[1]
+        print(path_template)
+        doc = DocxTemplate(f'{path_template}\\report_for_calculator\\templates\\temp_rpz.docx')
         equp_table = equipment()
         mass_sub_table = mass_in_equipment()
         mass_crash_table = mass_crash()
@@ -991,8 +992,8 @@ class Dangerous_object:
                    'risk_table': risk_table,
                    'risk_table_part': risk_table_part,
                    'result_table': result_table,
-                   'fn': InlineImage(doc, f'{path_template}\\templates\\fn.jpg', width=Mm(160)),
-                   'fg': InlineImage(doc, f'{path_template}\\templates\\fg.jpg', width=Mm(160)),
+                   'fn': InlineImage(doc, f'{path_template}\\report_for_calculator\\templates\\fn.jpg', width=Mm(160)),
+                   'fg': InlineImage(doc, f'{path_template}\\report_for_calculator\\templates\\fg.jpg', width=Mm(160)),
 
                    }
         doc.render(context)
