@@ -80,9 +80,9 @@ class Probit:
 
         :return: float
         """
-        t0 = 5  # время обнаружения пожара по методике, с
-        speed = 5  # средняя скорость, м/с
-        time = t0 + (dist / speed)
+        t0 = 120  # время обнаружения пожара по методике, с
+        speed = 1  # средняя скорость, м/с
+        time = t0 + (dist*5 / speed)
         probit = -12.8 + 2.56 * math.log(time * (q_max ** (4 / 3)))
         probit = self.probit_check(probit)
 

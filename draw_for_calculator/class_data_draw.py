@@ -13,6 +13,7 @@ TIME_EVAPORATED = 3600
 MASS_BURNOUT_RATE = 0.06
 WIND_VELOCITY = 1
 
+
 class Data_draw:
     def __init__(self):
         ...
@@ -187,15 +188,16 @@ class Data_draw:
             # 1.2.  Сценарии аварии при полном разрушении
             probability = class_probability.Probability().probability_rosteh(type, length)
             temp = class_event_tree.Event_tree().event_tree_inflammable(flash_temperature,
-                                                                                  0, probability[0])
+                                                                        0, probability[0])
 
             scenarios_full = [float(i) for i in temp]
             scenarios_all.append(scenarios_full)
 
-        return (expl_all_probit, strait_all_probit,flash_all_probit,scenarios_all)
+        return (expl_all_probit, strait_all_probit, flash_all_probit, scenarios_all)
 
     def show_heat_map(self, zeors_array, width: int, height: int, qimg_zone):
         max_el = zeors_array.max()
+
         for x in range(width):
             for y in range(height):
                 if zeors_array[x, y] >= max_el:
@@ -348,14 +350,12 @@ class Data_draw:
                     qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 25, 255, 255))
                 elif max_el * 0.26 > zeors_array[x, y] >= max_el * 0.25:
                     qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 25, 255, 255))
-                elif max_el * 0.25 > zeors_array[x, y] >= max_el * 0.05:
+                elif max_el * 0.25 > zeors_array[x, y] >= max_el * 0.01:
                     qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 0, 255, 255))
 
         return qimg_zone
 
-
-
-    def calc_heat_map(self, sharpness: int, zeors_array, data_list: list, width: int, height: int, scale_plan:float,
+    def calc_heat_map(self, sharpness: int, zeors_array, data_list: list, width: int, height: int, scale_plan: float,
                       expl_all_probit: list, strait_all_probit: list, flash_all_probit: list, scenarios_all: list):
 
         # Вспомогательные функции
@@ -445,7 +445,3 @@ class Data_draw:
                         fast_calc(x, y, sharpness)
 
         return zeors_array
-
-
-
-

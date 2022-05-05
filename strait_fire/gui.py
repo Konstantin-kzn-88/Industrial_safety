@@ -41,8 +41,14 @@ class Calc_GUI(QtWidgets.QWidget):
     def btn_calc_func(self) -> None:
         # получим все данные с полей формы
         val = self.min_gui.get_form_val()
+        print(val)
         for i in val: # проверка на 0
             if i == 0:
+                msg = QtWidgets.QMessageBox(self)
+                msg.setIcon(QtWidgets.QMessageBox.Warning)
+                msg.setWindowTitle("Информация")
+                msg.setText("Введено нулевое значение!")
+                msg.exec()
                 return
         # по кнопкам выбора определим пишем в excel/строим график
         if self.min_gui.write_excel.isChecked():

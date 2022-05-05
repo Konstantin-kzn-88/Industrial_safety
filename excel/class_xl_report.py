@@ -1,18 +1,18 @@
 import win32com.client
+import xlwings as xw
 
 class Excel:
     def __init__(self) -> None:
-        self.Excel = win32com.client.Dispatch("Excel.Application")
-        self.wb = self.Excel.Workbooks.Add()
-        self.Excel.Visible = 1
-        self.sheet = self.wb.ActiveSheet
+        self.app = xw.App(visible=True,add_book=True)
+        self.wb = self.app.books.active
+        self.sheet = self.wb.sheets[0]
 
     def create(self, columns: list) -> None:
         # Ширина первой колонки
-        self.sheet.Range("A1").ColumnWidth = 50
+             #
         # Создаем колонки
         for i in range(len(columns)):
-            self.sheet.Cells(i + 1, 1).value = columns[i]
+            xw.Range((i + 1, 1)).value = columns[i]
 
     def write(self, columns: list) -> None:
 
@@ -20,7 +20,7 @@ class Excel:
                i = 1
                while i < 10000:
                    # т.е. строка постоянно 1, а столбец мы ищем перебором
-                   val = self.sheet.Cells(1, i).value
+                   val = xw.Range((1, i)).value
                    if val == None:
                        break
                    i = i + 1
@@ -29,10 +29,10 @@ class Excel:
                # данными из списка radius_CZA
                k = 1
                for rec in columns:
-                   self.sheet.Cells(k, i).value = rec
+                   xw.Range((k, i)).value = rec
                    k = k + 1
 
     def close(self)-> None:
-        self.wb.Close(SaveChanges=False)
-        # Закроем COM объект
-        self.Excel.Quit()
+        self.wb.close()
+        # Закроем объект
+        self.app.quit()
