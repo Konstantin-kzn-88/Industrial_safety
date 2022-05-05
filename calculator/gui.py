@@ -1265,6 +1265,7 @@ class Painter(QtWidgets.QMainWindow):
                 # зона может быть 0 тогда ничего рисовать не надо
                 if zone == 0:
                     continue
+
                 # определим ручку и кисточку
                 pen = QtGui.QPen(QtGui.QColor(color[0], color[1], color[2], color[3]), zone, QtCore.Qt.SolidLine)
                 brush = QtGui.QBrush(QtGui.QColor(color[0], color[1], color[2], color[3]))
@@ -1274,9 +1275,11 @@ class Painter(QtWidgets.QMainWindow):
                 pen.setCapStyle(QtCore.Qt.RoundCap)
                 qp.setPen(pen)
                 qp.setBrush(brush)
-                obj_coord = self.get_polygon(coordinate_obj[i])
 
+                # возьмем координаты оборудования
+                obj_coord = self.get_polygon(coordinate_obj[i])
                 if len(obj_coord) > 2:  # координаты можно преобразовать в полигон
+
                     if obj == 0:
                         # линейн. получим полигон
                         qp.drawPolyline(obj_coord)
@@ -1287,7 +1290,7 @@ class Painter(QtWidgets.QMainWindow):
                 else:  # не получается полигон, значит точка
                     pen_point = QtGui.QPen(QtGui.QColor(color[0], color[1], color[2], color[3]), 1, QtCore.Qt.SolidLine)
                     qp.setPen(pen_point)
-                    point = QtCore.QPoint(int(float(obj_coord[0])), int(float(obj_coord[1])))
+                    point = QtCore.QPoint(int(float(coordinate_obj[i][0])), int(float(coordinate_obj[i][1])))
                     qp.drawEllipse(point, zone / 2, zone / 2)  # т.к. нужен радиус
 
                 i += 1  # следующий объект
@@ -1456,9 +1459,6 @@ class Painter(QtWidgets.QMainWindow):
             print(len(dangerous_object.list_device))
             if len(dangerous_object.list_device) != 0:
                 dangerous_object.create_rpz(self.db_path, eval(info_about_organization[0]))
-
-
-
 
 
     # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
