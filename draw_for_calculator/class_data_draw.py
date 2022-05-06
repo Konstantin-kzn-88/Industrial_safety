@@ -4,6 +4,7 @@ import math
 # calc
 from evaporation import class_evaporation_liguid
 from tvs_explosion import class_tvs_explosion
+from sp_explosion import class_sp_explosion # для риска импортируем СП
 from strait_fire import class_strait_fire
 from lower_concentration import class_lower_concentration
 from event_tree import class_event_tree
@@ -155,13 +156,9 @@ class Data_draw:
                                                                                    mass_sub,
                                                                                    TIME_EVAPORATED)  # количество исп. вещества, кг
             # Взрыв
-            temp = class_tvs_explosion.Explosion().explosion_array(class_substance,
-                                                                   view_space,
-                                                                   evaporated_sub * place,
-                                                                   heat_of_combustion,
-                                                                   sigma,
-                                                                   energy_level
-                                                                   )
+            # Внимание !!! При расчете идет СП вместо ТВС
+
+            temp = class_sp_explosion.Explosion().explosion_array(evaporated_sub, heat_of_combustion, 0.1)
 
             expl_probit = [temp[0], temp[-1]]  # нужны только радиусы и вероятности поражения
             expl_all_probit.append(expl_probit)
@@ -180,8 +177,8 @@ class Data_draw:
                                                                        boiling_temperature,
                                                                        lower_concentration
                                                                        )[-1]
-            probit = [1 for _ in range(int(temp))]
-            radius = [i for i in range(len(probit))]
+            probit = [1 for _ in range(int(temp)*10)]
+            radius = [round(float(i*0.1),2) for i in range(len(probit))]
             flash_probit = [radius, probit]
             flash_all_probit.append(flash_probit)
 
@@ -350,7 +347,7 @@ class Data_draw:
                     qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 25, 255, 255))
                 elif max_el * 0.26 > zeors_array[x, y] >= max_el * 0.25:
                     qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 25, 255, 255))
-                elif max_el * 0.25 > zeors_array[x, y] >= max_el * 0.01:
+                elif max_el * 0.25 > zeors_array[x, y] >= max_el * 0.1:
                     qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 0, 255, 255))
 
         return qimg_zone
@@ -400,14 +397,14 @@ class Data_draw:
                         if type == 0:
                             # линейн. получим полигон
                             obj_coord = get_polyline_shapely(coordinate)
-                            distance = int(round(Point(x, y).distance(obj_coord) * scale_plan))
+                            distance = int(round(Point(x, y).distance(obj_coord) * scale_plan, 2))
                         else:
                             # стац. об. получим полигон
                             obj_coord = get_polygon_shapely(coordinate)
-                            distance = int(round(Point(x, y).distance(obj_coord) * scale_plan))
+                            distance = int(round(Point(x, y).distance(obj_coord) * scale_plan, 2))
                     else:  # не получается полигон, значит точка
                         obj_coord = Point(float(coordinate[0]), float(coordinate[1]))
-                        distance = int(round(Point(x, y).distance(obj_coord) * scale_plan))
+                        distance = int(round(Point(x, y).distance(obj_coord) * scale_plan, 2))
                     # Найдем нужный пробит
                     # 1. Индекс объекта в списке
                     ind = data_list.index(obj)

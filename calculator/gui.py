@@ -1332,7 +1332,7 @@ class Painter(QtWidgets.QMainWindow):
         # Рассчитаем тепловую карту
         sharpness = int(self.sharpness.value())
         calc_array = class_data_draw.Data_draw().calc_heat_map(sharpness, zeors_array, data_list, width, height,
-                                                               float(self.scale_plan.text()), expl_all_probit,
+                                                               1, expl_all_probit, # вместо 1 должно быть !!! float(self.scale_plan.text())
                                                                strait_all_probit, flash_all_probit, scenarios_all)
 
         # Нарисуем тепловую карту

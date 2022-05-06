@@ -102,7 +102,7 @@ class Strait_fire:
         probability_arr = []
 
         # максимальная интенсивность теплового излучения
-        radius = 1
+        radius = 0.5
         q_term = self.termal_radiation_point(S_spill, m_sg, mol_mass, t_boiling, wind_velocity, radius)
 
         # просчитаем значения пока интенсивность теплового излучения больше 1.2 кВт/м2
@@ -110,8 +110,8 @@ class Strait_fire:
             q_term = round(self.termal_radiation_point(S_spill, m_sg, mol_mass,
                                                        t_boiling, wind_velocity, radius), 2)
             q_term_arr.append(q_term)
-            radius_arr.append(radius)
-            radius += 1
+            radius_arr.append(round(radius, 2))
+            radius += 0.1
         # расчитаем пробит функцию и вероятность поражения
         D_eff = (4 * S_spill / 3.14) ** (1 / 2)
         # Определим расстояние на котором интенсивность = 4 кВт/м2
