@@ -62,7 +62,7 @@ class Explosion:
         probability_arr = []
 
         # максимальная интенсивность теплового излучения
-        radius = 1
+        radius = 0.1
         delta_p = self.explosion_point(mass, heat_of_combustion, z, radius)[0]
 
         # просчитаем значения пока взрыв больше 2.9 кПА
@@ -73,12 +73,12 @@ class Explosion:
             probit = Probit().probit_explosion(delta_p, impulse)
             probability = Probit().probability(probit)
             # append
-            radius_arr.append(radius)
+            radius_arr.append(round(radius, 2))
             delta_p_arr.append(delta_p)
             impulse_arr.append(impulse)
             probit_arr.append(probit)
             probability_arr.append(probability)
-            radius += 0.5
+            radius += 0.1
 
         result = [radius_arr, delta_p_arr, impulse_arr, probit_arr, probability_arr]
 

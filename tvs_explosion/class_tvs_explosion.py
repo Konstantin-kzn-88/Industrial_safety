@@ -83,7 +83,7 @@ class Explosion:
         return v_burn_rate
 
     def explosion_point(self, class_substance: int, view_space: int, mass: float,
-                        heat_of_combustion: float, sigma: int, energy_level: int, radius: int) -> list:
+                        heat_of_combustion: float, sigma: int, energy_level: int, radius: float) -> list:
 
         """
         :param class_substance: класс взрывоопасности вещества (1-4)
@@ -146,7 +146,7 @@ class Explosion:
         probability_arr = []
 
         # максимальная избыточное давление
-        radius = 1
+        radius = 0.1
         delta_p = self.explosion_point(class_substance, view_space,
                                        mass, heat_of_combustion, sigma,
                                        energy_level, radius)[0]

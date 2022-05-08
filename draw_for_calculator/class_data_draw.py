@@ -15,6 +15,7 @@ MASS_BURNOUT_RATE = 0.06
 WIND_VELOCITY = 1
 
 
+
 class Data_draw:
     def __init__(self):
         ...
@@ -158,10 +159,13 @@ class Data_draw:
             # Взрыв
             # Внимание !!! При расчете идет СП вместо ТВС
 
-            temp = class_sp_explosion.Explosion().explosion_array(evaporated_sub, heat_of_combustion, 0.1)
+            temp = class_sp_explosion.Explosion().explosion_array(evaporated_sub, heat_of_combustion, place)
+
+
 
             expl_probit = [temp[0], temp[-1]]  # нужны только радиусы и вероятности поражения
             expl_all_probit.append(expl_probit)
+            print('expl', expl_probit)
             # Пожар пролива
             temp = class_strait_fire.Strait_fire().termal_radiation_array(square_sub,
                                                                           MASS_BURNOUT_RATE,
@@ -169,18 +173,25 @@ class Data_draw:
                                                                           boiling_temperature,
                                                                           WIND_VELOCITY
                                                                           )
+
             strait_probit = [temp[0], temp[-1]]  # нужны только радиусы и вероятности поражения
             strait_all_probit.append(strait_probit)
+            print('fire', strait_probit)
 
             temp = class_lower_concentration.LCLP().culculation_R_LCLP(evaporated_sub,
                                                                        molecular_weight,
                                                                        boiling_temperature,
                                                                        lower_concentration
                                                                        )[-1]
+
+
+
             probit = [1 for _ in range(int(temp)*10)]
             radius = [round(float(i*0.1),2) for i in range(len(probit))]
             flash_probit = [radius, probit]
             flash_all_probit.append(flash_probit)
+
+            print('lclp', flash_probit)
 
             # 1.2.  Сценарии аварии при полном разрушении
             probability = class_probability.Probability().probability_rosteh(type, length)
@@ -199,6 +210,8 @@ class Data_draw:
             for y in range(height):
                 if zeors_array[x, y] >= max_el:
                     qimg_zone.setPixelColor(x, y, QtGui.QColor(255, 0, 0, 255))
+                elif max_el * 1.00 > zeors_array[x, y] >= max_el * 0.99:
+                    qimg_zone.setPixelColor(x, y, QtGui.QColor(255, 10, 0, 255))
                 elif max_el * 0.99 > zeors_array[x, y] >= max_el * 0.98:
                     qimg_zone.setPixelColor(x, y, QtGui.QColor(255, 10, 0, 255))
                 elif max_el * 0.98 > zeors_array[x, y] >= max_el * 0.97:
@@ -347,7 +360,7 @@ class Data_draw:
                     qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 25, 255, 255))
                 elif max_el * 0.26 > zeors_array[x, y] >= max_el * 0.25:
                     qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 25, 255, 255))
-                elif max_el * 0.25 > zeors_array[x, y] >= max_el * 0.1:
+                elif max_el * 0.25 > zeors_array[x, y] >= max_el * 0.005:
                     qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 0, 255, 255))
 
         return qimg_zone
