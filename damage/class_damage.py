@@ -5,6 +5,7 @@
 # email kuznetsovkm@yandex.ru
 # Released under GNU Public License (GPL)
 # -----------------------------------------------------------
+import random
 
 from prettytable import PrettyTable
 import math
@@ -226,6 +227,8 @@ class     Damage:
         damage_array, mln.RUB
         """
         direct_damage = self.direct_damage(volume, diametr, lenght, cost_sub, part_sub)
+        if direct_damage < 0.1:
+            direct_damage = random.uniform(0.11, 0.15)
         liquidation_failures = round(direct_damage * 0.1,2)
         se_damage = self.se_damage(death_person, injured_person)
         consequential_damage = round((se_damage + direct_damage)*0.125,2)

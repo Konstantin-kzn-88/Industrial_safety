@@ -27,13 +27,12 @@ LOCAL_BASE.open()
 FRACTIONS_OIL = (20, 34, 2, 3, 4, 220, 32)
 
 
-
-
 class Edit_table_org(QtWidgets.QWidget):
     """
     Форма редактирования таблицы с организациями
     из базы данных local_base.db
     """
+
     def __init__(self):
         super().__init__()
         path_ico = str(Path(os.getcwd()).parents[0])
@@ -70,6 +69,7 @@ class Edit_table_org(QtWidgets.QWidget):
         layout.addWidget(self.table)
         self.setLayout(layout)
         self.showMaximized()
+
 
 class Object_point(QtWidgets.QGraphicsItem):
     def __init__(self, thickness):
@@ -150,8 +150,6 @@ class Painter(QtWidgets.QMainWindow):
         # в. Переменные отвечающие за подключение БД
         self.db_name = ''
         self.db_path = ''
-
-
 
         # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
@@ -480,6 +478,13 @@ class Painter(QtWidgets.QMainWindow):
         self.sharpness.setSingleStep(1)
         self.sharpness.setValue(5)
 
+        # 2.4.3. Рамка №3. Время истечения   (то что будет в рамке 3)
+        self.shutdown_time = QtWidgets.QSpinBox()
+        self.shutdown_time.setToolTip("Время отключения трубопроводов в секундах")
+        self.shutdown_time.setRange(0, 600)
+        self.shutdown_time.setSingleStep(1)
+        self.shutdown_time.setValue(0)
+
         #
         # # Упаковываем все в QGroupBox
         # # Рамка №1
@@ -496,9 +501,17 @@ class Painter(QtWidgets.QMainWindow):
         layout_sharpness.addRow("", self.sharpness)
         GB_sharpness.setLayout(layout_sharpness)
 
+        # # Рамка №2
+        layout_shutdown = QtWidgets.QFormLayout(self)
+        GB_shutdown = QtWidgets.QGroupBox('Время отключения, сек.')
+        GB_shutdown.setStyleSheet("QGroupBox { font-weight : bold; }")
+        layout_shutdown.addRow("", self.shutdown_time)
+        GB_shutdown.setLayout(layout_shutdown)
+
         # Собираем рамки №№ 1
         tab_settings.layout.addWidget(GB_set)
         tab_settings.layout.addWidget(GB_sharpness)
+        tab_settings.layout.addWidget(GB_shutdown)
 
         # Размещаем на табе рамки №№ 1
         tab_settings.setLayout(tab_settings.layout)
@@ -700,7 +713,7 @@ class Painter(QtWidgets.QMainWindow):
             item.setBackground(QtGui.QColor(225, 225, 225))
             self.table_data.setHorizontalHeaderItem(header_list.index(header), item)
 
-        header_list_tech = ['Длина, км', 'Диаметр, мм', 'Давление, кПа',
+        header_list_tech = ['Длина, км', 'Диаметр, мм', 'Давление, МПа',
                             'Тем-ра, гр.С', 'Объем, м3',
                             'Ст.заполн., -', 'Обвалование, м2', 'Тип']
 
@@ -930,7 +943,6 @@ class Painter(QtWidgets.QMainWindow):
     def edit_organization(self):
         self.edition = Edit_table_org()
         self.edition.show()
-
 
     # Функции работы с ген.планом
     def plan_add_func(self):
@@ -1209,7 +1221,7 @@ class Painter(QtWidgets.QMainWindow):
             self.draw_risk(data_list)
 
         else:
-            result = class_data_draw.Data_draw().data_for_zone(data_list, plan_report_index)
+            result = class_data_draw.Data_draw().data_for_zone(data_list, plan_report_index, self.shutdown_time.value())
             #   Нарисуем зоны поражения
             self.draw_from_data(result)
 
@@ -1278,7 +1290,7 @@ class Painter(QtWidgets.QMainWindow):
 
                 # возьмем координаты оборудования
                 obj_coord = self.get_polygon(coordinate_obj[i])
-                if len(obj_coord) > 2:  # координаты можно преобразовать в полигон
+                if len(obj_coord) >= 2:  # координаты можно преобразовать в полигон
 
                     if obj == 0:
                         # линейн. получим полигон
@@ -1326,13 +1338,13 @@ class Painter(QtWidgets.QMainWindow):
         zeors_array = np.zeros((width, height))
         # получим пробиты и расстояния
         expl_all_probit, strait_all_probit, flash_all_probit, scenarios_all = class_data_draw.Data_draw().data_for_risk(
-            data_list)
-
+            data_list, self.shutdown_time.value())
 
         # Рассчитаем тепловую карту
         sharpness = int(self.sharpness.value())
         calc_array = class_data_draw.Data_draw().calc_heat_map(sharpness, zeors_array, data_list, width, height,
-                                                               1, expl_all_probit, # вместо 1 должно быть !!! float(self.scale_plan.text())
+                                                               1, expl_all_probit,
+                                                               # вместо 1 должно быть !!! float(self.scale_plan.text())
                                                                strait_all_probit, flash_all_probit, scenarios_all)
 
         # Нарисуем тепловую карту
@@ -1362,7 +1374,7 @@ class Painter(QtWidgets.QMainWindow):
             # Выбрать ген.план
             self.plan_list.setCurrentIndex(i)
             # Установить ген.план
-            self.plan_list_select(text = self.plan_list.currentText())
+            self.plan_list_select(text=self.plan_list.currentText())
             # отрисовка зон
             for j in range(5):
                 # Установить тип аварии (взрыв, пожар...риск)
@@ -1376,7 +1388,7 @@ class Painter(QtWidgets.QMainWindow):
                 self.plan_report_draw()
                 # Сохранить
                 self.plan_save()
-                time.sleep(2) # что бы успел сохранить рисунок
+                time.sleep(2)  # что бы успел сохранить рисунок
 
         # Диалог нужен ли текст
         dlg = QtWidgets.QMessageBox(self)
@@ -1390,7 +1402,8 @@ class Painter(QtWidgets.QMainWindow):
 
             # Информация из базы данных
             current_org = self.organization.currentText()
-            info_about_organization = class_db.Data_base('local_base.db', str(PATH_LOCAL_BASE)).get_info_about_organizations(current_org)
+            info_about_organization = class_db.Data_base('local_base.db',
+                                                         str(PATH_LOCAL_BASE)).get_info_about_organizations(current_org)
             print(info_about_organization, "info_about_organization")
             if info_about_organization == None:
                 return
@@ -1400,7 +1413,7 @@ class Painter(QtWidgets.QMainWindow):
                 # Выбрать ген.план
                 self.plan_list.setCurrentIndex(i)
                 # Установить ген.план
-                self.plan_list_select(text = self.plan_list.currentText())
+                self.plan_list_select(text=self.plan_list.currentText())
                 # если не заполнена таблица и масштаб, то для плана ничего заполнять не надо
                 data_table = self.get_data_in_table()
                 if '' in data_table:
@@ -1453,13 +1466,11 @@ class Painter(QtWidgets.QMainWindow):
 
                     }
 
-
-                    dangerous_object.append_device(class_opo.Device(obj_dict))
+                    dangerous_object.append_device(class_opo.Device(obj_dict, self.shutdown_time.value()))
 
             print(len(dangerous_object.list_device))
             if len(dangerous_object.list_device) != 0:
                 dangerous_object.create_rpz(self.db_path, eval(info_about_organization[0]))
-
 
     # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -1678,8 +1689,6 @@ class Painter(QtWidgets.QMainWindow):
             count_row += 1  # +1 к строке (новая строка если len(data_list) > 1)
         return data_list
     # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
-
 
 
 if __name__ == '__main__':

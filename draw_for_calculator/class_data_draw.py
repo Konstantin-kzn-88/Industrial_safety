@@ -4,7 +4,7 @@ import math
 # calc
 from evaporation import class_evaporation_liguid
 from tvs_explosion import class_tvs_explosion
-from sp_explosion import class_sp_explosion # для риска импортируем СП
+from sp_explosion import class_sp_explosion  # для риска импортируем СП
 from strait_fire import class_strait_fire
 from lower_concentration import class_lower_concentration
 from event_tree import class_event_tree
@@ -15,18 +15,18 @@ MASS_BURNOUT_RATE = 0.06
 WIND_VELOCITY = 1
 
 
-
 class Data_draw:
     def __init__(self):
         ...
 
-    def data_for_zone(self, data_list: list, plan_report_index: int):
+    def data_for_zone(self, data_list: list, plan_report_index: int, shutdown_time: int):
         print("draw zone")
         result = []
         for obj in data_list:
             # a) Посчитаем объем
             length = float(obj[6])
             diameter = float(obj[7])
+            pressure = float(obj[8])
             volume_char = float(obj[10])  # характеристика емкость, объем, м3
             completion = float(obj[11])
             spill_square = float(obj[12])
@@ -48,7 +48,11 @@ class Data_draw:
             volume_sub = 0  # аварийный объем
             # Если трубопровод, то есть длина не равно 0
             if length != 0:
-                volume_sub = math.pi * math.pow(diameter / 2000, 2) * (length * 1000)
+                flow = 0.6 * density * (math.pow((diameter / 2) / 1000, 2) * math.pi) * math.pow(
+                    2 * (pressure* math.pow(10,6)) / density, 1 / 2)
+
+                print(flow, "flow")
+                volume_sub = math.pi * math.pow(diameter / 2000, 2) * (length * 1000) + (flow*shutdown_time)/density
             # Если емкость, то есть объем не равен 0
             if volume_char != 0:
                 volume_sub = volume_char * completion
@@ -108,7 +112,7 @@ class Data_draw:
 
         return result
 
-    def data_for_risk(self, data_list: list):
+    def data_for_risk(self, data_list: list, shutdown_time: int):
 
         expl_all_probit = []
         strait_all_probit = []
@@ -119,6 +123,7 @@ class Data_draw:
             # a) Посчитаем объем
             length = float(obj[6])
             diameter = float(obj[7])
+            pressure = float(obj[8])
             volume_char = float(obj[10])  # характеристика емкость, объем, м3
             completion = float(obj[11])
             spill_square = float(obj[12])
@@ -137,7 +142,10 @@ class Data_draw:
             volume_sub = 0  # аварийный объем
             # Если трубопровод, то есть длина не равно 0
             if length != 0:
-                volume_sub = math.pi * math.pow(diameter / 2000, 2) * (length * 1000)
+                flow = 0.6 * density * (math.pow((diameter / 2) / 1000, 2) * math.pi) * math.pow(
+                    2 * (pressure * math.pow(10,6)) / density, 1 / 2)
+                print(flow, "flow")
+                volume_sub = math.pi * math.pow(diameter / 2000, 2) * (length * 1000) + (flow*shutdown_time)/density
             # Если емкость, то есть объем не равен 0
             if volume_char != 0:
                 volume_sub = volume_char * completion
@@ -156,8 +164,6 @@ class Data_draw:
             # Внимание !!! При расчете идет СП вместо ТВС
 
             temp = class_sp_explosion.Explosion().explosion_array(evaporated_sub, heat_of_combustion, place)
-
-
 
             expl_probit = [temp[0], temp[-1]]  # нужны только радиусы и вероятности поражения
             expl_all_probit.append(expl_probit)
@@ -180,10 +186,8 @@ class Data_draw:
                                                                        lower_concentration
                                                                        )[-1]
 
-
-
-            probit = [1 for _ in range(int(temp)*10)]
-            radius = [round(float(i*0.1),2) for i in range(len(probit))]
+            probit = [1 for _ in range(int(temp) * 10)]
+            radius = [round(float(i * 0.1), 2) for i in range(len(probit))]
             flash_probit = [radius, probit]
             flash_all_probit.append(flash_probit)
 

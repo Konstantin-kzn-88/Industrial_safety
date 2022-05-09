@@ -17,7 +17,6 @@ from lower_concentration import class_lower_concentration
 from damage import class_damage
 from fn_fg_chart import class_FN_FG
 
-
 TIME_EVAPORATED = 3600  # 3600 секунд, время испарения
 MASS_BURNOUT_RATE = 0.06  # массовая скорость выгорания
 WIND_VELOCITY = 1  # скорость ветра, м/с
@@ -29,7 +28,8 @@ PART = 0.3
 
 
 class Device:
-    def __init__(self, char_set: dict):
+    def __init__(self, char_set: dict, shutdown_time: int):
+        self.shutdown_time = shutdown_time
         # Характеристики оборудования
         self.name = char_set["name"]
         self.name_full = char_set['name_full']
@@ -92,7 +92,8 @@ class Device:
         # 1.1. Объем, масса, площадь, количество испарившегося вещества
         self.volume_sub = self.emergency_volume()  # аварийный объем, м3
         self.mass_sub = self.volume_sub * self.density  # аварийная масса выброса, кг
-        self.square_sub = (self.volume_sub * self.spreading) if self.spill_square == 0 else self.spill_square  # аварийная плащодь пролива, м2
+        self.square_sub = (
+                self.volume_sub * self.spreading) if self.spill_square == 0 else self.spill_square  # аварийная плащодь пролива, м2
         self.evaporated_sub = class_evaporation_liguid.Evapor_liqud().evapor_liguid(self.molecular_weight,
                                                                                     self.steam_pressure,
                                                                                     self.square_sub,
@@ -217,8 +218,12 @@ class Device:
                                                                                          TIME_EVAPORATED)  # количество исп. вещества, кг
         # 1.2.  Сценарии аварии при полном разрушении
         self.probability_part = class_probability.Probability().probability_rosteh(self.type, self.length)
+        if self.shutdown_time == 0:
+            flow = 0
+        else:
+            flow = self.volume_sub_part / self.shutdown_time
         self.scenarios_part = class_event_tree.Event_tree().event_tree_inflammable(self.flash_temperature,
-                                                                                   0,
+                                                                                   flow,
                                                                                    self.probability_part[1]
                                                                                    )
         # 1.3. Расчет зон действия ПФ
@@ -332,7 +337,10 @@ class Device:
             raise ValueError("Емкости и трубы не могут быть одновременно заполненными!")
         # Если трубопровод, то есть длина не равно 0
         if self.length != 0:
-            volume = math.pi * math.pow(self.diameter / 2000, 2) * (self.length * 1000)
+            flow = 0.6 * self.density * (math.pow((self.diameter / 2) / 1000, 2) * math.pi) * math.pow(
+                2 * (self.pressure * math.pow(10, 6)) / self.density, 1 / 2)
+            volume = math.pi * math.pow(self.diameter / 2000, 2) * (self.length * 1000) + (
+                    flow * self.shutdown_time) / self.density
         # Если емкость, то есть объем не равен 0
         if self.volume != 0:
             volume = self.volume * self.completion
@@ -466,20 +474,21 @@ class Dangerous_object:
             return mass_crash_table_part
 
         def most_dangerous():
-            spill = 0
-            res = ""
+            res = ''
+            max_spill = max([i.square_sub for i in self.list_device])
             for item in self.list_device:
-                if item.square_sub > spill:
-                    res = f'сценарий С1 (пожар пролива) для оборудования "{item.name}" с вероятностью {item.scenarios_full[0]}.'
-                spill = item.square_sub
+                if item.square_sub == max_spill:
+                    res = f'сценарий С1 (пожар пролива) для оборудования: {item.name}, ' \
+                          f'с частотой {item.scenarios_full[0]} 1/год.'
             return res
 
         def most_possible():
-            res = 0
+            res = ''
             scenarios = 0
             for item in self.list_device:
                 if float(item.scenarios_part[-1]) > scenarios:
-                    res = f'сценарий С4_1 (частичная разгерметизация с ликвидацией пролива пролива) для оборудования "{item.name}" с вероятностью {item.scenarios_part[-1]}.'
+                    res = f'сценарий С4_1 (частичная разгерметизация с ликвидацией пролива пролива) для оборудования: ' \
+                          f'{item.name}, с частотой  {item.scenarios_part[-1]} 1/год.'
                 scenarios = float(item.scenarios_part[-1])
             return res
 
@@ -932,7 +941,6 @@ class Dangerous_object:
 
             fg.fg_chart([probability, money])
 
-
         if len(self.list_device) == 0:
             return
         path_template = Path(__file__).parents[1]
@@ -957,7 +965,6 @@ class Dangerous_object:
         create_fg()
         create_fn()
 
-
         context = {'company_name': data[1],
                    'project_name': self.project,
                    'project_shifr': self.number,
@@ -975,7 +982,7 @@ class Dangerous_object:
                    'project_description': self.description,
                    'equp_table': equp_table,
                    'mass_sub_table': mass_sub_table,
-                   'sum_sub': sum([round(i.mass_sub / 1000, 2) for i in self.list_device]),
+                   'sum_sub': round(sum([i.mass_sub / 1000 for i in self.list_device]), 2),
                    'automation': self.automation,
                    'mass_crash_table': mass_crash_table,
                    'mass_crash_table_part': mass_crash_table_part,
@@ -1025,7 +1032,7 @@ class Dangerous_object:
                    'project_description': self.description,
                    'equp_table': equp_table,
                    'mass_sub_table': mass_sub_table,
-                   'sum_sub': sum([round(i.mass_sub / 1000, 2) for i in self.list_device]),
+                   'sum_sub': round(sum([i.mass_sub / 1000 for i in self.list_device]), 2),
                    'automation': self.automation,
                    'mass_crash_table': mass_crash_table,
                    'mass_crash_table_part': mass_crash_table_part,
@@ -1049,9 +1056,6 @@ class Dangerous_object:
         doc.render(context)
         text = str(int(time.time()))
         doc.save(f'{path}\\{text}_dbp.docx')
-
-
-
 
 
 if __name__ == '__main__':
