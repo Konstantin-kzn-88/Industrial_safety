@@ -941,12 +941,47 @@ class Dangerous_object:
 
             fg.fg_chart([probability, money])
 
+        def oil_pipeline():
+            # таблица аварий нефтепроводов
+            nums = []
+            places = []
+            events = []
+            implications = []
+            damages = []
+            mens = []
+
+            path_template = Path(__file__).parents[1]
+            with open(f'{path_template}\\report_for_calculator\\templates\\oil_pipelines.txt', 'r', encoding="utf-8") as f:
+                data = f.read()
+
+            print('data', data)
+            print('-------')
+            data = eval(data)
+            print('******')
+            print('data', data)
+
+            for item in data:
+                nums.append(item[0])
+                places.append(item[1])
+                events.append(item[2])
+                implications.append(item[3])
+                damages.append(item[4])
+                mens.append(item[5])
+
+            result_table = [
+                {'num': num, 'place': place, 'event': event, 'implication': implication, 'damage': damage, 'men': men, }
+                for num, place, event, implication, damage, men in
+                zip(nums, places, events, implications, damages, mens)]
+
+            return result_table
+
         if len(self.list_device) == 0:
             return
         path_template = Path(__file__).parents[1]
         doc = DocxTemplate(f'{path_template}\\report_for_calculator\\templates\\temp_rpz.docx')
         equp_table = equipment()
         mass_sub_table = mass_in_equipment()
+        oil_pipeline_table = oil_pipeline()
         mass_crash_table = mass_crash()
         mass_crash_table_part = mass_crash_part()
         most_dangerous = most_dangerous()
@@ -984,6 +1019,7 @@ class Dangerous_object:
                    'mass_sub_table': mass_sub_table,
                    'sum_sub': round(sum([i.mass_sub / 1000 for i in self.list_device]), 2),
                    'automation': self.automation,
+                   'oil_pipeline_table': oil_pipeline_table,
                    'mass_crash_table': mass_crash_table,
                    'mass_crash_table_part': mass_crash_table_part,
                    'most_possible': most_possible,
