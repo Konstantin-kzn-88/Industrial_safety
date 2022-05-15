@@ -210,13 +210,16 @@ class Device:
         # 1.1. Объем, масса, площадь, количество испарившегося вещества
         self.volume_sub_part = self.emergency_volume() * PART  # аварийный объем, м3
         self.mass_sub_part = self.volume_sub_part * self.density  # аварийная масса выброса, кг
-        self.square_sub_part = self.volume_sub_part * self.spreading  # аварийная плащодь пролива, м2
+
+        temp = self.volume_sub_part * self.spreading
+        self.square_sub_part = temp if temp < self.spill_square else self.spill_square  # аварийная плащодь пролива, м2
+
         self.evaporated_sub_part = class_evaporation_liguid.Evapor_liqud().evapor_liguid(self.molecular_weight,
                                                                                          self.steam_pressure,
                                                                                          self.square_sub_part,
                                                                                          self.mass_sub_part,
                                                                                          TIME_EVAPORATED)  # количество исп. вещества, кг
-        # 1.2.  Сценарии аварии при полном разрушении
+        # 1.2.  Сценарии аварии при частичном разрушении
         self.probability_part = class_probability.Probability().probability_rosteh(self.type, self.length)
         if self.shutdown_time == 0:
             flow = 0
@@ -395,7 +398,8 @@ class Dangerous_object:
 
         def mass_in_equipment():
             # Распредление опасного вещества
-            components = [i.located for i in self.list_device]
+            locations = [i.ground for i in self.list_device]
+            # print("locations",locations)
 
             pozitions_with_sub = [i.name + ', нефть' for i in self.list_device]
 
@@ -410,11 +414,11 @@ class Dangerous_object:
             temperatures = [i.temperature for i in self.list_device]
 
             mass_sub_table = [
-                {'component': component, 'pozition_with_sub': pozition_with_sub, 'lenght_or_num': lenght_or_num,
+                {'location': location, 'pozition_with_sub': pozition_with_sub, 'lenght_or_num': lenght_or_num,
                  'quantity': quantity,
                  'state': state, 'pressure': pressure, 'temperature': temperature}
-                for component, pozition_with_sub, lenght_or_num, quantity, state, pressure, temperature in
-                zip(components, pozitions_with_sub, lenghts_or_num, quantitis, states, pressures, temperatures)]
+                for location, pozition_with_sub, lenght_or_num, quantity, state, pressure, temperature in
+                zip(locations, pozitions_with_sub, lenghts_or_num, quantitis, states, pressures, temperatures)]
             return mass_sub_table
 
         def mass_crash():
@@ -950,15 +954,14 @@ class Dangerous_object:
             damages = []
             mens = []
 
+
             path_template = Path(__file__).parents[1]
             with open(f'{path_template}\\report_for_calculator\\templates\\oil_pipelines.txt', 'r', encoding="utf-8") as f:
                 data = f.read()
 
-            print('data', data)
-            print('-------')
             data = eval(data)
-            print('******')
-            print('data', data)
+
+
 
             for item in data:
                 nums.append(item[0])

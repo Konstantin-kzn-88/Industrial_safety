@@ -54,7 +54,10 @@ class     Damage:
         else:
             direct_damage = 3                            #если все вызвано с 0 то ущерб принять 3 млн.
 
-        direct_damage = round(direct_damage,2)
+        direct_damage = round(direct_damage * CONST,2) # уменьшим ущерб
+        # если ущерб меньше 0.1 млн, то
+        if direct_damage < 0.1:
+            direct_damage = round(random.uniform(0.21, 0.22),2)
 
         return direct_damage
 
@@ -227,8 +230,6 @@ class     Damage:
         damage_array, mln.RUB
         """
         direct_damage = self.direct_damage(volume, diametr, lenght, cost_sub, part_sub)
-        if direct_damage < 0.1:
-            direct_damage = random.uniform(0.11, 0.15)
         liquidation_failures = round(direct_damage * 0.1,2)
         se_damage = self.se_damage(death_person, injured_person)
         consequential_damage = round((se_damage + direct_damage)*0.125,2)
@@ -248,7 +249,7 @@ class     Damage:
                            ecological_damage +
                            new_man,2)
 
-        damage_array = [round(direct_damage * CONST,2), liquidation_failures, se_damage, consequential_damage,
+        damage_array = [direct_damage, liquidation_failures, se_damage, consequential_damage,
                         damage_air, damage_air_fire, damage_earth, ecological_damage,
                         new_man,sum_damage]
 
