@@ -626,7 +626,7 @@ class Painter(QtWidgets.QMainWindow):
         plan_menu.addAction(plan_add)
         plan_replace = QtWidgets.QAction(replace_ico, 'Заменить', self)
         plan_replace.setStatusTip('Заменить план объекта')
-        # plan_replace.triggered.connect(self.plan_replace)
+        plan_replace.triggered.connect(self.plan_replace)
         plan_menu.addAction(plan_replace)
         plan_save = QtWidgets.QAction(save_ico, 'Coхранить', self)
         plan_save.setStatusTip('Сохранить текущее изображение плана объекта как файл')
@@ -963,6 +963,11 @@ class Painter(QtWidgets.QMainWindow):
         self.scene.render(painter)
         image.save((f"{self.db_path}/{text}.jpg"), "JPG")
         painter.end()
+
+    def plan_replace(self):
+        class_db.Data_base(self.db_name, self.db_path).plan_replace(self.plan_list.currentText())
+        class_db.Data_base(self.db_name, self.db_path).plan_list_update(self.plan_list)
+        self.plan_list_select(self.plan_list.currentText())
 
     def plan_list_select(self, text):
 
