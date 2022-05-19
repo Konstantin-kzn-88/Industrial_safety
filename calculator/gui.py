@@ -1348,7 +1348,7 @@ class Painter(QtWidgets.QMainWindow):
         # Рассчитаем тепловую карту
         sharpness = int(self.sharpness.value())
         calc_array = class_data_draw.Data_draw().calc_heat_map(sharpness, zeors_array, data_list, width, height,
-                                                               1, expl_all_probit,
+                                                               0.3, expl_all_probit,
                                                                # вместо 1 должно быть !!! float(self.scale_plan.text())
                                                                strait_all_probit, flash_all_probit, scenarios_all)
 
@@ -1375,25 +1375,35 @@ class Painter(QtWidgets.QMainWindow):
         plan_count = self.plan_list.count()
         print(plan_count)
 
-        for i in range(plan_count):
-            # Выбрать ген.план
-            self.plan_list.setCurrentIndex(i)
-            # Установить ген.план
-            self.plan_list_select(text=self.plan_list.currentText())
-            # отрисовка зон
-            for j in range(5):
-                # Установить тип аварии (взрыв, пожар...риск)
-                self.plan_report_type.setCurrentIndex(j)
-                # Нарисовать
-                if self.scale_plan.text() == '':
-                    continue
-                data_table = self.get_data_in_table()
-                if '' in data_table:
-                    continue
-                self.plan_report_draw()
-                # Сохранить
-                self.plan_save()
-                time.sleep(2)  # что бы успел сохранить рисунок
+        # Диалог нужны ли планы
+        dlg = QtWidgets.QMessageBox(self)
+        dlg.setIcon(QtWidgets.QMessageBox.Question)
+        dlg.setWindowTitle("Нарисовать...")
+        dlg.setText("Нарисовать ген.планы?")
+        dlg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+        button = dlg.exec()
+
+        if button == QtWidgets.QMessageBox.Yes:
+
+            for i in range(plan_count):
+                # Выбрать ген.план
+                self.plan_list.setCurrentIndex(i)
+                # Установить ген.план
+                self.plan_list_select(text=self.plan_list.currentText())
+                # отрисовка зон
+                for j in range(5):
+                    # Установить тип аварии (взрыв, пожар...риск)
+                    self.plan_report_type.setCurrentIndex(j)
+                    # Нарисовать
+                    if self.scale_plan.text() == '':
+                        continue
+                    data_table = self.get_data_in_table()
+                    if '' in data_table:
+                        continue
+                    self.plan_report_draw()
+                    # Сохранить
+                    self.plan_save()
+                    time.sleep(2)  # что бы успел сохранить рисунок
 
         # Диалог нужен ли текст
         dlg = QtWidgets.QMessageBox(self)

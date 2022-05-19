@@ -29,6 +29,7 @@ class Strait_fire:
         """
         # Вычислим эффективный диаметр
         D_eff = math.sqrt(4 * S_spill / math.pi)
+
         # проведем проверку не попадает ли расчетная точка в пролив
         if radius < (D_eff / 2 + 0.1):  # попадает
             # примем радиус на границе пролива, так как методика
@@ -37,6 +38,7 @@ class Strait_fire:
             radius = (D_eff / 2 + 0.1)
 
         po_steam = mol_mass / (22.413 * (1 + 0.00367 * t_boiling))
+        # print("Пожар", wind_velocity, m_sg, D_eff, po_steam, S_spill)
         u_star = wind_velocity / math.pow((m_sg * 9.8 * D_eff) / po_steam, (1 / 3))
 
         if u_star >= 1:  # L

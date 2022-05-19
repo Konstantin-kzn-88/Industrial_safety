@@ -1,71 +1,70 @@
-from tkinter import *
+import sys
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
 
 
-Weh = 1000
-Hen = 400
-Speed_Pad = 3
-Speed_Pad_R = Speed_Pad
-Speed_Pad_L = Speed_Pad
-
-class Ball(Canvas):
+class App(QWidget):
     def __init__(self):
-        Canvas.__init__(self, width=Weh, height=Hen, bg="Black")
-        self.focus()
-        #self.bind_all("<Key>", self.Move_Pad)
-        self.Move_PAD()
-        self.Loeder()
-        self.mine_Oval()
-        self.pack()
+        super().__init__()
+        self.title = 'PyQt5 Model Example'
+        self.left = 10
+        self.top = 10
+        self.width = 640
+        self.height = 240
+        self.initUI()
 
-    def Loeder(self):
-        self.create_oval(Weh / 2 - 10, Hen / 2 - 10, Weh / 2 + 10, Hen / 2 + 10, fill="white", tag="Oval")
-        self.create_line(990, 300, 990, 200, fill="white", width=20, tag="Plr1")
-        self.create_line(10, 100, 10, 10, fill="white", width=20, tag="Plr2")
+    def initUI(self):
 
-    def Move_Oval(self):
-        self.move("Oval", 10, 10)
+        self.model = QStandardItemModel(0, 0)
+        all_items = QStandardItem("Все объекты")
+        self.model.appendRow(all_items)
+        self.object1 = QStandardItem("Объект 1")
+        all_items.appendRow(self.object1)
+        self.object2 = QStandardItem("Объект 2")
+        all_items.appendRow(self.object2)
+
+        self.view = QTreeView()
+        self.view.header().hide()
+        self.view.setModel(self.model)
+
+        self.comboBox = QComboBox()
+        self.comboBox.addItem("Объект 1")
+        self.comboBox.addItem("Объект 2")
+        but = QPushButton('Добавить в  группу')
+        but.clicked.connect(self.on_click)
+        but_rem = QPushButton('Удалить точку')
+        but_rem.clicked.connect(self.remove_point)
+
+        mainLayout = QHBoxLayout()
+        mainLayout.addWidget(self.view)
+        partLayout = QVBoxLayout()
+        partLayout.addWidget(self.comboBox)
+        partLayout.addWidget(but)
+        partLayout.addWidget(but_rem)
+        mainLayout.addLayout(partLayout)
+
+        self.setLayout(mainLayout)
+
+        self.show()
+
+    def on_click(self):
+        ind = self.comboBox.currentIndex()
+        if ind == 0:
+            item = QStandardItem(f'Точка {self.object1.rowCount() + 1}')
+            self.object1.setChild(self.object1.rowCount(), item)
+        if ind == 1:
+            item = QStandardItem(f'Точка {self.object2.rowCount() + 1}')
+            self.object2.setChild(self.object2.rowCount(), item)
+
+    def remove_point(self, event):
+        index = self.view.selectedIndexes()[0]
+        item = index.model().itemFromIndex(index)
+        if not item.parent() is None and item.parent().text().startswith('Объект'):
+            item.parent().removeRow(item.row())
 
 
-    def Move_PAD(self):
-        global Speed_Pad_R, Speed_Pad_L
-        Pad = {'Plr1': Speed_Pad_R,
-        'Plr2': Speed_Pad_L}
-        for p in Pad:
-            self.move(p, 0,Pad[p])
-
-        if self.coords(p)[1] > 0:
-            self.move(p, 0, -self.coords(p)[1])
-
-
-
-    def Move_Pad(self, event):
-
-        if event.keysym == "Up":
-            self.move("Plr1", 0, -Speed_Pad_R)
-        elif event.keysym == "Down":
-            self.move("Plr1", 0, Speed_Pad_R)
-        if event.char == "w":
-            self.move("Plr2", 0, -Speed_Pad_L)
-        elif event.char == "s":
-            self.move("Plr2", 0, Speed_Pad_L)
-
-    def mine_Oval(self):
-        self.Move_Oval()
-        #self.Move_Pad
-        self.Move_PAD()
-        self.after(30, self.mine_Oval)
-
-
-
-def Strat():
-    root.board = Ball()
-
-
-
-
-root = Tk()
-root.geometry("1000x400")
-
-
-Strat()
-root.mainloop()
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    ex = App()
+    sys.exit(app.exec_())

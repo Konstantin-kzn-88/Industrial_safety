@@ -24,7 +24,7 @@ DAMAGE_EXPLOSION = 0.6
 DAMAGE_STRAIT = 1
 DAMAGE_LCLP = 0.3
 DAMAGE_ELIMINATION = 0.1
-PART = 0.3
+PART = 0.6
 
 
 class Device:
@@ -74,8 +74,11 @@ class Device:
         # Расчетные значения
         self.calc_full()
         self.calc_part()
-
         self.group_risk, self.individual_risk = self.calc_risk()
+
+        self.flow = 0.6 * self.density * (math.pow((self.diameter / 2) / 1000, 2) * math.pi) * math.pow(
+            2 * (self.pressure * math.pow(10, 6)) / self.density, 1 / 2)  # кг/с
+        self.mass_with_flow = self.flow * self.shutdown_time  # кг
 
     def calc_risk(self):
         group_risk = 0
@@ -212,7 +215,11 @@ class Device:
         self.mass_sub_part = self.volume_sub_part * self.density  # аварийная масса выброса, кг
 
         temp = self.volume_sub_part * self.spreading
-        self.square_sub_part = temp if temp < self.spill_square else self.spill_square  # аварийная плащодь пролива, м2
+        # print('temp', temp,'self.spill_square', self.spill_square)
+        if self.type != 0:
+            self.square_sub_part = temp if temp < self.spill_square else self.spill_square  # аварийная плащодь пролива, м2
+        else:
+            self.square_sub_part = temp
 
         self.evaporated_sub_part = class_evaporation_liguid.Evapor_liqud().evapor_liguid(self.molecular_weight,
                                                                                          self.steam_pressure,
@@ -239,6 +246,7 @@ class Device:
                                                                                           self.energy_level
                                                                                           )
         # 1.3.2. Пожар пролива
+        # print("self.square_sub_part", self.square_sub_part)
         self.fire_radius_part = class_strait_fire.Strait_fire().termal_class_zone(self.square_sub_part,
                                                                                   MASS_BURNOUT_RATE,
                                                                                   self.molecular_weight,
@@ -405,7 +413,7 @@ class Dangerous_object:
 
             lenghts_or_num = [(str(i.length) + " км") if i.type == 0 else 1 for i in self.list_device]
 
-            quantitis = [round(i.mass_sub / 1000, 2) for i in self.list_device]
+            quantitis = [round((i.mass_sub - i.mass_with_flow) / 1000, 2) for i in self.list_device]
 
             states = ['Ж.ф.' if i.type == 0 else 'Ж.ф.+п.г.ф.' for i in self.list_device]
 
@@ -954,14 +962,12 @@ class Dangerous_object:
             damages = []
             mens = []
 
-
             path_template = Path(__file__).parents[1]
-            with open(f'{path_template}\\report_for_calculator\\templates\\oil_pipelines.txt', 'r', encoding="utf-8") as f:
+            with open(f'{path_template}\\report_for_calculator\\templates\\oil_pipelines.txt', 'r',
+                      encoding="utf-8") as f:
                 data = f.read()
 
             data = eval(data)
-
-
 
             for item in data:
                 nums.append(item[0])
@@ -1020,7 +1026,7 @@ class Dangerous_object:
                    'project_description': self.description,
                    'equp_table': equp_table,
                    'mass_sub_table': mass_sub_table,
-                   'sum_sub': round(sum([i.mass_sub / 1000 for i in self.list_device]), 2),
+                   'sum_sub': round(sum([(i.mass_sub - i.mass_with_flow) / 1000 for i in self.list_device]), 2),
                    'automation': self.automation,
                    'oil_pipeline_table': oil_pipeline_table,
                    'mass_crash_table': mass_crash_table,
