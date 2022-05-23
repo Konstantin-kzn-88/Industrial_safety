@@ -19,6 +19,18 @@ class Data_draw:
     def __init__(self):
         ...
 
+    def del_white_pixel(self, pixmap):
+
+        img = pixmap.toImage()
+
+        for y in range(0, img.height() + 1):
+            for x in range(0, img.width() + 1):
+                print(img.pixelColor(x, y).getRgbF())
+                if img.pixelColor(x, y).getRgbF() == (1.0, 1.0, 1.0, 1.0):
+                    img.setPixelColor(x, y, QtGui.QColor(0, 0, 0, 0))
+
+        return QtGui.QPixmap.fromImage(img)
+
     def data_for_zone(self, data_list: list, plan_report_index: int, shutdown_time: int):
         print("draw zone")
         result = []
@@ -49,10 +61,10 @@ class Data_draw:
             # Если трубопровод, то есть длина не равно 0
             if length != 0:
                 flow = 0.6 * density * (math.pow((diameter / 2) / 1000, 2) * math.pi) * math.pow(
-                    2 * (pressure* math.pow(10,6)) / density, 1 / 2)
+                    2 * (pressure * math.pow(10, 6)) / density, 1 / 2)
 
                 print(flow, "flow")
-                volume_sub = math.pi * math.pow(diameter / 2000, 2) * (length * 1000) + (flow*shutdown_time)/density
+                volume_sub = math.pi * math.pow(diameter / 2000, 2) * (length * 1000) + (flow * shutdown_time) / density
             # Если емкость, то есть объем не равен 0
             if volume_char != 0:
                 volume_sub = volume_char * completion
@@ -112,6 +124,8 @@ class Data_draw:
 
         return result
 
+
+
     def data_for_risk(self, data_list: list, shutdown_time: int):
 
         expl_all_probit = []
@@ -143,9 +157,9 @@ class Data_draw:
             # Если трубопровод, то есть длина не равно 0
             if length != 0:
                 flow = 0.6 * density * (math.pow((diameter / 2) / 1000, 2) * math.pi) * math.pow(
-                    2 * (pressure * math.pow(10,6)) / density, 1 / 2)
+                    2 * (pressure * math.pow(10, 6)) / density, 1 / 2)
                 print(flow, "flow")
-                volume_sub = math.pi * math.pow(diameter / 2000, 2) * (length * 1000) + (flow*shutdown_time)/density
+                volume_sub = math.pi * math.pow(diameter / 2000, 2) * (length * 1000) + (flow * shutdown_time) / density
             # Если емкость, то есть объем не равен 0
             if volume_char != 0:
                 volume_sub = volume_char * completion

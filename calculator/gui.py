@@ -151,6 +151,9 @@ class Painter(QtWidgets.QMainWindow):
         self.db_name = ''
         self.db_path = ''
 
+        # г. Переменная ген.плана
+        self.scale = 1
+
         # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
         # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -651,17 +654,17 @@ class Painter(QtWidgets.QMainWindow):
         scale_plus = QtWidgets.QAction(plus_ico, 'Увеличить план', self)
         scale_plus.setShortcut('Ctrl+P')
         scale_plus.setStatusTip('Увеличить план')
-        # scale_plus.triggered.connect(self.scale_view_plus)
+        scale_plus.triggered.connect(self.scale_view_plus)
 
         scale_min = QtWidgets.QAction(minus_ico, 'Уменьшить план', self)
         scale_min.setShortcut('Ctrl+M')
         scale_min.setStatusTip('Уменьшить план')
-        # scale_min.triggered.connect(self.scale_view_min)
+        scale_min.triggered.connect(self.scale_view_min)
 
         hand_act = QtWidgets.QAction(hand_ico, 'Рука', self)
         hand_act.setShortcut('Ctrl+H')
         hand_act.setStatusTip('Рука')
-        # hand_act.triggered.connect(self.plan_hand)
+        hand_act.triggered.connect(self.plan_hand)
 
         # Справка
         help_show = QtWidgets.QAction(question_ico, 'Справка', self)
@@ -1230,7 +1233,7 @@ class Painter(QtWidgets.QMainWindow):
             #   Нарисуем зоны поражения
             self.draw_from_data(result)
 
-    def draw_from_data(self, data: list):
+    def draw_from_data(self, data: list, fill_thickness=10):
         '''
         Функция отрисовки на ген плане зон поражения.
         :param data список вида [[1,2,3,4,5,6],[1,2,3,4,5,6]..n]
@@ -1275,6 +1278,7 @@ class Painter(QtWidgets.QMainWindow):
 
         for zone_index in range(-1, -7, -1):
             i = 0  # итератор для объектов
+            k = 0  # итератор для объектов без заливки
             for obj in type_obj:
                 # # начинаем рисовать с последнего цвета
                 color = color_zone_arr[zone_index]
@@ -1312,8 +1316,50 @@ class Painter(QtWidgets.QMainWindow):
 
                 i += 1  # следующий объект
 
+            # Рисуем прозрачные
+
+            if fill_thickness != 0:
+                for obj in reversed(type_obj):
+                    zone_without_fill = math.fabs(
+                        float(data[k][zone_index]) * scale_plan * 2) - fill_thickness
+
+                    # определим ручку и кисточку
+                    pen_without_fill = QtGui.QPen(QtGui.QColor(255, 255, 255, 255), zone_without_fill,
+                                                  QtCore.Qt.SolidLine)
+                    brush_without_fill = QtGui.QBrush(QtGui.QColor(255, 255, 255, 255))
+                    # со сглаживаниями
+                    pen_without_fill.setJoinStyle(QtCore.Qt.RoundJoin)
+                    # закругленный концы
+                    pen_without_fill.setCapStyle(QtCore.Qt.RoundCap)
+                    qp.setPen(pen_without_fill)
+                    qp.setBrush(brush_without_fill)
+
+                    # возьмем координаты оборудования
+                    obj_coord = self.get_polygon(coordinate_obj[k])
+                    if len(obj_coord) >= 2:  # координаты можно преобразовать в полигон
+
+                        if obj == 0:
+                            # линейн. получим полигон
+                            qp.drawPolyline(obj_coord)
+                        else:
+                            # стац. об. получим полигон
+                            qp.drawPolyline(obj_coord)
+                            qp.drawPolygon(obj_coord, QtCore.Qt.OddEvenFill)
+                    else:  # не получается полигон, значит точка
+                        pen_point = QtGui.QPen(QtGui.QColor(255, 255, 255, 255), 1,
+                                               QtCore.Qt.SolidLine)
+                        qp.setPen(pen_point)
+                        point = QtCore.QPoint(int(float(coordinate_obj[k][0])), int(float(coordinate_obj[k][1])))
+                        qp.drawEllipse(point, zone_without_fill / 2, zone_without_fill / 2)  # т.к. нужен радиус
+
+                    k += 1  # следующий объект
+
+
+
         # Завершить рисование
         qp.end()
+        # удалить белый фон (при наличии)
+        pixmap_zone = class_data_draw.Data_draw().del_white_pixel(pixmap_zone)
         # Положим одну картинку на другую
         painter = QtGui.QPainter(pixmap)
         painter.begin(pixmap)
@@ -1364,6 +1410,33 @@ class Painter(QtWidgets.QMainWindow):
         # Разместим на сцене pixmap с pixmap_zone
         self.scene.addPixmap(pixmap)
         self.scene.setSceneRect(QtCore.QRectF(pixmap.rect()))
+
+    def scale_view_plus(self):  #
+        """
+        функция увеличения масштаба
+        """
+        self.scale += 0.05
+        self.view.scale(self.scale, self.scale)
+        self.scale = 1
+
+    def scale_view_min(self):  #
+        """
+        функция уменьшения масштаба
+        """
+        self.scale -= 0.05
+        self.view.scale(self.scale, self.scale)
+        self.scale = 1
+
+    def plan_hand(self):  # функция что бы появлялась рука для перетаскивания большой картинки
+        """
+        функция что бы появлялась рука для перетаскивания большой картинки
+        """
+        self.draw_obj.setChecked(False)
+        self.draw_type_act.setChecked(False)
+        if self.view.dragMode() == QtWidgets.QGraphicsView.ScrollHandDrag:
+            self.view.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
+        else:
+            self.view.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
 
     # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
