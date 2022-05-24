@@ -21,15 +21,12 @@ class Data_draw:
 
     def del_white_pixel(self, pixmap):
 
-        img = pixmap.toImage()
+        for i in range(1, 6):
+            for k in range(1, 6):
+                for j in range(1, 6):
+                    pixmap.setMask(pixmap.createMaskFromColor(QtGui.QColor(250 + i, 250 + k, 250 + j)))
 
-        for y in range(0, img.height() + 1):
-            for x in range(0, img.width() + 1):
-                print(img.pixelColor(x, y).getRgbF())
-                if img.pixelColor(x, y).getRgbF() == (1.0, 1.0, 1.0, 1.0):
-                    img.setPixelColor(x, y, QtGui.QColor(0, 0, 0, 0))
-
-        return QtGui.QPixmap.fromImage(img)
+        return pixmap
 
     def data_for_zone(self, data_list: list, plan_report_index: int, shutdown_time: int):
         print("draw zone")

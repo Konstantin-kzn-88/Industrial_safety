@@ -470,13 +470,20 @@ class Painter(QtWidgets.QMainWindow):
 
         # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         # 2.4.1. Рамка №1. Толщина линий объектов   (то что будет в рамке 1)
-        self.thickness_line = QtWidgets.QDoubleSpinBox()
+        self.thickness_line = QtWidgets.QSpinBox()
         self.thickness_line.setRange(1, 10)
         self.thickness_line.setSingleStep(1)
         self.thickness_line.setValue(2)
+        self.thickness_line.setToolTip("Толщина линий объектов")
+
+        self.fill_thickness = QtWidgets.QSpinBox()
+        self.fill_thickness.setRange(0, 30)
+        self.fill_thickness.setSingleStep(1)
+        self.fill_thickness.setValue(10)
+        self.fill_thickness.setToolTip("Толщина изолиний зон поражающего фактора")
 
         # 2.4.2. Рамка №2. Подробность расчета риска   (то что будет в рамке 2)
-        self.sharpness = QtWidgets.QDoubleSpinBox()
+        self.sharpness = QtWidgets.QSpinBox()
         self.sharpness.setRange(1, 10)
         self.sharpness.setSingleStep(1)
         self.sharpness.setValue(5)
@@ -492,9 +499,13 @@ class Painter(QtWidgets.QMainWindow):
         # # Упаковываем все в QGroupBox
         # # Рамка №1
         layout_set = QtWidgets.QFormLayout(self)
-        GB_set = QtWidgets.QGroupBox('Толщина линий объектов')
+        GB_set = QtWidgets.QGroupBox('Толщина линий')
         GB_set.setStyleSheet("QGroupBox { font-weight : bold; }")
-        layout_set.addRow("", self.thickness_line)
+        hbox_fill = QtWidgets.QHBoxLayout()
+        hbox_fill.addWidget(self.thickness_line)
+        hbox_fill.addWidget(self.fill_thickness)
+        layout_set.addRow("", hbox_fill)
+        layout_set.addRow("", hbox_fill)
         GB_set.setLayout(layout_set)
 
         # # Рамка №2
@@ -1231,16 +1242,17 @@ class Painter(QtWidgets.QMainWindow):
         else:
             result = class_data_draw.Data_draw().data_for_zone(data_list, plan_report_index, self.shutdown_time.value())
             #   Нарисуем зоны поражения
-            self.draw_from_data(result)
+            self.draw_from_data(result, fill_thickness = self.fill_thickness.value())
 
-    def draw_from_data(self, data: list, fill_thickness=10):
+    def draw_from_data(self, data: list, fill_thickness:int):
         '''
         Функция отрисовки на ген плане зон поражения.
         :param data список вида [[1,2,3,4,5,6],[1,2,3,4,5,6]..n]
                     количество списков = количетву отрисовываемых объектов .
 
         '''
-        print(data)
+
+        # print(data)
         # 1. Проверки
         # 1.1. Проверки на заполненность данных
         self.is_action_valid()
@@ -1270,7 +1282,7 @@ class Painter(QtWidgets.QMainWindow):
         pixmap = QtGui.QPixmap.fromImage(qimg)
         # создадим соразмерный pixmap_zone и сделаем его прозрачным
         pixmap_zone = QtGui.QPixmap(pixmap.width(), pixmap.height())
-        pixmap_zone.fill(QtGui.QColor(0, 0, 0, 0))
+        pixmap_zone.fill(QtGui.QColor(255, 255, 255, 255))
         # Создадим QPainter
         qp = QtGui.QPainter(pixmap_zone)
         # Начнем рисование
