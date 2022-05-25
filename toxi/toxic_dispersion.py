@@ -1,65 +1,125 @@
-import math
+import sys
+from PySide2.QtWidgets import (QWidget, QHBoxLayout,
+                               QLabel, QApplication, QMessageBox)
+from PySide2.QtGui import QPixmap, QImage, QPainter, QGuiApplication, QColor
+import traceback
+from pathlib import Path
+import xlwings as xw
 
 
-def ri(h_eff, po_eff, u_dinamic):  # 99
-    return 9.81 * ((po_eff - 1.29) / 1.29) * (h_eff / pow(u_dinamic, 2))
+def get_row_col_index(sheet):
+    row = 0
+    col = 0
+    # find col
+    for i in range(1, 5000):
+        val = sheet.range((1, i)).value
+        if val == None:
+            col = (1, i - 1)
+            break
+    # find row
+    for i in range(1, 5000):
+        val = sheet.range((i, 1)).value
+        if val == None:
+            row = (i - 1, 1)
+            break
+
+    return row, col
 
 
-def u_up_mixing(h_eff, po_eff, u_dinamic):
-    ri = 9.81 * ((po_eff - 1.29) / 1.29) * (h_eff / pow(u_dinamic, 2))
-    a = pow(1 + 0.8 * ri, 1 / 2) / (1 + 0.65)
-    b = pow(1 - 0.6 * ri, -1 / 2) / (1 + 0.65)
-    f_ri = a if ri > 0 else b
-    return 0.41*u_dinamic/f_ri
+def get_data_in_excel(row: tuple, col: tuple) -> list:
+    return sheet.range((2, 2), (row[0], col[1])).options(
+        ndim=2).value  # с 2 - т.к. нужно ислючить размерность длины по X, Y
+
+
+DATA_PATH = Path.cwd()
+SCALE = 1.443  # т.е. в 1 метре 1.443 пикселя
+
+print(f'{DATA_PATH}//data25.xls')
+wb = xw.Book(f'{DATA_PATH}//data25.xls')
+sheet = wb.sheets['Лист1']
+
+row, col = get_row_col_index(sheet)
+if row != 0 and col != 0:
+    val = get_data_in_excel(row, col)
+else:
+    val = 0
+
+print(row, col)
+
+app = QGuiApplication([])
+pixmap = QPixmap(row[0], col[1])
+pixmap.fill(QColor(255, 255, 255, 255))
+image_zone = pixmap.toImage()  #
+
+print(row[0], col[1])
+
+for i in range(0, col[1]-1):
+
+    for j in val[i]:
+
+        if val[i][val[i].index(j)] > 0:
+            image_zone.setPixelColor(j, i, QColor(0, 0, 255, 255))
+
+image_zone.save('cat.jpg')
 
 
 
+# pixmap_zone = QPixmap(map.width(), map.height())
+# # Создадим QPainter
+# qp = QPainter(pixmap_zone)
+# # Начнем рисование
+# qp.begin(pixmap_zone)
 
-# _____
-# Volume = 1000 m3
-# alpha = 0.1
-# _____
-p3 = 3  # pressure (MPa)
-t3 = 10  # temperature (deg.C)
-q_gas = 9035.265  # mass gas (kg)
-q_lig = 1397700  # mass liquid (kg)
-f_spill = 500  # m2
-# ____Substance____
-steam_pressure = 5950  # mm.rt.st, давление пара
-t_kip = 44.7  # s, time boiling
-q_gas_boiling = 1390  # mass gas boiling (kg)
-q_gas_spray = 175000  # mass gas spray (kg)
-q_gas_in_spray = 175000  # mass gas spray (kg)
-po_first_cloud = 6.95  # density of first cloud (kg/m3)
-t_first_cloud = -31  # temperature (deg.C)
-mass_gas_in_first_cloud = q_gas + q_gas_boiling + q_gas_spray + q_gas_in_spray
-r_3 = pow(mass_gas_in_first_cloud / (math.pi * po_first_cloud), 1 / 3)
-h_3 = r_3  # eq.41
 
-h_eff = (1/1.65)*h_3*1.49 #Г(1/1,65)
-u_eff = (1/1.49)*1*pow(h_3/10,0.65)
+# print(val)
 
-# ____Second cloud____
-po_second_cloud = 3.57  # density of second cloud (kg/m3)
-t_second_cloud = -31  # temperature (deg.C)
-q_i_3 = 4.61  # speed evaporated (kq/s)
-u_0_eff = 0.108  # speed eff (kq/s)
-b_3 = 0.5 * pow(f_spill, 1 / 2)
-h_3_s = q_i_3 / (2 * u_0_eff * b_3 * po_second_cloud)
 
-# ____All____
-time_ev_lig = (q_lig - q_gas_spray - q_gas_boiling - q_gas_in_spray) / q_i_3
-l_mo = 26 * pow(0.55, 0.17)
-u_dinamic = (0.41 * 1) / (math.log(((10 + 0.55) / 0.55) - (-6.9 * 10 / l_mo)))  # u*
-
-if __name__ == "__main__":
-    print(f'Масса ОВ (газа и жидкости) в первичном облаке: {mass_gas_in_first_cloud} кг')
-    print(f'Начальный радиус первичного облака ОВ: {r_3} м')
-    print(f'Начальная высота первичного облака ОВ: {h_3} м')
-    print(f'Начальная полуширина вторичного облака: {b_3} м')
-    print(f'Начальная высота вторичного облака: {h_3_s} м')
-    print(f'Время испарения пролива: {time_ev_lig} с')
-    print(f'Масштаб Монина - Обухова: {l_mo} -')
-    print(f'Динамическая скорость: {u_dinamic} м/с')
-    print(f'Эффективная высота: {h_eff} м')
-    print(f'Эффективная скорость: {u_eff} м/с')
+#
+# class Example(QWidget):
+#
+#     def __init__(self, scale=8, pos_x=500, pos_y=500):
+#         super().__init__()
+#         self.scale = scale
+#         self.pos_x = pos_x
+#         self.pos_y = pos_y
+#         self.initUI()
+#
+#     def initUI(self):
+#         # Рисование данных
+#         # 1. Получим на основе копии картинки основу для рисования
+#         map = QPixmap("map.jpg")
+#         pixmap_zone = QPixmap(map.width(), map.height())
+#         pixmap_zone.fill(QColor(255, 255, 255, 255))
+#
+#         # Создадим QPainter
+#         qp = QPainter(pixmap_zone)
+#         # Начнем рисование
+#         qp.begin(pixmap_zone)
+#
+#         hbox = QHBoxLayout(self)
+#         pixmap = QPixmap.fromImage(image)
+#
+#         lbl = QLabel(self)
+#         lbl.setPixmap(pixmap)
+#
+#         hbox.addWidget(lbl)
+#         self.setLayout(hbox)
+#
+#         self.move(300, 200)
+#         self.setWindowTitle('Toxi')
+#         self.show()
+#
+#
+# def log_uncaught_exceptions(ex_cls, ex, tb):
+#     # pyqt визуализация ошибок
+#     text = '{}: {}:\n'.format(ex_cls.__name__, ex)
+#     text += ''.join(traceback.format_tb(tb))
+#     print(text)
+#     QMessageBox.critical(None, 'Error', text)
+#     sys.exit()
+#
+#
+# sys.excepthook = log_uncaught_exceptions
+# if __name__ == '__main__':
+#     app = QApplication(sys.argv)
+#     main = Example()
