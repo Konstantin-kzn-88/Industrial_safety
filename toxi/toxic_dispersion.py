@@ -31,6 +31,10 @@ def get_data_in_excel(row: tuple, col: tuple) -> list:
 
 
 def set_pix_color(qimg_zone, max_el, value, x ,y):
+
+    if x ==0 or y == 0:
+        qimg_zone.setPixelColor(x, y, QtGui.QColor(255, 0, 0, 255))
+
     if value >= max_el:
         qimg_zone.setPixelColor(x, y, QtGui.QColor(255, 0, 0, 255))
     #     красный
@@ -126,10 +130,16 @@ for row in range(0, col[1]-1):
     for iter in range(0, len(val[row])-1):
         set_pix_color(image_zone, max_elem, val[row][iter], iter, row)
 
-image_zone.save('cat.jpg')
+image_zone.save('res.jpg')
 
-
-
+# Положим одну картинку на другую
+pixmap_map = QtGui.QPixmap('map.jpg')
+painter = QtGui.QPainter(pixmap_map)
+painter.begin(pixmap_map)
+painter.setOpacity(0.5)
+painter.drawPixmap(0, 0, QtGui.QPixmap('res.jpg'))
+painter.end()
+pixmap_map.save('map_plus_res.jpg')
 # pixmap_zone = QPixmap(map.width(), map.height())
 # # Создадим QPainter
 # qp = QPainter(pixmap_zone)
