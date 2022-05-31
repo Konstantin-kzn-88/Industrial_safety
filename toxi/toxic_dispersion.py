@@ -1,9 +1,8 @@
-import sys
-
 from PySide2 import QtGui
-import traceback
 from pathlib import Path
 import xlwings as xw
+import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap
 
 
 def get_row_col_index(sheet):
@@ -94,15 +93,6 @@ def set_pix_color(qimg_zone, max_el, value, x ,y):
     # elif max_el * 0.0002 > value >= max_el * 0.0001:
     #     qimg_zone.setPixelColor(x, y, QtGui.QColor(0, 0, 255, 255))
 
-def get_max_elem(data:list):
-    max_elem = 0
-    for list_ in data:
-        i = max(list_)
-        if i>max_elem:
-            max_elem = i
-    print(max_elem)
-    return max_elem
-
 
 DATA_PATH = Path.cwd()
 SCALE = 1.443  # т.е. в 1 метре 1.443 пикселя
@@ -117,85 +107,24 @@ if row != 0 and col != 0:
 else:
     val = 0
 
-
+#
+cmap = ListedColormap(["white", "blue", "cyan", "lime", "yellow", 'red'])
+plt.figure(figsize=(10, 10), dpi=30)
+plt.imshow(val, cmap=cmap, interpolation='bicubic', vmax=0.1)
+plt.axis('off')
+plt.savefig('res.jpg', bbox_inches='tight', pad_inches=0)
 
 app = QtGui.QGuiApplication([])
-pixmap = QtGui.QPixmap(row[0], col[1])
-pixmap.fill(QtGui.QColor(255, 255, 255, 255))
-image_zone = pixmap.toImage()  #
-
-max_elem = get_max_elem(val)
-
-for row in range(0, col[1]-1):
-    for iter in range(0, len(val[row])-1):
-        set_pix_color(image_zone, max_elem, val[row][iter], iter, row)
-
-image_zone.save('res.jpg')
-
 # Положим одну картинку на другую
 pixmap_map = QtGui.QPixmap('map.jpg')
+# **************************************
+pixmap_zone = QtGui.QPixmap('res.jpg')
+# pixmap_zone = pixmap_zone.scaled(300, 300)
+t = QtGui.QTransform().rotate(35)
+# **************************************
 painter = QtGui.QPainter(pixmap_map)
 painter.begin(pixmap_map)
 painter.setOpacity(0.5)
-painter.drawPixmap(0, 0, QtGui.QPixmap('res.jpg'))
+painter.drawPixmap(50, 50, pixmap_zone.transformed(t))
 painter.end()
 pixmap_map.save('map_plus_res.jpg')
-# pixmap_zone = QPixmap(map.width(), map.height())
-# # Создадим QPainter
-# qp = QPainter(pixmap_zone)
-# # Начнем рисование
-# qp.begin(pixmap_zone)
-
-
-# print(val)
-
-
-#
-# class Example(QWidget):
-#
-#     def __init__(self, scale=8, pos_x=500, pos_y=500):
-#         super().__init__()
-#         self.scale = scale
-#         self.pos_x = pos_x
-#         self.pos_y = pos_y
-#         self.initUI()
-#
-#     def initUI(self):
-#         # Рисование данных
-#         # 1. Получим на основе копии картинки основу для рисования
-#         map = QPixmap("map.jpg")
-#         pixmap_zone = QPixmap(map.width(), map.height())
-#         pixmap_zone.fill(QColor(255, 255, 255, 255))
-#
-#         # Создадим QPainter
-#         qp = QPainter(pixmap_zone)
-#         # Начнем рисование
-#         qp.begin(pixmap_zone)
-#
-#         hbox = QHBoxLayout(self)
-#         pixmap = QPixmap.fromImage(image)
-#
-#         lbl = QLabel(self)
-#         lbl.setPixmap(pixmap)
-#
-#         hbox.addWidget(lbl)
-#         self.setLayout(hbox)
-#
-#         self.move(300, 200)
-#         self.setWindowTitle('Toxi')
-#         self.show()
-#
-#
-# def log_uncaught_exceptions(ex_cls, ex, tb):
-#     # pyqt визуализация ошибок
-#     text = '{}: {}:\n'.format(ex_cls.__name__, ex)
-#     text += ''.join(traceback.format_tb(tb))
-#     print(text)
-#     QMessageBox.critical(None, 'Error', text)
-#     sys.exit()
-#
-#
-# sys.excepthook = log_uncaught_exceptions
-# if __name__ == '__main__':
-#     app = QApplication(sys.argv)
-#     main = Example()

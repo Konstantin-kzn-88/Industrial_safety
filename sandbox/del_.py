@@ -1,99 +1,111 @@
 import sys
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QApplication, QMainWindow
-from PyQt5.QtGui import QPainter, QPainterPath
-from PyQt5.QtCore import QSize
-from random import randint
-
-ded = [
-    [(140, 140), (570, 525)],
-    [(20, 20), (350, 525), (100, 300), (20, 20)],
-    [(50, 50), (280, 175), (150, 240)],
-    [(80, 80), (210, 225), (300, 300), (340, 40)],
-    [(510, 110), (340, 275), (490, 390), (510, 110)]]
+from PyQt5.QtCore import Qt
+from PyQt5.QtNetwork import QTcpSocket, QHostAddress
+from PyQt5.QtWidgets import QApplication, QWidget, QTextBrowser, QTextEdit, QSplitter, QPushButton, \
+                            QHBoxLayout, QVBoxLayout
 
 
-from PyQt5 import QtCore, QtGui, QtWidgets
-
-class GraphicsView(QtWidgets.QGraphicsView):                                    # +++
-    def __init__(self, parent=None):
-        super(GraphicsView, self).__init__(parent)
-        self.setScene(QtWidgets.QGraphicsScene(self))
-        self.resize(1000, 600)
-
-        self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
-        self.setResizeAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
-        self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        self.setBackgroundBrush(QtGui.QBrush(QtGui.QColor(30, 30, 30)))
-        self.setFrameShape(QtWidgets.QFrame.NoFrame)
-
-    def wheelEvent(self, event):
-        """ Увеличение или уменьшение масштаба. """
-        zoomInFactor = 1.25
-        zoomOutFactor = 1 / zoomInFactor
-
-        # Save the scene pos
-        oldPos = self.mapToScene(event.pos())
-
-        # Zoom
-        if event.angleDelta().y() > 0:
-            zoomFactor = zoomInFactor
-        else:
-            zoomFactor = zoomOutFactor
-        self.scale(zoomFactor, zoomFactor)
-
-        # Get the new position
-        newPos = self.mapToScene(event.pos())
-
-        # Move scene to old position
-        delta = newPos - oldPos
-        self.translate(delta.x(), delta.y())
-
-
-class MainWindow(QMainWindow):
+class Client(QWidget):
     def __init__(self):
-        super().__init__()
-        self.initUI()
+        super(Client, self).__init__()
+        self.resize(500, 450)
 
-        self.w = GraphicsView(self)                                       # +++
-        self.drawLine()                                                   # +++
+        # 1. Создайте элемент управления и завершите макет интерфейса.
+        # Код макета находится в функции layout_init().
 
-    def initUI(self):
-        self.setMinimumSize(QSize(200, 200))
-        self.resize(1000, 600)
-        self.setWindowTitle('Das')
+        self.browser = QTextBrowser(self)
+        self.edit = QTextEdit(self)
 
-#    def paintEvent(self, e):
-#        qp = QPainter()
-#        qp.begin(self)
-#        qp.setRenderHint(QPainter.Antialiasing)
-#        self.drawLine(qp)
-#        qp.end()
+        self.splitter = QSplitter(self)
+        self.splitter.setOrientation(Qt.Vertical)
+        self.splitter.addWidget(self.browser)
+        self.splitter.addWidget(self.edit)
+        self.splitter.setSizes([350, 100])
 
-    def drawLine(self, qp=None):                    # + =None
-        path = QPainterPath()
-        def draw_trajectory(line):
-            for i, (x, y) in enumerate(line):
-                if i == 0:
-                    path.moveTo(x, y)
-                else:
-                    path.lineTo(x, y)
+        self.send_btn = QPushButton('Send', self)
+        self.close_btn = QPushButton('Close', self)
 
-        for line in ded:
-            draw_trajectory(line)
+        self.h_layout = QHBoxLayout()
+        self.v_layout = QVBoxLayout()
 
-#            qp.drawPath(path)
+        # 2. Создайте объект QTcpSocket и вызовите метод connectToHost()
+        # для подключения к целевому хосту на указанном порту
+        # (в это время будут выполнены три операции рукопожатия).
+        # Если клиент и сервер успешно соединены, будет подан сигнал connected()
 
-            self.w.scene().addPath(                                        # +++
-                path,
-                QtGui.QPen(QtGui.QColor(230, 230, 230)),
-                QtGui.QBrush(QtGui.QColor(*[randint(0, 255) for _ in range(4)]))
-                )
+        self.sock = QTcpSocket(self)
+        self.sock.connectToHost(QHostAddress.LocalHost, 9090)
+
+        self.layout_init()
+        self.signal_init()
+
+    def layout_init(self):
+        self.h_layout.addStretch(1)
+        self.h_layout.addWidget(self.close_btn)
+        self.h_layout.addWidget(self.send_btn)
+        self.v_layout.addWidget(self.splitter)
+        self.v_layout.addLayout(self.h_layout)
+        self.setLayout(self.v_layout)
+
+    # 3. Выполните операции по подключению сигналов и слотов в функции signal_init().
+    # Когда пользователь закончит ввод текста в поле для редактирования текста QTextEdit,
+    # нажмите кнопку 'Send', чтобы отправить текст на сервер.
+    # В функции слота write_data_slot() мы сначала получаем текст в поле для редактирования текста,
+    # затем кодируем его и отправляем, используя метод write()
+    # ( нет необходимости записывать адрес назначения и порт, потому что,
+    # он был ранее указан с помощью метода connectToHost() )
+    # После отправки мы очищаем поле для редактирования текста.
+
+    def signal_init(self):
+        self.send_btn.clicked.connect(self.write_data_slot)
+
+        # 4. Когда пользователь нажимает кнопку закрытия,
+        # вызывается метод close_slot(), чтобы закрыть сокет QTcpSocket,
+        # и закрываем окно.
+        self.close_btn.clicked.connect(self.close_slot)
+
+        # Как упоминалось ранее, когда клиент и сервер успешно подключены,
+        # будет подключен сигнал connected.
+        # Мы подключаем этот сигнал к функции слота connected_slot().
+        self.sock.connected.connect(self.connected_slot)
+
+        # Сигнал readyRead испускается,
+        # когда новые данные готовы для чтения.
+        self.sock.readyRead.connect(self.read_data_slot)
+
+    def write_data_slot(self):
+        message = self.edit.toPlainText()
+        self.browser.append('Client: {}'.format(message))
+        datagram = message.encode()  # кодируем
+        self.sock.write(datagram)    # отправляем
+        self.edit.clear()            # очищаем поле для редактирования текста
+
+    # В этой функции слота мы просто добавляем строку 'Connected! Ready to chat! :)' ,
+    # чтобы напомнить пользователям, что они могут общаться.
+    def connected_slot(self):
+        message = 'Connected! Ready to chat! :)'
+        self.browser.append(message)
+
+    # Мы используем метод bytesAvailable(), чтобы определить, есть ли данные,
+    # и если это так, мы вызываем метод read(), чтобы получить данные размера bytesAvailable().
+    # Затем данные декодируются и отображаются на экране.
+    def read_data_slot(self):
+        while self.sock.bytesAvailable():
+            datagram = self.sock.read(self.sock.bytesAvailable())
+            message = datagram.decode()
+            self.browser.append('Server: {}'.format(message))
+
+    def close_slot(self):
+        self.sock.close()                   # закрыть сокет QTcpSocket
+        self.close()
+
+    def closeEvent(self, event):
+        self.sock.close()
+        event.accept()
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    w = MainWindow()
-    w.show()
-    sys.exit(app.exec_())  
+    demo = Client()
+    demo.show()
+    sys.exit(app.exec_())
