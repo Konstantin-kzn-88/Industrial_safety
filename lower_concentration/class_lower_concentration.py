@@ -6,7 +6,6 @@ class LCLP:
         - molecular weight, kg/kmol
         - temp. boiling, deg.C
         - lower concentration limit, % vol.;
-
         """
         self.mass_SAM = mass_SAM  # SAM - steam-air mixture
         self.mol_mass = mol_mass
@@ -16,13 +15,11 @@ class LCLP:
     def culculation_R_LCLP(self, mass_SAM=200, mol_mass=95.3, t_boiling=68, LCLP=1.8):
         """
         R_LCLP - radius of the lower concentration limit of the flame propagation
-
         Parametrs:
         mass_SAM- mass of the steam-air mixture, kg;
         mol_mass - molecular weight, kg/kmol
         t_boiling - temp. boiling, deg.C
         LCLP - lower concentration limit, % vol.;
-
         Return:
         R_LCLP in meters (float)
         """
