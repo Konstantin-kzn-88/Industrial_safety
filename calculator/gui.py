@@ -340,7 +340,8 @@ class Painter(QtWidgets.QMainWindow):
         self.draw_from_excel.setIcon(paint_ico)
         self.draw_from_excel.setToolTip("Отрисовка зон из Excel")
         self.draw_from_excel.clicked.connect(lambda: self.draw_from_data([] if self.data_excel.text() == ''
-                                                                         else eval(self.data_excel.text())))
+                                                                         else eval(self.data_excel.text()),
+                                                                         fill_thickness=self.fill_thickness.value()))
 
         # 2.2.3. Рамка №3. Владки зон поражения. (то что будет в рамке 3)
         self.opacity = QtWidgets.QDoubleSpinBox()
@@ -1242,9 +1243,9 @@ class Painter(QtWidgets.QMainWindow):
         else:
             result = class_data_draw.Data_draw().data_for_zone(data_list, plan_report_index, self.shutdown_time.value())
             #   Нарисуем зоны поражения
-            self.draw_from_data(result, fill_thickness = self.fill_thickness.value())
+            self.draw_from_data(result, fill_thickness=self.fill_thickness.value())
 
-    def draw_from_data(self, data: list, fill_thickness:int):
+    def draw_from_data(self, data: list, fill_thickness: int):
         '''
         Функция отрисовки на ген плане зон поражения.
         :param data список вида [[1,2,3,4,5,6],[1,2,3,4,5,6]..n]
@@ -1365,8 +1366,6 @@ class Painter(QtWidgets.QMainWindow):
                         qp.drawEllipse(point, zone_without_fill / 2, zone_without_fill / 2)  # т.к. нужен радиус
 
                     k += 1  # следующий объект
-
-
 
         # Завершить рисование
         qp.end()
